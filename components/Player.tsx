@@ -15,7 +15,6 @@ const Player: React.FC = () => {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
-        // Cache-busting on play/reconnect
         const buster = `&t=${Date.now()}`;
         audioRef.current.src = `${streamUrl}${buster}`;
         audioRef.current.play().catch(e => console.error("Erro ao reproduzir áudio:", e));
@@ -29,7 +28,6 @@ const Player: React.FC = () => {
     if (!audio) return;
 
     const handleStalled = () => {
-      console.log("Audio stalled, reconnecting...");
       if (isPlaying) {
         setTimeout(() => {
           const buster = `&t=${Date.now()}`;
@@ -59,62 +57,107 @@ const Player: React.FC = () => {
     }
   }, [volume]);
 
+  // Generate bars for the visualizer
+  const bars = Array.from({ length: 18 }, (_, i) => ({
+    id: i,
+    delay: `${Math.random() * 0.5}s`,
+    duration: `${0.6 + Math.random() * 0.8}s`
+  }));
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] bg-gray-900/95 border-t border-blue-500/30 backdrop-blur-xl p-4 md:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-      <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        
-        {/* Album Art / Info */}
-        <div className="flex items-center space-x-4 w-full md:w-auto">
-          <div className={`relative h-16 w-16 md:h-20 md:w-20 rounded-xl overflow-hidden shadow-2xl flex-shrink-0 group ${isPlaying ? 'animate-pulse' : ''}`}>
-             <img src="logo.png" alt="Rádio Art" className="h-full w-full object-cover" />
-             {isPlaying && (
-               <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
-                 <div className="flex space-x-1">
-                    {[1,2,3,4].map(i => (
-                      <div key={i} className={`w-1 bg-white rounded-full animate-bounce h-4`} style={{ animationDelay: `${i * 0.1}s` }}></div>
-                    ))}
-                 </div>
-               </div>
-             )}
+    <div className="fixed bottom-0 left-0 right-0 z-[100] transition-all duration-500">
+      {/* Visualizer overlay (subtle glow on the whole bar) */}
+      <div className={`absolute inset-0 bg-blue-600/5 blur-3xl transition-opacity duration-1000 ${isPlaying ? 'opacity-100' : 'opacity-0'}`} />
+
+      <div className="relative bg-gray-900/90 border-t border-blue-500/20 backdrop-blur-2xl p-4 md:p-5 shadow-[0_-15px_50px_rgba(0,0,0,0.6)]">
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          
+          {/* Enhanced Album Art & Metadata */}
+          <div className="flex items-center space-x-5 w-full md:w-auto">
+            <div className="relative group">
+              <div className={`absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 ${isPlaying ? 'opacity-60 animate-pulse' : ''}`} />
+              <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                <img src="logo.png" alt="Logo Rádio" className="h-full w-full object-cover" />
+                {isLoading && (
+                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                     <div className="h-8 w-8 border-3 border-white/20 border-t-blue-400 rounded-full animate-spin" />
+                   </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="min-w-0">
+              <div className="flex items-center space-x-2">
+                <span className={`h-2 w-2 rounded-full ${isPlaying ? 'bg-red-500 animate-pulse' : 'bg-gray-600'}`} />
+                <h4 className="text-white font-black text-xl tracking-tight uppercase italic">Live</h4>
+              </div>
+              <p className="text-blue-400 text-sm font-bold truncate max-w-[200px] md:max-w-[300px] uppercase tracking-wider mt-1">
+                {metadata}
+              </p>
+              
+              {/* Sound Wave Animation (Desktop View) */}
+              <div className={`hidden md:flex items-end space-x-1 h-6 mt-2 ${isPlaying ? 'opacity-100' : 'opacity-20'}`}>
+                {bars.map((bar) => (
+                  <div
+                    key={bar.id}
+                    className="w-1 bg-blue-500/80 rounded-full visualizer-bar"
+                    style={{ 
+                      animationDelay: bar.delay, 
+                      animationDuration: bar.duration,
+                      animationPlayState: isPlaying ? 'running' : 'paused'
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h4 className="text-white font-bold truncate text-lg">Em Direto</h4>
-            <p className="text-blue-400 text-sm truncate animate-pulse font-medium">{metadata}</p>
+
+          {/* Main Player Controls */}
+          <div className="flex flex-col items-center space-y-2">
+            <button 
+              onClick={togglePlay}
+              className="group relative h-16 w-16 md:h-20 md:w-20 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.3)] transition-all transform active:scale-90 hover:scale-105"
+            >
+              <div className={`absolute -inset-2 bg-blue-500 rounded-full opacity-20 blur-xl group-hover:opacity-40 transition-opacity ${isPlaying ? 'animate-pulse' : ''}`} />
+              {isPlaying ? (
+                <svg className="w-8 h-8 md:w-10 md:h-10 relative" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              ) : (
+                <svg className="w-8 h-8 md:w-10 md:h-10 ml-1 relative" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              )}
+            </button>
+            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              {isPlaying ? 'A Reproduzir' : 'Pausado'}
+            </span>
           </div>
-        </div>
 
-        {/* Controls */}
-        <div className="flex items-center space-x-6">
-          <button 
-            onClick={togglePlay}
-            className="h-16 w-16 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20 transition-all transform active:scale-95"
-          >
-            {isLoading ? (
-               <div className="h-8 w-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
-            ) : isPlaying ? (
-              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-            ) : (
-              <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            )}
-          </button>
-        </div>
+          {/* Volume Control Section */}
+          <div className="hidden lg:flex flex-col items-end space-y-2 w-56">
+            <div className="flex items-center space-x-3 w-full">
+              <svg className="w-5 h-5 text-blue-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+              </svg>
+              <div className="relative w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="1" 
+                  step="0.01" 
+                  value={volume}
+                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all"
+                  style={{ width: `${volume * 100}%` }}
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-gray-500 font-bold uppercase">Volume {Math.round(volume * 100)}%</p>
+          </div>
 
-        {/* Volume & Misc */}
-        <div className="hidden md:flex items-center space-x-4 w-48">
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-          <input 
-            type="range" 
-            min="0" 
-            max="1" 
-            step="0.01" 
-            value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
-            className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-          />
         </div>
-
-        <audio ref={audioRef} />
       </div>
+      <audio ref={audioRef} />
     </div>
   );
 };

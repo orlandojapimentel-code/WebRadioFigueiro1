@@ -7,6 +7,10 @@
     <title>Web Rádio Figueiró</title>
     <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Shim para evitar erro "process is not defined" em ambientes de produção
+        window.process = window.process || { env: {} };
+    </script>
     <style>
         @keyframes pulse-ring {
             0% { transform: scale(0.33); opacity: 0.8; }
@@ -14,6 +18,19 @@
         }
         .animate-pulse-ring {
             animation: pulse-ring 1.25s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+        }
+        
+        @keyframes wave {
+            0%, 100% { height: 4px; opacity: 0.5; }
+            50% { height: 24px; opacity: 1; }
+        }
+        .visualizer-bar {
+            animation: wave 1s ease-in-out infinite;
+        }
+        /* Garantir que o body ocupe toda a altura para evitar ecrã preto visual */
+        body {
+            background-color: #111827;
+            min-height: 100vh;
         }
     </style>
 <script type="importmap">
@@ -29,5 +46,7 @@
 </head>
 <body class="bg-gray-900 text-gray-100 overflow-x-hidden">
     <div id="root"></div>
+    <!-- Importante: Carregar o ponto de entrada da aplicação -->
+    <script type="module" src="index.tsx"></script>
 </body>
 </html>
