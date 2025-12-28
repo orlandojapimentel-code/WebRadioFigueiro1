@@ -47,7 +47,7 @@ const Hero: React.FC = () => {
                 </li>
                 <li className="flex items-center space-x-2">
                   <span className="w-1 h-1 bg-blue-500 rounded-full"></span>
-                  <span><strong>Estilo:</strong> Hits, Notícias e Clássicos</span>
+                  <span><strong>Estilo:</strong> Hits, Clássicos e muita música Portuguesa</span>
                 </li>
               </ul>
             </div>
