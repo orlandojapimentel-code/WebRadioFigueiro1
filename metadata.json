@@ -1,0 +1,7 @@
+{
+  "name": "Web Rádio Figueiró",
+  "description": "App oficial da Web Rádio Figueiró com player de alta fidelidade, assistente IA para dedicatórias e sugestões musicais, programação completa e contador de visitas.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
