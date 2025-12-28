@@ -31,7 +31,7 @@ const Hero: React.FC = () => {
             <div className="bg-black/30 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 text-left">
               <h3 className="text-blue-400 font-black uppercase tracking-[0.2em] text-[10px] mb-3">A Nossa Missão</h3>
               <p className="text-sm text-gray-300 leading-relaxed italic">
-                "Levar alegria, informação e boa música a todos os lares. Somos mais que uma rádio, somos uma comunidade unida pela paixão de comunicar e entreter."
+                "Levar alegria e boa música a todos os lares. Somos mais que uma rádio, somos uma comunidade unida pela paixão de comunicar e entreter."
               </p>
             </div>
             <div className="bg-black/30 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 text-left">
