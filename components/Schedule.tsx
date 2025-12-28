@@ -17,7 +17,7 @@ const Schedule: React.FC = () => {
           <h4 className="text-xl font-bold mb-6 text-blue-400">Programação Diária</h4>
           <div className="space-y-4">
             {[
-              { time: "08:00 - 10:00", name: "Manhãs Figueiró", host: "Música e notícias para começar o dia" },
+              { time: "08:00 - 10:00", name: "Manhãs Figueiró", host: "Música para começar o dia" },
               { time: "10:00 - 13:00", name: "Top Hits", host: "As mais pedidas do momento" },
               { time: "13:00 - 15:00", name: "Almoço Musical", host: "Sons tranquilos para o meio do dia" },
               { time: "15:00 - 19:00", name: "Tardes em Movimento", host: "Energia para o seu regresso" }
