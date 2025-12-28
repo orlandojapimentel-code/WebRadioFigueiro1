@@ -29,7 +29,8 @@ const Partnerships: React.FC = () => {
               FM - Rent a car & Bicycle House
             </h4>
             <p className="text-lg text-gray-600 font-medium max-w-xl">
-              A solução perfeita para a sua mobilidade. Aluguer de viaturas e bicicletas com a máxima qualidade e confiança.
+              Serviços Rent a Car, Táxis, veículos de Transporte de Crianças e Seguros.
+A F.M tem ainda disponível um alojamento local com piscina em zona calma de Felgueiras.
             </p>
             <div className="flex flex-wrap justify-center md:justify-start gap-4">
                <span className="bg-green-600 text-white px-6 py-2 rounded-full font-bold shadow-lg group-hover:bg-green-700 transition-colors">
