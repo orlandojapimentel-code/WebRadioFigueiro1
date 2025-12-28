@@ -6,6 +6,7 @@ const Player: React.FC = () => {
   const [volume, setVolume] = useState(0.8);
   const [isLoading, setIsLoading] = useState(false);
   const [metadata, setMetadata] = useState("Web Rádio Figueiró - Direto");
+  const [imgError, setImgError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
@@ -57,7 +58,6 @@ const Player: React.FC = () => {
     }
   }, [volume]);
 
-  // Generate bars for the visualizer
   const bars = Array.from({ length: 18 }, (_, i) => ({
     id: i,
     delay: `${Math.random() * 0.5}s`,
@@ -66,18 +66,25 @@ const Player: React.FC = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[100] transition-all duration-500">
-      {/* Visualizer overlay (subtle glow on the whole bar) */}
       <div className={`absolute inset-0 bg-blue-600/5 blur-3xl transition-opacity duration-1000 ${isPlaying ? 'opacity-100' : 'opacity-0'}`} />
 
       <div className="relative bg-gray-900/90 border-t border-blue-500/20 backdrop-blur-2xl p-4 md:p-5 shadow-[0_-15px_50px_rgba(0,0,0,0.6)]">
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           
-          {/* Enhanced Album Art & Metadata */}
           <div className="flex items-center space-x-5 w-full md:w-auto">
             <div className="relative group">
               <div className={`absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 ${isPlaying ? 'opacity-60 animate-pulse' : ''}`} />
-              <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-                <img src="logo.png" alt="Logo Rádio" className="h-full w-full object-cover" />
+              <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-gray-800 flex items-center justify-center">
+                {!imgError ? (
+                  <img 
+                    src="/logo.png" 
+                    alt="Logo Rádio" 
+                    className="h-full w-full object-cover" 
+                    onError={() => setImgError(true)}
+                  />
+                ) : (
+                  <span className="text-blue-500 font-black text-xl italic leading-none">WRF</span>
+                )}
                 {isLoading && (
                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                      <div className="h-8 w-8 border-3 border-white/20 border-t-blue-400 rounded-full animate-spin" />
@@ -95,7 +102,6 @@ const Player: React.FC = () => {
                 {metadata}
               </p>
               
-              {/* Sound Wave Animation (Desktop View) */}
               <div className={`hidden md:flex items-end space-x-1 h-6 mt-2 ${isPlaying ? 'opacity-100' : 'opacity-20'}`}>
                 {bars.map((bar) => (
                   <div
@@ -112,7 +118,6 @@ const Player: React.FC = () => {
             </div>
           </div>
 
-          {/* Main Player Controls */}
           <div className="flex flex-col items-center space-y-2">
             <button 
               onClick={togglePlay}
@@ -130,7 +135,6 @@ const Player: React.FC = () => {
             </span>
           </div>
 
-          {/* Volume Control Section */}
           <div className="hidden lg:flex flex-col items-end space-y-2 w-56">
             <div className="flex items-center space-x-3 w-full">
               <svg className="w-5 h-5 text-blue-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
