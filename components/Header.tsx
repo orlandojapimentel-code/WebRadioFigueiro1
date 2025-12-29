@@ -11,7 +11,7 @@ const Header: React.FC = () => {
           <div className="h-12 w-12 rounded-full border-2 border-blue-500 p-0.5 overflow-hidden bg-gray-800 flex items-center justify-center">
             {!imgError ? (
               <img 
-                src="/logo.png" 
+                src="logo.png" 
                 alt="Logo Web Rádio Figueiró" 
                 className="h-full w-full object-cover rounded-full"
                 onError={() => setImgError(true)}

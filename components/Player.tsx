@@ -78,7 +78,7 @@ const Player: React.FC = () => {
               <div className="relative h-16 w-16 md:h-24 md:w-24 rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-gray-800 flex items-center justify-center">
                 {!imgError ? (
                   <img 
-                    src="/logo.png" 
+                    src="logo.png" 
                     alt="Logo Rádio" 
                     className="h-full w-full object-cover" 
                     onError={() => setImgError(true)}
@@ -103,7 +103,7 @@ const Player: React.FC = () => {
                 {metadata}
               </p>
               
-              {/* Sound Wave Animation - Agora visível em Mobile (flex em vez de hidden md:flex) */}
+              {/* Sound Wave Animation */}
               <div className={`flex items-end space-x-1 h-5 md:h-6 mt-2 transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-20'}`}>
                 {bars.map((bar) => (
                   <div
