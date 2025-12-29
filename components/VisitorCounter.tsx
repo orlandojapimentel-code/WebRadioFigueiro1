@@ -3,57 +3,73 @@ import React, { useState, useEffect } from 'react';
 
 /**
  * COMPONENTE: VisitorCounter
- * OBJETIVO: Contador que inicia em 10160 e regista cada nova entrada no site.
- * ATUALIZAÇÃO: Substituição da menção "10160" por "OUVINTES ONLINE" na interface.
+ * OBJETIVO: Contador global sincronizado que soma visitas de todos os utilizadores.
+ * TECNOLOGIA: Utiliza a CounterAPI.dev para persistência global entre diferentes browsers.
  */
 
 const VisitorCounter: React.FC = () => {
-  // VALOR DE PARTIDA INTERNO (Mantido conforme pedido anterior)
+  // VALOR DE PARTIDA FIXO (A rádio começa com este legado de ouvintes)
   const VALOR_BASE = 10160;
   
-  // Chaves persistentes
-  const STORAGE_KEY = 'wrf_visits_accumulator_v3';
-  const SESSION_KEY = 'wrf_active_session_v3';
+  // Identificador único para a API (Namespace/Key)
+  const API_NAMESPACE = 'webradiofigueiro_pt';
+  const API_KEY = 'total_visits';
+  const SESSION_KEY = 'wrf_session_active_global';
 
   const [totalVisits, setTotalVisits] = useState(VALOR_BASE);
   const [hasNewEntry, setHasNewEntry] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Recuperar o acumulado
-    const savedExtras = localStorage.getItem(STORAGE_KEY);
-    let extraCount = savedExtras ? parseInt(savedExtras) : 0;
+    const fetchVisits = async () => {
+      try {
+        // Verificar se é uma nova sessão neste browser
+        const isNewSession = !sessionStorage.getItem(SESSION_KEY);
+        
+        // Se for nova sessão, usamos o endpoint 'up' para incrementar +1
+        // Se já for uma sessão ativa, usamos 'get' apenas para ler o valor atual
+        const endpoint = isNewSession ? 'up' : 'get';
+        
+        const response = await fetch(`https://api.counterapi.dev/v1/${API_NAMESPACE}/${API_KEY}/${endpoint}`);
+        const data = await response.json();
 
-    // 2. Lógica de nova entrada (Sessão)
-    const isNewEntry = !sessionStorage.getItem(SESSION_KEY);
+        if (data && data.count !== undefined) {
+          setTotalVisits(VALOR_BASE + data.count);
+          
+          if (isNewSession) {
+            sessionStorage.setItem(SESSION_KEY, 'true');
+            setHasNewEntry(true);
+            setTimeout(() => setHasNewEntry(false), 4000);
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao sincronizar contador global:", error);
+        // Fallback: se a API falhar, mostramos o valor base
+        setTotalVisits(VALOR_BASE);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    if (isNewEntry) {
-      extraCount += 1;
-      localStorage.setItem(STORAGE_KEY, extraCount.toString());
-      sessionStorage.setItem(SESSION_KEY, 'true');
-      
-      setHasNewEntry(true);
-      setTimeout(() => setHasNewEntry(false), 3500);
-    }
+    fetchVisits();
 
-    setTotalVisits(VALOR_BASE + extraCount);
-
-    // Dinamismo para o visor
-    const organicGrowth = setInterval(() => {
-      if (Math.random() > 0.96) {
+    // Pequeno dinamismo visual para simular atividade orgânica (puramente estético)
+    const organicInterval = setInterval(() => {
+      if (Math.random() > 0.98) {
         setTotalVisits(prev => prev + 1);
         setHasNewEntry(true);
-        setTimeout(() => setHasNewEntry(false), 1200);
+        setTimeout(() => setHasNewEntry(false), 1500);
       }
-    }, 35000);
+    }, 45000);
 
-    return () => clearInterval(organicGrowth);
+    return () => clearInterval(organicInterval);
   }, []);
 
   const displayDigits = totalVisits.toString().padStart(6, '0').split('');
 
   return (
     <div className="bg-gray-800/40 p-6 rounded-[2.5rem] border border-blue-500/20 shadow-2xl backdrop-blur-xl relative overflow-hidden transition-all duration-500 hover:border-blue-500/40 group">
-      {/* Efeito de iluminação suave */}
+      {/* Efeito de iluminação de fundo */}
       <div className={`absolute -top-10 -right-10 w-48 h-48 bg-blue-600/10 blur-[70px] rounded-full transition-opacity duration-1000 ${hasNewEntry ? 'opacity-100 scale-110' : 'opacity-40'}`} />
       
       <div className="flex items-center justify-between mb-6 relative z-10">
@@ -64,11 +80,13 @@ const VisitorCounter: React.FC = () => {
               <span className={`animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 ${hasNewEntry ? 'duration-300' : ''}`}></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
             </span>
-            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">Visitas Registadas</span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">Visitas Sincronizadas</span>
           </div>
         </div>
         <div className="bg-blue-600/10 px-3 py-1 rounded-full border border-blue-500/20">
-          <span className="text-[9px] text-blue-300 font-black uppercase tracking-widest">Live Stream</span>
+          <span className="text-[9px] text-blue-300 font-black uppercase tracking-widest">
+            {isLoading ? 'Sincronizando...' : 'Global Live'}
+          </span>
         </div>
       </div>
 
