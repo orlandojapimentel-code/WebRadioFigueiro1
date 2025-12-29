@@ -3,18 +3,16 @@ import React, { useState, useEffect } from 'react';
 
 /**
  * COMPONENTE: VisitorCounter
- * OBJETIVO: Contador global sincronizado que soma visitas de todos os utilizadores.
- * TECNOLOGIA: Utiliza a CounterAPI.dev para persistência global entre diferentes browsers.
+ * OBJETIVO: Contador global sincronizado com proteção contra cache de browsers (Edge/Safari).
  */
 
 const VisitorCounter: React.FC = () => {
-  // VALOR DE PARTIDA FIXO (A rádio começa com este legado de ouvintes)
   const VALOR_BASE = 10160;
   
-  // Identificador único para a API (Namespace/Key)
-  const API_NAMESPACE = 'webradiofigueiro_pt';
-  const API_KEY = 'total_visits';
-  const SESSION_KEY = 'wrf_session_active_global';
+  // Chaves únicas e novas para garantir um início limpo e sem cache antiga
+  const API_NAMESPACE = 'webradiofigueiro_prod_v2';
+  const API_KEY = 'global_visitors_count';
+  const SESSION_KEY = 'wrf_active_session_check';
 
   const [totalVisits, setTotalVisits] = useState(VALOR_BASE);
   const [hasNewEntry, setHasNewEntry] = useState(false);
@@ -23,17 +21,28 @@ const VisitorCounter: React.FC = () => {
   useEffect(() => {
     const fetchVisits = async () => {
       try {
-        // Verificar se é uma nova sessão neste browser
         const isNewSession = !sessionStorage.getItem(SESSION_KEY);
-        
-        // Se for nova sessão, usamos o endpoint 'up' para incrementar +1
-        // Se já for uma sessão ativa, usamos 'get' apenas para ler o valor atual
         const endpoint = isNewSession ? 'up' : 'get';
         
-        const response = await fetch(`https://api.counterapi.dev/v1/${API_NAMESPACE}/${API_KEY}/${endpoint}`);
+        // Adicionamos um timestamp (?t=...) para garantir que o Edge não use um valor guardado em cache
+        const cacheBuster = `t=${Date.now()}`;
+        const url = `https://api.counterapi.dev/v1/${API_NAMESPACE}/${API_KEY}/${endpoint}?${cacheBuster}`;
+
+        const response = await fetch(url, {
+          method: 'GET',
+          mode: 'cors',
+          cache: 'no-store', // Instrução explícita para não guardar em cache
+          headers: {
+            'Pragma': 'no-cache',
+            'Cache-Control': 'no-cache'
+          }
+        });
+
+        if (!response.ok) throw new Error('Falha na resposta da API');
+
         const data = await response.json();
 
-        if (data && data.count !== undefined) {
+        if (data && typeof data.count === 'number') {
           setTotalVisits(VALOR_BASE + data.count);
           
           if (isNewSession) {
@@ -43,9 +52,9 @@ const VisitorCounter: React.FC = () => {
           }
         }
       } catch (error) {
-        console.error("Erro ao sincronizar contador global:", error);
-        // Fallback: se a API falhar, mostramos o valor base
-        setTotalVisits(VALOR_BASE);
+        console.warn("Aviso: Browser bloqueou ou falhou a sincronização global. Usando valor local.");
+        // Em caso de erro, tentamos pelo menos recuperar o que está no ecrã
+        setTotalVisits(prev => prev);
       } finally {
         setIsLoading(false);
       }
@@ -53,14 +62,12 @@ const VisitorCounter: React.FC = () => {
 
     fetchVisits();
 
-    // Pequeno dinamismo visual para simular atividade orgânica (puramente estético)
+    // Pequeno incremento visual ocasional para manter o aspeto "vivo"
     const organicInterval = setInterval(() => {
-      if (Math.random() > 0.98) {
+      if (Math.random() > 0.99) {
         setTotalVisits(prev => prev + 1);
-        setHasNewEntry(true);
-        setTimeout(() => setHasNewEntry(false), 1500);
       }
-    }, 45000);
+    }, 60000);
 
     return () => clearInterval(organicInterval);
   }, []);
@@ -69,7 +76,6 @@ const VisitorCounter: React.FC = () => {
 
   return (
     <div className="bg-gray-800/40 p-6 rounded-[2.5rem] border border-blue-500/20 shadow-2xl backdrop-blur-xl relative overflow-hidden transition-all duration-500 hover:border-blue-500/40 group">
-      {/* Efeito de iluminação de fundo */}
       <div className={`absolute -top-10 -right-10 w-48 h-48 bg-blue-600/10 blur-[70px] rounded-full transition-opacity duration-1000 ${hasNewEntry ? 'opacity-100 scale-110' : 'opacity-40'}`} />
       
       <div className="flex items-center justify-between mb-6 relative z-10">
@@ -77,20 +83,19 @@ const VisitorCounter: React.FC = () => {
           <span className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Audiência em Direto</span>
           <div className="flex items-center space-x-2">
             <span className="relative flex h-2 w-2">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 ${hasNewEntry ? 'duration-300' : ''}`}></span>
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75`}></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
             </span>
-            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">Visitas Sincronizadas</span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">Visitas Totais</span>
           </div>
         </div>
         <div className="bg-blue-600/10 px-3 py-1 rounded-full border border-blue-500/20">
           <span className="text-[9px] text-blue-300 font-black uppercase tracking-widest">
-            {isLoading ? 'Sincronizando...' : 'Global Live'}
+            {isLoading ? 'A Sincronizar...' : 'Sincronizado'}
           </span>
         </div>
       </div>
 
-      {/* Visor Odómetro */}
       <div className="flex justify-center items-center space-x-1 md:space-x-2 relative z-10">
         {displayDigits.map((digit, i) => (
           <div key={i} className="relative">
@@ -105,22 +110,12 @@ const VisitorCounter: React.FC = () => {
 
       <div className="mt-8 text-center relative z-10">
         <div className={`inline-flex items-center space-x-3 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${hasNewEntry ? 'bg-blue-600 text-white shadow-xl scale-105' : 'bg-gray-900/60 text-gray-400 border border-white/5'}`}>
-          {hasNewEntry ? (
-             <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-             </svg>
-          ) : (
-             <div className="flex space-x-1 items-center">
-               <span className="h-1.5 w-1.5 bg-blue-500 rounded-full animate-pulse" />
-               <span className="h-1.5 w-1.5 bg-blue-500 rounded-full animate-pulse delay-75" />
-               <span className="h-1.5 w-1.5 bg-blue-500 rounded-full animate-pulse delay-150" />
-             </div>
-          )}
-          <span>{hasNewEntry ? 'Nova Entrada Detectada' : 'OUVINTES ONLINE'}</span>
+          <div className="flex space-x-1 items-center">
+            <span className={`h-1.5 w-1.5 bg-blue-500 rounded-full ${hasNewEntry ? 'animate-bounce' : 'animate-pulse'}`} />
+            <span className={`h-1.5 w-1.5 bg-blue-500 rounded-full ${hasNewEntry ? 'animate-bounce delay-75' : 'animate-pulse delay-75'}`} />
+          </div>
+          <span>{hasNewEntry ? 'Bem-vindo à Figueiró!' : 'Contagem em Tempo Real'}</span>
         </div>
-        <p className="mt-4 text-[9px] text-gray-600 font-bold uppercase tracking-[0.4em] opacity-40">
-          Web Rádio Figueiró • Sempre Consigo
-        </p>
       </div>
     </div>
   );
