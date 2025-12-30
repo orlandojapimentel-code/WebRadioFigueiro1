@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Player from './components/Player';
@@ -11,38 +11,6 @@ import News from './components/News';
 import VisitorCounter from './components/VisitorCounter';
 
 const App: React.FC = () => {
-  useEffect(() => {
-    const updateFavicon = () => {
-      // Remove ícones antigos
-      const existingIcons = document.querySelectorAll("link[rel*='icon'], link[rel='apple-touch-icon']");
-      existingIcons.forEach(el => el.parentNode?.removeChild(el));
-
-      // Criar URL com cache-buster (v=51) para forçar o Chrome a atualizar
-      const logoUrl = `logo.png?v=51&t=${Date.now()}`;
-
-      // Injeta o ícone padrão
-      const link = document.createElement('link');
-      link.rel = 'icon';
-      link.type = 'image/png';
-      link.href = logoUrl;
-      document.head.appendChild(link);
-
-      // Injeta para dispositivos Apple
-      const appleLink = document.createElement('link');
-      appleLink.rel = 'apple-touch-icon';
-      appleLink.href = logoUrl;
-      document.head.appendChild(appleLink);
-      
-      console.log("Favicon atualizado dinamicamente via string path.");
-    };
-
-    updateFavicon();
-    
-    // Pequeno atraso para garantir que o navegador está pronto
-    const timer = setTimeout(updateFavicon, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <div className="min-h-screen flex flex-col pb-32 bg-gray-900">
       <Header />

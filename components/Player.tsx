@@ -9,7 +9,7 @@ const Player: React.FC = () => {
   const [imgError, setImgError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const logoPath = "logo.png?v=51";
+  const logoPath = "logo.png";
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
 
   const togglePlay = () => {
@@ -81,10 +81,7 @@ const Player: React.FC = () => {
                     src={logoPath} 
                     alt="Logo Rádio" 
                     className="h-full w-full object-cover" 
-                    onError={() => {
-                      console.warn("Logo Player falhou. Usando fallback.");
-                      setImgError(true);
-                    }}
+                    onError={() => setImgError(true)}
                   />
                 ) : (
                   <span className="text-blue-500 font-black text-xl italic leading-none">WRF</span>

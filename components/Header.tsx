@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 
 const Header: React.FC = () => {
   const [imgError, setImgError] = useState(false);
-  // Caminho relativo para a raiz onde está o logo.png
-  const logoPath = "logo.png?v=51";
+  // Caminho direto para o logo
+  const logoPath = "logo.png";
 
   return (
     <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-md border-b border-white/10">
@@ -16,10 +16,7 @@ const Header: React.FC = () => {
                 src={logoPath} 
                 alt="Logo Web Rádio Figueiró" 
                 className="h-full w-full object-cover rounded-full"
-                onError={() => {
-                  console.warn("Logo Header falhou. Tentando alternativa...");
-                  setImgError(true);
-                }}
+                onError={() => setImgError(true)}
               />
             ) : (
               <div className="flex flex-col items-center justify-center">
