@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 const Header: React.FC = () => {
   const [imgError, setImgError] = useState(false);
-  const logoUrl = "logo.png?v=12";
+  const logoUrl = "logo.png?v=21";
 
   return (
     <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-md border-b border-white/10">
@@ -15,7 +15,10 @@ const Header: React.FC = () => {
                 src={logoUrl} 
                 alt="Logo Web Rádio Figueiró" 
                 className="h-full w-full object-cover rounded-full"
-                onError={() => setImgError(true)}
+                onError={() => {
+                  console.warn("Falha ao carregar logo no Header com caminho relativo.");
+                  setImgError(true);
+                }}
               />
             ) : (
               <span className="text-blue-500 font-bold text-xs text-center leading-none">WRF</span>

@@ -12,29 +12,32 @@ import VisitorCounter from './components/VisitorCounter';
 
 const App: React.FC = () => {
   useEffect(() => {
-    const logoPath = "logo.png?v=12";
-    
-    const updateFavicons = () => {
-      // Atualizar todos os links de ícone existentes
-      const links = document.querySelectorAll("link[rel*='icon']");
-      if (links.length > 0) {
-        links.forEach((link: any) => {
-          link.href = logoPath;
-        });
-      } else {
-        // Criar se não existir
-        const newIcon = document.createElement('link');
-        newIcon.rel = 'icon';
-        newIcon.type = 'image/png';
-        newIcon.href = logoPath;
-        document.head.appendChild(newIcon);
-      }
+    const updateFavicon = () => {
+      // Remover links antigos para forçar o Chrome a reprocessar
+      const existingIcons = document.querySelectorAll("link[rel*='icon']");
+      existingIcons.forEach(el => el.parentNode?.removeChild(el));
+
+      const logoPath = `logo.png?v=${Date.now()}`;
+
+      // Criar novo link de favicon
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.type = 'image/png';
+      link.href = logoPath;
+      document.head.appendChild(link);
+
+      // Apple Touch Icon
+      const appleLink = document.createElement('link');
+      appleLink.rel = 'apple-touch-icon';
+      appleLink.href = logoPath;
+      document.head.appendChild(appleLink);
     };
 
-    updateFavicons();
-    // Forçar atualização quando a janela carregar totalmente
-    window.addEventListener('load', updateFavicons);
-    return () => window.removeEventListener('load', updateFavicons);
+    updateFavicon();
+    
+    // Pequeno atraso para garantir execução após o carregamento completo do DOM
+    const timer = setTimeout(updateFavicon, 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
