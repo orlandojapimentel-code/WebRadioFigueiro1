@@ -6,30 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Rádio Figueiró | A Sua Melhor Companhia</title>
     
-    <!-- Favicon Principal com Caminho Absoluto e Cache Busting v=10 -->
-    <link rel="icon" type="image/png" href="/logo.png?v=10">
-    <link rel="shortcut icon" type="image/png" href="/logo.png?v=10">
+    <!-- Favicon Principal - v=12 -->
+    <link rel="icon" type="image/png" href="logo.png?v=12">
+    <link rel="shortcut icon" type="image/png" href="logo.png?v=12">
     
-    <!-- Suporte para diferentes tamanhos -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/logo.png?v=10">
-    <link rel="icon" type="image/png" sizes="16x16" href="/logo.png?v=10">
+    <!-- Suporte para tamanhos variados -->
+    <link rel="icon" type="image/png" sizes="32x32" href="logo.png?v=12">
+    <link rel="icon" type="image/png" sizes="16x16" href="logo.png?v=12">
     
-    <!-- Fallback Mobile (Apple) -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/logo.png?v=10">
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="logo.png?v=12">
     
-    <!-- Meta Tags para Redes Sociais (Open Graph) -->
+    <!-- Meta Tags Open Graph -->
     <meta property="og:title" content="Web Rádio Figueiró">
     <meta property="og:description" content="A Sua Melhor Companhia - Sintonize em Direto">
-    <meta property="og:image" content="/logo.png?v=10">
+    <meta property="og:image" content="logo.png?v=12">
     <meta property="og:url" content="https://webradiofigueiro.pt">
     <meta property="og:type" content="website">
     
-    <!-- Cor da barra do navegador -->
     <meta name="theme-color" content="#111827">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Shim para evitar erro "process is not defined"
         window.process = window.process || { env: {} };
     </script>
     <style>
@@ -48,12 +46,10 @@
         .visualizer-bar {
             animation: wave 1s ease-in-out infinite;
         }
-        /* Cor de fundo base para evitar flash branco no carregamento */
         body {
             background-color: #111827;
             min-height: 100vh;
         }
-        /* Esconder barra de scroll do assistente para estética limpa */
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }

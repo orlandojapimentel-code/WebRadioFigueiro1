@@ -12,27 +12,17 @@ import VisitorCounter from './components/VisitorCounter';
 
 const App: React.FC = () => {
   useEffect(() => {
-    // Versão 10 para forçar limpeza total da cache do Chrome
-    const logoPath = "/logo.png?v=10";
+    const logoPath = "logo.png?v=12";
     
     const updateFavicons = () => {
-      // Procurar todos os links relacionados com ícones
-      const selectors = [
-        "link[rel='icon']", 
-        "link[rel='shortcut icon']", 
-        "link[rel='apple-touch-icon']",
-        "link[rel*='icon']"
-      ];
-      
-      selectors.forEach(selector => {
-        const links = document.querySelectorAll(selector);
+      // Atualizar todos os links de ícone existentes
+      const links = document.querySelectorAll("link[rel*='icon']");
+      if (links.length > 0) {
         links.forEach((link: any) => {
           link.href = logoPath;
         });
-      });
-
-      // Se por algum motivo não existirem, criá-los
-      if (document.querySelectorAll("link[rel*='icon']").length === 0) {
+      } else {
+        // Criar se não existir
         const newIcon = document.createElement('link');
         newIcon.rel = 'icon';
         newIcon.type = 'image/png';
@@ -41,10 +31,10 @@ const App: React.FC = () => {
       }
     };
 
-    // Executar imediatamente e após 2 segundos (ajuda o Chrome a "acordar")
     updateFavicons();
-    const timer = setTimeout(updateFavicons, 2000);
-    return () => clearTimeout(timer);
+    // Forçar atualização quando a janela carregar totalmente
+    window.addEventListener('load', updateFavicons);
+    return () => window.removeEventListener('load', updateFavicons);
   }, []);
 
   return (
