@@ -13,31 +13,33 @@ import VisitorCounter from './components/VisitorCounter';
 const App: React.FC = () => {
   useEffect(() => {
     const updateFavicon = () => {
-      // Remover links antigos para forçar o Chrome a reprocessar
+      // 1. Limpar todos os links de ícone existentes no head
       const existingIcons = document.querySelectorAll("link[rel*='icon']");
       existingIcons.forEach(el => el.parentNode?.removeChild(el));
 
-      const logoPath = `logo.png?v=${Date.now()}`;
+      // 2. Criar novo link com caminho absoluto e versão dinâmica
+      const logoPath = `/logo.png?v=${Date.now()}`;
 
-      // Criar novo link de favicon
       const link = document.createElement('link');
       link.rel = 'icon';
       link.type = 'image/png';
       link.href = logoPath;
       document.head.appendChild(link);
 
-      // Apple Touch Icon
+      // 3. Adicionar Apple Touch Icon para dispositivos móveis
       const appleLink = document.createElement('link');
       appleLink.rel = 'apple-touch-icon';
       appleLink.href = logoPath;
       document.head.appendChild(appleLink);
+      
+      console.log("Favicon atualizado para:", logoPath);
     };
 
     updateFavicon();
     
-    // Pequeno atraso para garantir execução após o carregamento completo do DOM
-    const timer = setTimeout(updateFavicon, 1500);
-    return () => clearTimeout(timer);
+    // Segunda tentativa após o carregamento total da página (estratégia para o Chrome)
+    window.addEventListener('load', updateFavicon);
+    return () => window.removeEventListener('load', updateFavicon);
   }, []);
 
   return (

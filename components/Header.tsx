@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 const Header: React.FC = () => {
   const [imgError, setImgError] = useState(false);
-  const logoUrl = "logo.png?v=21";
+  const logoUrl = "/logo.png?v=30";
 
   return (
     <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-md border-b border-white/10">
@@ -16,7 +16,7 @@ const Header: React.FC = () => {
                 alt="Logo Web Rádio Figueiró" 
                 className="h-full w-full object-cover rounded-full"
                 onError={() => {
-                  console.warn("Falha ao carregar logo no Header com caminho relativo.");
+                  console.warn("Logo no Header falhou com caminho absoluto. A usar fallback.");
                   setImgError(true);
                 }}
               />
