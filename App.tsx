@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Player from './components/Player';
@@ -11,6 +11,34 @@ import News from './components/News';
 import VisitorCounter from './components/VisitorCounter';
 
 const App: React.FC = () => {
+  // Forçar o Favicon via caminho direto para evitar erros de importação
+  useEffect(() => {
+    try {
+      const logoPath = '/logo.png?v=3';
+      const updateFavicon = (url: string) => {
+        let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'icon';
+          document.getElementsByTagName('head')[0].appendChild(link);
+        }
+        link.type = 'image/png';
+        link.href = url;
+
+        let appleLink: HTMLLinkElement | null = document.querySelector("link[rel='apple-touch-icon']");
+        if (!appleLink) {
+          appleLink = document.createElement('link');
+          appleLink.rel = 'apple-touch-icon';
+          document.getElementsByTagName('head')[0].appendChild(appleLink);
+        }
+        appleLink.href = url;
+      };
+      updateFavicon(logoPath);
+    } catch (e) {
+      console.warn("Erro ao atualizar favicon dinamicamente", e);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col pb-32">
       <Header />
@@ -47,7 +75,6 @@ const App: React.FC = () => {
         </div>
       </footer>
 
-      {/* Fixed Player - Stays at bottom */}
       <Player />
     </div>
   );

@@ -9,6 +9,7 @@ const Player: React.FC = () => {
   const [imgError, setImgError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const logoUrl = "/logo.png?v=3";
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
 
   const togglePlay = () => {
@@ -58,7 +59,6 @@ const Player: React.FC = () => {
     }
   }, [volume]);
 
-  // Reduzi o número de barras ligeiramente para não sobrecarregar o telemóvel
   const bars = Array.from({ length: 14 }, (_, i) => ({
     id: i,
     delay: `${Math.random() * 0.5}s`,
@@ -78,7 +78,7 @@ const Player: React.FC = () => {
               <div className="relative h-16 w-16 md:h-24 md:w-24 rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-gray-800 flex items-center justify-center">
                 {!imgError ? (
                   <img 
-                    src="logo.png" 
+                    src={logoUrl} 
                     alt="Logo Rádio" 
                     className="h-full w-full object-cover" 
                     onError={() => setImgError(true)}
@@ -103,7 +103,6 @@ const Player: React.FC = () => {
                 {metadata}
               </p>
               
-              {/* Sound Wave Animation */}
               <div className={`flex items-end space-x-1 h-5 md:h-6 mt-2 transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-20'}`}>
                 {bars.map((bar) => (
                   <div
