@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Header: React.FC = () => {
   const [imgError, setImgError] = useState(false);
-  const logoUrl = "/logo.png?v=30";
+  // Usar caminho relativo direto com versão alta
+  const logoUrl = "logo.png?v=50";
 
   return (
     <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-md border-b border-white/10">
@@ -15,13 +16,15 @@ const Header: React.FC = () => {
                 src={logoUrl} 
                 alt="Logo Web Rádio Figueiró" 
                 className="h-full w-full object-cover rounded-full"
-                onError={() => {
-                  console.warn("Logo no Header falhou com caminho absoluto. A usar fallback.");
+                onError={(e) => {
+                  console.warn("Logo Header falhou. Tentando fallback...");
                   setImgError(true);
                 }}
               />
             ) : (
-              <span className="text-blue-500 font-bold text-xs text-center leading-none">WRF</span>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-blue-500 font-black text-[10px] leading-none">WRF</span>
+              </div>
             )}
           </div>
           <div>
