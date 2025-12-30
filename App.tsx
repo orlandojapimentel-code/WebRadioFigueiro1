@@ -11,36 +11,33 @@ import News from './components/News';
 import VisitorCounter from './components/VisitorCounter';
 
 const App: React.FC = () => {
-  // Forçar o Favicon via caminho direto para evitar erros de importação
   useEffect(() => {
-    try {
-      const logoPath = '/logo.png?v=3';
-      const updateFavicon = (url: string) => {
-        let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
-        if (!link) {
-          link = document.createElement('link');
-          link.rel = 'icon';
-          document.getElementsByTagName('head')[0].appendChild(link);
-        }
-        link.type = 'image/png';
-        link.href = url;
+    // Forçar atualização do favicon de forma simples e segura
+    const logoPath = "/logo.png?v=4";
+    
+    const updateLinks = () => {
+      const links = document.querySelectorAll("link[rel*='icon']");
+      links.forEach((link: any) => {
+        link.href = logoPath;
+      });
 
-        let appleLink: HTMLLinkElement | null = document.querySelector("link[rel='apple-touch-icon']");
-        if (!appleLink) {
-          appleLink = document.createElement('link');
-          appleLink.rel = 'apple-touch-icon';
-          document.getElementsByTagName('head')[0].appendChild(appleLink);
-        }
-        appleLink.href = url;
-      };
-      updateFavicon(logoPath);
-    } catch (e) {
-      console.warn("Erro ao atualizar favicon dinamicamente", e);
-    }
+      // Adicionar Apple Touch Icon se não existir
+      if (!document.querySelector("link[rel='apple-touch-icon']")) {
+        const appleIcon = document.createElement('link');
+        appleIcon.rel = 'apple-touch-icon';
+        appleIcon.href = logoPath;
+        document.head.appendChild(appleIcon);
+      }
+    };
+
+    updateLinks();
+    // Pequeno delay para garantir que o Chrome processa a mudança após o carregamento inicial
+    const timeout = setTimeout(updateLinks, 1000);
+    return () => clearTimeout(timeout);
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col pb-32">
+    <div className="min-h-screen flex flex-col pb-32 bg-gray-900">
       <Header />
       
       <main className="flex-grow container mx-auto px-4 space-y-16 py-8">
@@ -71,7 +68,7 @@ const App: React.FC = () => {
           <p>© {new Date().getFullYear()} Web Rádio Figueiró. Todos os direitos reservados.</p>
           <p className="mt-2">Email: <a href="mailto:webradiofigueiro@gmail.pt" className="hover:text-blue-400 transition-colors">webradiofigueiro@gmail.pt</a></p>
           <p>Telefone: +351 910270085</p>
-          <p className="mt-2 text-xs">Desenvolvido com tecnologia de ponta para a melhor experiência auditiva.</p>
+          <p className="mt-2 text-xs">Desenvolvido para a melhor experiência auditiva.</p>
         </div>
       </footer>
 

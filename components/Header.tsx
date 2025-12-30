@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 const Header: React.FC = () => {
   const [imgError, setImgError] = useState(false);
-  const logoUrl = "/logo.png?v=3";
+  const logoUrl = "/logo.png?v=4";
 
   return (
     <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-md border-b border-white/10">
