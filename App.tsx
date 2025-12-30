@@ -12,28 +12,39 @@ import VisitorCounter from './components/VisitorCounter';
 
 const App: React.FC = () => {
   useEffect(() => {
-    // Forçar atualização do favicon de forma simples e segura
-    const logoPath = "/logo.png?v=4";
+    // Versão 10 para forçar limpeza total da cache do Chrome
+    const logoPath = "/logo.png?v=10";
     
-    const updateLinks = () => {
-      const links = document.querySelectorAll("link[rel*='icon']");
-      links.forEach((link: any) => {
-        link.href = logoPath;
+    const updateFavicons = () => {
+      // Procurar todos os links relacionados com ícones
+      const selectors = [
+        "link[rel='icon']", 
+        "link[rel='shortcut icon']", 
+        "link[rel='apple-touch-icon']",
+        "link[rel*='icon']"
+      ];
+      
+      selectors.forEach(selector => {
+        const links = document.querySelectorAll(selector);
+        links.forEach((link: any) => {
+          link.href = logoPath;
+        });
       });
 
-      // Adicionar Apple Touch Icon se não existir
-      if (!document.querySelector("link[rel='apple-touch-icon']")) {
-        const appleIcon = document.createElement('link');
-        appleIcon.rel = 'apple-touch-icon';
-        appleIcon.href = logoPath;
-        document.head.appendChild(appleIcon);
+      // Se por algum motivo não existirem, criá-los
+      if (document.querySelectorAll("link[rel*='icon']").length === 0) {
+        const newIcon = document.createElement('link');
+        newIcon.rel = 'icon';
+        newIcon.type = 'image/png';
+        newIcon.href = logoPath;
+        document.head.appendChild(newIcon);
       }
     };
 
-    updateLinks();
-    // Pequeno delay para garantir que o Chrome processa a mudança após o carregamento inicial
-    const timeout = setTimeout(updateLinks, 1000);
-    return () => clearTimeout(timeout);
+    // Executar imediatamente e após 2 segundos (ajuda o Chrome a "acordar")
+    updateFavicons();
+    const timer = setTimeout(updateFavicons, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   return (

@@ -9,7 +9,7 @@ const Player: React.FC = () => {
   const [imgError, setImgError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const logoUrl = "/logo.png?v=4";
+  const logoUrl = "/logo.png?v=10";
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
 
   const togglePlay = () => {
