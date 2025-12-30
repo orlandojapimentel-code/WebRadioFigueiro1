@@ -12,42 +12,35 @@ import VisitorCounter from './components/VisitorCounter';
 
 const App: React.FC = () => {
   useEffect(() => {
-    const forceUpdateFavicon = () => {
-      // 1. Localizar e remover todos os links de ícone existentes para evitar conflitos de cache
-      const links = document.querySelectorAll("link[rel*='icon'], link[rel='apple-touch-icon']");
-      links.forEach(link => link.parentNode?.removeChild(link));
+    const updateFavicon = () => {
+      // Remove ícones antigos
+      const existingIcons = document.querySelectorAll("link[rel*='icon'], link[rel='apple-touch-icon']");
+      existingIcons.forEach(el => el.parentNode?.removeChild(el));
 
-      // 2. Definir o caminho absoluto para o logo com cache-buster único
-      const timestamp = Date.now();
-      const logoUrl = `${window.location.origin}/logo.png?v=50&t=${timestamp}`;
+      // Criar URL com cache-buster (v=51) para forçar o Chrome a atualizar
+      const logoUrl = `logo.png?v=51&t=${Date.now()}`;
 
-      // 3. Criar e injetar o novo ícone standard
-      const newIcon = document.createElement('link');
-      newIcon.rel = 'icon';
-      newIcon.type = 'image/png';
-      newIcon.href = logoUrl;
-      document.head.appendChild(newIcon);
+      // Injeta o ícone padrão
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.type = 'image/png';
+      link.href = logoUrl;
+      document.head.appendChild(link);
 
-      // 4. Criar e injetar o ícone para Apple/Mobile
-      const appleIcon = document.createElement('link');
-      appleIcon.rel = 'apple-touch-icon';
-      appleIcon.href = logoUrl;
-      document.head.appendChild(appleIcon);
+      // Injeta para dispositivos Apple
+      const appleLink = document.createElement('link');
+      appleLink.rel = 'apple-touch-icon';
+      appleLink.href = logoUrl;
+      document.head.appendChild(appleLink);
       
-      console.log("Sistema de Favicon: Atualizado para", logoUrl);
+      console.log("Favicon atualizado dinamicamente via string path.");
     };
 
-    // Executar imediatamente e após o carregamento completo
-    forceUpdateFavicon();
-    window.addEventListener('load', forceUpdateFavicon);
+    updateFavicon();
     
-    // Tentativa extra após 3 segundos (estratégia para o Chrome persistente)
-    const timer = setTimeout(forceUpdateFavicon, 3000);
-
-    return () => {
-      window.removeEventListener('load', forceUpdateFavicon);
-      clearTimeout(timer);
-    };
+    // Pequeno atraso para garantir que o navegador está pronto
+    const timer = setTimeout(updateFavicon, 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
