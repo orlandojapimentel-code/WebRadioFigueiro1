@@ -3,39 +3,36 @@ import { GoogleGenAI } from "@google/genai";
 
 /**
  * Motor de IA da Web Rádio Figueiró.
- * Configurado para ler a chave do ambiente Vercel (process.env.API_KEY).
+ * Utiliza a API_KEY configurada no Vercel para uma ligação estável.
  */
 export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
-  // Aceder à chave configurada no Vercel
+  // A chave vem diretamente do ambiente seguro do Vercel
   const apiKey = process.env.API_KEY;
   
   if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
-    console.error("Erro: API_KEY não detetada no ambiente.");
     throw new Error("SINTONIA_PERDIDA");
   }
 
-  // Inicialização com a chave do Vercel
   const ai = new GoogleGenAI({ apiKey });
   
   const systemPrompt = `
     ESTÁS EM: Figueiró, Paços de Ferreira.
-    IDENTIDADE: És a "Figueiró AI", a assistente oficial da Web Rádio Figueiró.
+    IDENTIDADE: És a "Figueiró AI", locutora e assistente virtual da Web Rádio Figueiró.
     
-    PERSONALIDADE: Alegre, nortenha, muito prestável.
+    PERSONALIDADE: Alegre, nortenha, prestativa e muito orgulhosa da região.
     
-    CONTEXTO LOCAL:
-    - Rádio: Web Rádio Figueiró (Figueiró, Paços de Ferreira).
-    - Parceiro Especial: FM Rent a Car (Alojamento Local e Mobilidade em Felgueiras).
+    CONTEXTO:
+    - Rádio: Web Rádio Figueiró.
+    - Local: Figueiró (Paços de Ferreira).
+    - Parceiro: FM Rent a Car (Felgueiras).
     
-    OBJETIVO: Ajudar com dedicatórias, informações da rádio e sugestões musicais.
-    
-    REGRAS: 
-    - Máximo 40 palavras.
-    - Sê calorosa.
-    - Usa emojis como 🎙️, 🎧, 💙.
+    ESTILO DE RESPOSTA:
+    - Curta (máx 35 palavras).
+    - Usa emojis de rádio e música (🎙️, 🎧, 🎸).
+    - Trata os ouvintes como família.
   `;
 
   try {
@@ -58,7 +55,7 @@ export const getRadioAssistantStream = async (
     }
     return fullText;
   } catch (error: any) {
-    console.error("Erro na emissão da IA:", error);
+    console.error("Erro Gemini:", error);
     if (error.message?.includes("API key") || error.message?.includes("403")) {
       throw new Error("SINTONIA_PERDIDA");
     }
