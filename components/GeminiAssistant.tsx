@@ -6,50 +6,42 @@ import { ChatMessage } from '../types';
 const GeminiAssistant: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([{ 
     role: 'model', 
-    text: '🎙️ Estúdio ligado aqui em Figueiró! Sou a Figueiró AI, a tua melhor companhia digital. Como te posso ajudar hoje?' 
+    text: '🎙️ Estúdio ligado aqui em Figueiró! Sou a Figueiró AI, a tua melhor companhia. Como te posso ajudar hoje?' 
   }]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [showKeyInfo, setShowKeyInfo] = useState(false);
+  const [isAistudioEnv, setIsAistudioEnv] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Verificação inicial de chave
-  const checkSintonia = async () => {
-    if (window.aistudio) {
-      const hasKey = await window.aistudio.hasSelectedApiKey();
-      setShowKeyInfo(!hasKey);
-    }
-  };
-
   useEffect(() => {
-    checkSintonia();
-    // Re-verificar a cada 30 segundos em background caso o estado mude
-    const timer = setInterval(checkSintonia, 30000);
-    return () => clearInterval(timer);
+    const checkEnv = async () => {
+      // Verifica se estamos no ambiente do Google AI Studio
+      if (window.aistudio) {
+        setIsAistudioEnv(true);
+        const hasKey = await window.aistudio.hasSelectedApiKey();
+        setShowKeyInfo(!hasKey);
+      } else {
+        setIsAistudioEnv(false);
+        setShowKeyInfo(false);
+      }
+    };
+    checkEnv();
   }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText]);
 
-  const handleSintonizar = async (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    console.log("A abrir diálogo de sintonização...");
+  const handleSintonizar = async () => {
     if (window.aistudio) {
       try {
         await window.aistudio.openSelectKey();
-        // Segundo as regras, assumimos sucesso imediato para prosseguir
         setShowKeyInfo(false);
       } catch (err) {
-        console.error("Erro ao abrir seletor de chave:", err);
+        console.error("Erro ao sintonizar:", err);
       }
-    } else {
-      alert("O sistema de sintonização não está disponível neste navegador.");
     }
   };
 
@@ -70,13 +62,15 @@ const GeminiAssistant: React.FC = () => {
       setStreamingText('');
       setIsTyping(false);
     } catch (err: any) {
-      console.error("Erro na comunicação com a IA:", err);
+      console.error(err);
       
-      let errorMsg = "🎙️ Oops! Algo correu mal. Tenta novamente em instantes.";
+      let errorMsg = "🎙️ Oops! Algo correu mal na ligação. Tenta novamente mais tarde!";
       
-      if (err.message === "SINTONIA_PERDIDA") {
-        errorMsg = "🎙️ A minha sintonia com o satélite caiu! Clica no botão amarelo 'SINTONIZAR' no topo deste chat para me ligares de novo.";
-        setShowKeyInfo(true); // Força o botão a aparecer
+      if (err.message === "SINTONIA_PERDIDA" && isAistudioEnv) {
+        errorMsg = "🎙️ Perdi a sintonia! Clica no botão amarelo 'SINTONIZAR' no topo para me ligares de novo.";
+        setShowKeyInfo(true);
+      } else if (!isAistudioEnv) {
+        errorMsg = "🎙️ O estúdio está com interferências técnicas. Por favor, verifica a tua ligação ou tenta mais tarde.";
       }
       
       setMessages(prev => [...prev, { role: 'model', text: errorMsg }]);
@@ -86,7 +80,7 @@ const GeminiAssistant: React.FC = () => {
   };
 
   const sugestoes = [
-    "O que toca agora?",
+    "O que está a tocar?",
     "Quero deixar um abraço",
     "Sugere música de Portugal",
     "Fala-me de Figueiró"
@@ -106,23 +100,26 @@ const GeminiAssistant: React.FC = () => {
           <span className="text-white font-black text-[10px] uppercase tracking-[0.2em]">Figueiró AI</span>
         </div>
         
-        {/* Botão Sintonizar - Reforçado */}
-        {showKeyInfo ? (
-          <button 
-            type="button"
-            onClick={handleSintonizar}
-            className="relative z-[60] text-[9px] bg-yellow-500 text-black px-4 py-1.5 rounded-full font-black uppercase hover:bg-yellow-400 transition-all shadow-[0_0_20px_rgba(234,179,8,0.5)] animate-pulse active:scale-95 cursor-pointer"
-          >
-            Sintonizar
-          </button>
+        {/* Botão Sintonizar - Só aparece se estivermos no ambiente Google */}
+        {isAistudioEnv ? (
+          showKeyInfo ? (
+            <button 
+              onClick={handleSintonizar}
+              className="text-[9px] bg-yellow-500 text-black px-4 py-1.5 rounded-full font-black uppercase hover:bg-yellow-400 transition-all shadow-[0_0_15px_rgba(234,179,8,0.4)] animate-pulse"
+            >
+              Sintonizar
+            </button>
+          ) : (
+            <div className="flex items-center space-x-1.5 px-3 py-1 bg-white/5 rounded-full border border-white/10">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+              <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Sintonizado</span>
+            </div>
+          )
         ) : (
-          <button 
-            onClick={handleSintonizar}
-            className="flex items-center space-x-1.5 px-3 py-1 bg-white/5 rounded-full border border-white/10 hover:bg-white/10 transition-colors"
-          >
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Sintonizado</span>
-          </button>
+          <div className="flex items-center space-x-1.5 px-3 py-1 bg-white/5 rounded-full border border-white/10">
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+            <span className="text-[8px] text-blue-400 font-bold uppercase tracking-widest">Estúdio Online</span>
+          </div>
         )}
       </div>
 
