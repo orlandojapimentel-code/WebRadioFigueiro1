@@ -1,17 +1,14 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-/**
- * Motor de IA da Web Rádio Figueiró.
- * Utiliza a API_KEY configurada no Vercel para uma ligação estável.
- */
 export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
-  // A chave vem diretamente do ambiente seguro do Vercel
+  // Tentamos pegar a chave do Vercel
   const apiKey = process.env.API_KEY;
   
+  // Se não houver chave no Vercel ou no seletor manual, lançamos erro de sintonia
   if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
     throw new Error("SINTONIA_PERDIDA");
   }
@@ -19,20 +16,11 @@ export const getRadioAssistantStream = async (
   const ai = new GoogleGenAI({ apiKey });
   
   const systemPrompt = `
-    ESTÁS EM: Figueiró, Paços de Ferreira.
-    IDENTIDADE: És a "Figueiró AI", locutora e assistente virtual da Web Rádio Figueiró.
-    
-    PERSONALIDADE: Alegre, nortenha, prestativa e muito orgulhosa da região.
-    
-    CONTEXTO:
-    - Rádio: Web Rádio Figueiró.
-    - Local: Figueiró (Paços de Ferreira).
-    - Parceiro: FM Rent a Car (Felgueiras).
-    
-    ESTILO DE RESPOSTA:
-    - Curta (máx 35 palavras).
-    - Usa emojis de rádio e música (🎙️, 🎧, 🎸).
-    - Trata os ouvintes como família.
+    IDENTIDADE: És a "Figueiró AI", locutora oficial da Web Rádio Figueiró.
+    LOCAL: Figueiró, Paços de Ferreira, Portugal.
+    PERSONALIDADE: Alegre, nortenha, orgulhosa da região.
+    PARCEIRO: FM Rent a Car (Felgueiras).
+    REGRAS: Respostas muito curtas, usa emojis (🎙️, 🎧), trata todos como família.
   `;
 
   try {
@@ -41,22 +29,21 @@ export const getRadioAssistantStream = async (
       contents: [{ role: 'user', parts: [{ text: message }] }],
       config: {
         systemInstruction: systemPrompt,
-        temperature: 0.8,
+        temperature: 0.9,
       },
     });
 
     let fullText = "";
     for await (const chunk of response) {
-      const text = chunk.text;
-      if (text) {
-        fullText += text;
+      if (chunk.text) {
+        fullText += chunk.text;
         onChunk(fullText);
       }
     }
     return fullText;
   } catch (error: any) {
-    console.error("Erro Gemini:", error);
-    if (error.message?.includes("API key") || error.message?.includes("403")) {
+    console.error("Erro API:", error);
+    if (error.message?.includes("API key") || error.status === 403 || error.status === 401) {
       throw new Error("SINTONIA_PERDIDA");
     }
     throw error;

@@ -11,34 +11,35 @@ const GeminiAssistant: React.FC = () => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [streamingText, setStreamingText] = useState('');
-  const [needsSync, setNeedsSync] = useState(false);
+  const [hasKey, setHasKey] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText]);
 
-  // Lógica de verificação da chave
+  // Verificar se temos uma chave válida (do Vercel ou do seletor)
   useEffect(() => {
-    const checkStatus = () => {
-      // No Vercel, a API_KEY pode não estar exposta diretamente ao 'window' por segurança,
-      // mas o nosso serviço geminiService.ts consegue aceder-lhe durante a execução.
-      const apiKey = process.env.API_KEY;
-      const isOk = apiKey && apiKey !== "undefined" && apiKey.length > 10;
+    const checkKey = async () => {
+      const envKey = process.env.API_KEY;
+      const hasEnvKey = envKey && envKey !== "undefined" && envKey.length > 15;
       
-      // Só mostramos o estado "A Sintonizar" se tivermos a certeza absoluta que não há chave.
-      // Se houver dúvida, deixamos o chat aberto.
-      setNeedsSync(!isOk && !window.location.hostname.includes('webradiofigueiro.pt'));
+      let hasManualKey = false;
+      if ((window as any).aistudio?.hasSelectedApiKey) {
+        hasManualKey = await (window as any).aistudio.hasSelectedApiKey();
+      }
+      
+      setHasKey(hasEnvKey || hasManualKey);
     };
-    checkStatus();
-    const interval = setInterval(checkStatus, 5000);
+    checkKey();
+    const interval = setInterval(checkKey, 3000);
     return () => clearInterval(interval);
   }, []);
 
   const handleSintonizar = async () => {
-    if (typeof (window as any).aistudio?.openSelectKey === 'function') {
+    if ((window as any).aistudio?.openSelectKey) {
       await (window as any).aistudio.openSelectKey();
-      setNeedsSync(false);
+      setHasKey(true);
     }
   };
 
@@ -58,18 +59,19 @@ const GeminiAssistant: React.FC = () => {
       setStreamingText('');
       setIsTyping(false);
     } catch (err: any) {
-      console.error("Erro no chat:", err);
-      if (err.message === "SINTONIA_PERDIDA") {
-        setNeedsSync(true);
-        setMessages(prev => [...prev, { 
-          role: 'model', 
-          text: '🎙️ O sinal da IA está a ser configurado. Se o erro persistir, verifique a chave no Vercel.' 
-        }]);
-      } else {
-        setMessages(prev => [...prev, { role: 'model', text: '🎙️ Estamos com algumas interferências. Tente de novo dentro de instantes!' }]);
-      }
+      console.error("Erro na Figueiró AI:", err);
       setIsTyping(false);
       setStreamingText('');
+      
+      if (err.message === "SINTONIA_PERDIDA") {
+        setHasKey(false);
+        setMessages(prev => [...prev, { 
+          role: 'model', 
+          text: '🎙️ O sinal da IA está fraco. Por favor, clique no botão "SINTONIZAR" em cima para ativar o estúdio manualmente.' 
+        }]);
+      } else {
+        setMessages(prev => [...prev, { role: 'model', text: '🎙️ Houve uma pequena interferência no sinal. Pode tentar de novo?' }]);
+      }
     }
   };
 
@@ -82,24 +84,26 @@ const GeminiAssistant: React.FC = () => {
             <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30">
               <svg className="w-5 h-5 text-blue-400 animate-pulse" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
             </div>
-            {!needsSync && (
+            {hasKey && (
               <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-gray-950 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
             )}
           </div>
           <div>
             <h4 className="text-white font-black text-xs uppercase tracking-[0.2em] leading-none">Figueiró AI</h4>
-            <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest">{needsSync ? 'A Sintonizar...' : 'No Ar em Direto'}</span>
+            <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest">{hasKey ? 'No Ar em Direto' : 'Sinal em Espera'}</span>
           </div>
         </div>
         
-        {needsSync ? (
+        {!hasKey && (
           <button 
             onClick={handleSintonizar}
             className="text-[9px] px-4 py-2 bg-yellow-500 text-black rounded-full font-black uppercase tracking-widest animate-bounce shadow-lg shadow-yellow-500/30"
           >
             Sintonizar
           </button>
-        ) : (
+        )}
+        
+        {hasKey && (
           <div className="flex space-x-1">
             <div className="w-1 h-3 bg-blue-500 rounded-full animate-[wave_1s_infinite]"></div>
             <div className="w-1 h-3 bg-blue-400 rounded-full animate-[wave_1s_0.2s_infinite]"></div>
@@ -143,11 +147,11 @@ const GeminiAssistant: React.FC = () => {
         <form onSubmit={(e) => { e.preventDefault(); handleSend(input); }} className="flex gap-3">
           <input 
             type="text" value={input} onChange={(e) => setInput(e.target.value)} disabled={isTyping}
-            placeholder="Manda uma mensagem ao estúdio..."
+            placeholder={hasKey ? "Manda uma mensagem ao estúdio..." : "Clique em Sintonizar para falar..."}
             className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-white/10"
           />
           <button 
-            type="submit" disabled={!input.trim() || isTyping} 
+            type="submit" disabled={!input.trim() || isTyping || !hasKey} 
             className="bg-blue-600 text-white p-4 rounded-2xl hover:bg-blue-500 disabled:opacity-20 transition-all active:scale-95 shadow-xl shadow-blue-600/30 flex items-center justify-center"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7m0 0l-7 7m7-7H3"/></svg>
