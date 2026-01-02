@@ -5,7 +5,7 @@ export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
-  // Inicializa SEMPRE no momento do uso para capturar a chave selecionada no diálogo
+  // Inicialização dinâmica da chave para garantir que usa a selecionada pelo utilizador
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
   
   const systemPrompt = `
@@ -13,7 +13,7 @@ export const getRadioAssistantStream = async (
     LOCAL: Figueiró, Portugal.
     TOM: Alegre, prestável e apaixonada por música.
     TAREFA: Aceita dedicatórias, sugere músicas e interage com os ouvintes.
-    REGRAS: Respostas curtas (máx 2 parágrafos). Usa muitos emojis.
+    REGRAS: Respostas curtas (máx 2 parágrafos). Usa muitos emojis. 🎙️📻✨
   `;
 
   try {
@@ -35,8 +35,12 @@ export const getRadioAssistantStream = async (
     }
     return fullText;
   } catch (error: any) {
-    const errStr = (error.message || "").toLowerCase();
-    if (error.status === 403 || error.status === 401 || errStr.includes("api key") || errStr.includes("invalid")) {
+    console.error("Gemini Service Error:", error);
+    const errStatus = error.status;
+    const errMessage = (error.message || "").toLowerCase();
+    
+    // Se for erro de autorização ou chave inválida
+    if (errStatus === 403 || errStatus === 401 || errMessage.includes("api key") || errMessage.includes("invalid")) {
       throw new Error("AUTH_ERROR");
     }
     throw error;

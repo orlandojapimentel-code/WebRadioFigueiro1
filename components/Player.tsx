@@ -46,7 +46,6 @@ const Player: React.FC = () => {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: parts[1] || parts[0],
         artist: parts[1] ? parts[0] : 'Web Rádio Figueiró',
-        album: 'Em Direto',
         artwork: [{ src: logoPath, sizes: '512x512', type: 'image/png' }]
       });
     }
@@ -104,21 +103,19 @@ const Player: React.FC = () => {
   }));
 
   return (
-    <div className="fixed bottom-6 left-4 right-4 md:left-8 md:right-8 z-[100] transition-all duration-700">
-      {/* Glow de Fundo Dinâmico */}
-      <div className={`absolute -inset-4 bg-blue-600/20 blur-[100px] rounded-full transition-opacity duration-1000 ${isPlaying ? 'opacity-100 scale-110' : 'opacity-0'}`} />
+    <div className="fixed bottom-6 left-4 right-4 md:left-8 md:right-8 z-[100] transition-all duration-700 pointer-events-none">
+      {/* Glow de Fundo Dinâmico - pointer-events-none para não bloquear cliques */}
+      <div className={`absolute -inset-4 bg-blue-600/20 blur-[100px] rounded-full transition-opacity duration-1000 pointer-events-none ${isPlaying ? 'opacity-100 scale-110' : 'opacity-0'}`} />
 
-      <div className="relative bg-gray-950/80 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] p-3 md:p-5 shadow-[0_20px_80px_rgba(0,0,0,0.9)] overflow-hidden group">
+      {/* Container Interno do Player - pointer-events-auto para permitir cliques aqui */}
+      <div className="relative bg-gray-950/80 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] p-3 md:p-5 shadow-[0_20px_80px_rgba(0,0,0,0.9)] overflow-hidden group pointer-events-auto">
         
-        {/* Barra de Progresso Decorativa (Simulada) */}
         <div className="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent w-full opacity-30"></div>
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           
-          {/* Lado Esquerdo: Info & Visualizer */}
           <div className="flex items-center space-x-4 md:space-x-6 w-full md:w-auto">
             <div className="relative group flex-shrink-0">
-              {/* Efeito Disco de Vinil */}
               <div className={`absolute -inset-2 bg-gradient-to-tr from-blue-600/40 to-indigo-600/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-700 ${isPlaying ? 'opacity-100 animate-pulse' : ''}`} />
               <div className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden shadow-2xl border-2 border-white/10 bg-gray-900 flex items-center justify-center transition-transform duration-[3000ms] ease-linear ${isPlaying ? 'rotate-[360deg] infinite' : ''}`}
                    style={{ animation: isPlaying ? 'spin 5s linear infinite' : 'none' }}>
@@ -127,7 +124,6 @@ const Player: React.FC = () => {
                 ) : (
                   <span className="text-blue-500 font-black text-xl italic">WRF</span>
                 )}
-                {/* Centro do "Disco" */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-2 h-2 bg-gray-950 rounded-full border border-white/20 shadow-inner"></div>
                 </div>
@@ -149,7 +145,6 @@ const Player: React.FC = () => {
                 </p>
               </div>
               
-              {/* Visualizer Moderno */}
               <div className="flex items-end space-x-[2px] h-6 mt-2">
                 {bars.map((bar) => (
                   <div
@@ -168,7 +163,6 @@ const Player: React.FC = () => {
             </div>
           </div>
 
-          {/* Centro: Controles Principais */}
           <div className="flex items-center space-x-6">
             <button 
               onClick={togglePlay}
@@ -182,7 +176,6 @@ const Player: React.FC = () => {
             </button>
           </div>
 
-          {/* Direita: Volume & Ferramentas */}
           <div className="flex items-center space-x-4 w-full md:w-auto justify-center md:justify-end">
             <div className="flex items-center bg-white/5 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 group/vol">
               <button onClick={toggleMute} className="text-white/60 hover:text-blue-400 transition-colors mr-3">
@@ -205,8 +198,6 @@ const Player: React.FC = () => {
 
         </div>
       </div>
-      
-      {/* Estilo Global para Animação de Rotação */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }

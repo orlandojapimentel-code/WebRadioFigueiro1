@@ -6,66 +6,49 @@ import { ChatMessage } from '../types';
 const GeminiAssistant: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([{ 
     role: 'model', 
-    text: '🎙️ Estúdio da Figueiró AI pronto! Para começarmos a falar, preciso que sintonize o sinal de dados do Google.' 
+    text: '🎙️ Olá! Sou a Figueiró AI. Se eu não responder, clica no botão "SINTONIZAR" no topo direito.' 
   }]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [streamingText, setStreamingText] = useState('');
-  const [status, setStatus] = useState<'online' | 'waiting'>('waiting');
+  const [status, setStatus] = useState<'online' | 'waiting'>('online');
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Verificação de chave robusta
-  useEffect(() => {
-    const checkStatus = async () => {
-      // Se houver uma API_KEY no ambiente (Vercel), tentamos usar logo
-      if (process.env.API_KEY && process.env.API_KEY.length > 10) {
-        setStatus('online');
-        return;
-      }
-
-      // Caso contrário, verificamos se o browser já tem uma chave selecionada
-      if ((window as any).aistudio) {
-        const hasKey = await (window as any).aistudio.hasSelectedApiKey();
-        if (hasKey) setStatus('online');
-      }
-    };
-    checkStatus();
-  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText]);
 
   const handleSintonizar = async () => {
+    console.log("A tentar sintonizar...");
     try {
       if ((window as any).aistudio?.openSelectKey) {
         await (window as any).aistudio.openSelectKey();
-        // Regra de ouro: assumir sucesso após abrir o diálogo
         setStatus('online');
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: '🎙️ SINAL RECUPERADO! Já estou no ar. Como posso ajudar a tua rádio hoje?' 
+          text: '🎙️ Sinal sintonizado com sucesso! Como posso ajudar?' 
         }]);
       } else {
-        // Fallback se o aistudio não estiver injetado (ex: preview local)
-        setStatus('online'); 
+        console.warn("API de sintonização não encontrada no ambiente atual.");
+        // Se não encontrar a API, tentamos forçar o estado online para usar a chave de ambiente
+        setStatus('online');
       }
     } catch (err) {
-      console.error("Erro ao sintonizar:", err);
-      setStatus('online'); // Forçamos para tentar usar a chave de ambiente
+      console.error("Erro ao abrir seletor de chave:", err);
     }
   };
 
   const handleSend = async (text: string) => {
     if (!text.trim() || isTyping) return;
 
-    setMessages(prev => [...prev, { role: 'user', text }]);
+    const userMsg = text.trim();
+    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setInput('');
     setIsTyping(true);
     setStreamingText('');
 
     try {
-      const result = await getRadioAssistantStream(text, (chunk) => {
+      const result = await getRadioAssistantStream(userMsg, (chunk) => {
         setStreamingText(chunk);
       });
       setMessages(prev => [...prev, { role: 'model', text: result }]);
@@ -74,33 +57,45 @@ const GeminiAssistant: React.FC = () => {
     } catch (err: any) {
       setIsTyping(false);
       setStreamingText('');
+      
       if (err.message === "AUTH_ERROR") {
         setStatus('waiting');
+        setMessages(prev => [...prev, { 
+          role: 'model', 
+          text: '⚠️ Precisamos sintonizar o sinal. Por favor, clica no botão "SINTONIZAR" no topo do chat.' 
+        }]);
+      } else {
+        setMessages(prev => [...prev, { role: 'model', text: '🎙️ Ops, o sinal falhou. Podes tentar de novo?' }]);
       }
-      setMessages(prev => [...prev, { role: 'model', text: '🎙️ Tivemos uma pequena interferência. Podes repetir?' }]);
     }
   };
 
   return (
-    <div className="bg-gray-950/90 rounded-[2.5rem] border border-blue-500/30 overflow-hidden flex flex-col shadow-[0_0_50px_rgba(59,130,246,0.1)] h-[540px] backdrop-blur-2xl relative">
+    <div className="bg-gray-950/90 rounded-[2.5rem] border border-blue-500/30 overflow-hidden flex flex-col shadow-[0_0_50px_rgba(59,130,246,0.1)] h-[540px] backdrop-blur-md relative z-30 pointer-events-auto">
       
-      {/* Header Fixo */}
-      <div className="p-5 bg-gradient-to-r from-blue-600/20 to-indigo-600/10 flex items-center justify-between border-b border-white/5 z-20">
+      {/* Header do Chat */}
+      <div className="p-5 bg-gray-900 border-b border-white/5 flex items-center justify-between relative z-40">
         <div className="flex items-center space-x-3">
-          <div className={`w-3 h-3 rounded-full animate-pulse ${status === 'online' ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-yellow-500'}`}></div>
-          <h4 className="text-white font-black text-xs uppercase tracking-[0.2em]">Figueiró AI</h4>
+          <div className={`w-2.5 h-2.5 rounded-full ${status === 'online' ? 'bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]' : 'bg-yellow-500 shadow-[0_0_8px_#eab308]'}`}></div>
+          <span className="text-white font-black text-[10px] uppercase tracking-widest">Figueiró AI</span>
         </div>
-        <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
-          {status === 'online' ? 'Em Direto' : 'Sinal Offline'}
-        </span>
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleSintonizar();
+          }}
+          className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-blue-400/50 transition-all active:scale-95 cursor-pointer relative z-50"
+        >
+          Sintonizar
+        </button>
       </div>
 
-      {/* Área de Chat / Bloqueio */}
-      <div className="flex-grow overflow-y-auto p-6 space-y-5 relative scrollbar-hide">
+      {/* Mensagens */}
+      <div className="flex-grow overflow-y-auto p-5 space-y-4 scrollbar-hide relative z-30">
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2`}>
-            <div className={`max-w-[85%] px-5 py-3 rounded-2xl text-[13px] leading-relaxed ${
-              m.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-gray-800/80 text-gray-200 rounded-tl-none border border-white/5'
+          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed ${
+              m.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none shadow-lg shadow-blue-600/10' : 'bg-gray-800 text-gray-200 rounded-tl-none border border-white/5'
             }`}>
               {m.text}
             </div>
@@ -109,48 +104,43 @@ const GeminiAssistant: React.FC = () => {
         
         {streamingText && (
           <div className="flex justify-start">
-            <div className="max-w-[85%] px-5 py-3 rounded-2xl rounded-tl-none bg-gray-800/80 text-blue-300 text-[13px] border border-blue-500/20 italic">
+            <div className="max-w-[85%] px-4 py-2.5 rounded-2xl rounded-tl-none bg-gray-800 text-blue-300 text-[13px] italic border border-blue-500/10">
               {streamingText}
             </div>
           </div>
         )}
-
-        {/* Overlay de Sintonização (Aparece se waiting) */}
-        {status === 'waiting' && (
-          <div className="absolute inset-0 bg-gray-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-8 text-center z-30">
-            <div className="w-20 h-20 bg-blue-600/20 rounded-full flex items-center justify-center mb-6 border border-blue-500/30 animate-pulse">
-              <svg className="w-10 h-10 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
-            </div>
-            <h5 className="text-white font-bold text-lg mb-2">Ligar ao Estúdio</h5>
-            <p className="text-gray-400 text-xs mb-8 leading-relaxed">O sinal da inteligência artificial precisa de ser sintonizado manualmente para este navegador.</p>
-            <button 
-              onClick={handleSintonizar}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-2xl shadow-blue-600/40"
-            >
-              Sintonizar Sinal Agora
-            </button>
-            <p className="mt-6 text-[9px] text-gray-500 uppercase tracking-tighter">Conexão segura via Google AI Studio</p>
+        
+        {isTyping && !streamingText && (
+          <div className="flex space-x-1 p-2">
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></div>
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
           </div>
         )}
-        
         <div ref={scrollRef} />
       </div>
 
       {/* Input de Mensagem */}
-      <div className="p-5 bg-gray-950/50 border-t border-white/5">
-        <form onSubmit={(e) => { e.preventDefault(); handleSend(input); }} className="flex gap-3">
+      <div className="p-4 bg-gray-900/50 border-t border-white/5 relative z-40">
+        <form 
+          onSubmit={(e) => { 
+            e.preventDefault(); 
+            if (input.trim()) handleSend(input); 
+          }} 
+          className="flex gap-2"
+        >
           <input 
             type="text" 
             value={input} 
             onChange={(e) => setInput(e.target.value)}
-            disabled={status === 'waiting' || isTyping}
-            placeholder={status === 'waiting' ? "Sintonize primeiro..." : "Diz algo à rádio..."}
-            className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 transition-all"
+            onFocus={(e) => e.target.select()}
+            placeholder="Escreve aqui..."
+            className="flex-grow bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-gray-500 pointer-events-auto cursor-text"
           />
           <button 
             type="submit" 
-            disabled={!input.trim() || isTyping || status === 'waiting'}
-            className="bg-blue-600 text-white p-4 rounded-2xl hover:bg-blue-500 disabled:opacity-10 transition-all flex items-center justify-center shadow-lg shadow-blue-600/20"
+            disabled={!input.trim() || isTyping}
+            className="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-500 disabled:opacity-20 transition-all flex items-center justify-center shadow-lg cursor-pointer"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7m0 0l-7 7m7-7H3"/></svg>
           </button>
