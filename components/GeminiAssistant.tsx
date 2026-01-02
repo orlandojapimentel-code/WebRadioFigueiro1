@@ -11,6 +11,7 @@ const GeminiAssistant: React.FC = () => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [streamingText, setStreamingText] = useState('');
+  // Em produção, assumimos que temos a chave configurada no Vercel
   const [hasKey, setHasKey] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -18,28 +19,26 @@ const GeminiAssistant: React.FC = () => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText]);
 
-  // Verificar se temos uma chave válida (do Vercel ou do seletor)
+  // Verificação de ambiente apenas para exibir o botão se estivermos no AI Studio
   useEffect(() => {
-    const checkKey = async () => {
-      const envKey = process.env.API_KEY;
-      const hasEnvKey = envKey && envKey !== "undefined" && envKey.length > 15;
-      
-      let hasManualKey = false;
-      if ((window as any).aistudio?.hasSelectedApiKey) {
-        hasManualKey = await (window as any).aistudio.hasSelectedApiKey();
+    const checkEnvironment = async () => {
+      if ((window as any).aistudio) {
+        const hasManual = await (window as any).aistudio.hasSelectedApiKey();
+        if (!hasManual && !process.env.API_KEY) {
+          setHasKey(false);
+        }
       }
-      
-      setHasKey(hasEnvKey || hasManualKey);
     };
-    checkKey();
-    const interval = setInterval(checkKey, 3000);
-    return () => clearInterval(interval);
+    checkEnvironment();
   }, []);
 
   const handleSintonizar = async () => {
     if ((window as any).aistudio?.openSelectKey) {
       await (window as any).aistudio.openSelectKey();
       setHasKey(true);
+    } else {
+      // Se não estiver no AI Studio, avisamos que a chave deve vir do Vercel
+      alert("A sintonização é automática via Vercel. Verifique as variáveis de ambiente no seu painel de controlo.");
     }
   };
 
@@ -58,19 +57,20 @@ const GeminiAssistant: React.FC = () => {
       setMessages(prev => [...prev, { role: 'model', text: result }]);
       setStreamingText('');
       setIsTyping(false);
+      setHasKey(true); // Se funcionou, temos a chave
     } catch (err: any) {
       console.error("Erro na Figueiró AI:", err);
       setIsTyping(false);
       setStreamingText('');
       
-      if (err.message === "SINTONIA_PERDIDA") {
+      if (err.message === "SINTONIA_PERM") {
         setHasKey(false);
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: '🎙️ O sinal da IA está fraco. Por favor, clique no botão "SINTONIZAR" em cima para ativar o estúdio manualmente.' 
+          text: '🎙️ Erro de Autenticação. Por favor, verifique se a API_KEY no Vercel está correta e se o projeto foi reimplantado (Redeploy).' 
         }]);
       } else {
-        setMessages(prev => [...prev, { role: 'model', text: '🎙️ Houve uma pequena interferência no sinal. Pode tentar de novo?' }]);
+        setMessages(prev => [...prev, { role: 'model', text: '🎙️ Estamos com algumas interferências no sinal. Tente de novo dentro de instantes!' }]);
       }
     }
   };
@@ -90,16 +90,16 @@ const GeminiAssistant: React.FC = () => {
           </div>
           <div>
             <h4 className="text-white font-black text-xs uppercase tracking-[0.2em] leading-none">Figueiró AI</h4>
-            <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest">{hasKey ? 'No Ar em Direto' : 'Sinal em Espera'}</span>
+            <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest">{hasKey ? 'No Ar em Direto' : 'Erro de Sinal'}</span>
           </div>
         </div>
         
         {!hasKey && (
           <button 
             onClick={handleSintonizar}
-            className="text-[9px] px-4 py-2 bg-yellow-500 text-black rounded-full font-black uppercase tracking-widest animate-bounce shadow-lg shadow-yellow-500/30"
+            className="text-[9px] px-4 py-2 bg-red-500 text-white rounded-full font-black uppercase tracking-widest animate-pulse shadow-lg shadow-red-500/30"
           >
-            Sintonizar
+            Verificar Chave
           </button>
         )}
         
@@ -147,11 +147,11 @@ const GeminiAssistant: React.FC = () => {
         <form onSubmit={(e) => { e.preventDefault(); handleSend(input); }} className="flex gap-3">
           <input 
             type="text" value={input} onChange={(e) => setInput(e.target.value)} disabled={isTyping}
-            placeholder={hasKey ? "Manda uma mensagem ao estúdio..." : "Clique em Sintonizar para falar..."}
+            placeholder="Manda uma mensagem ao estúdio..."
             className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-white/10"
           />
           <button 
-            type="submit" disabled={!input.trim() || isTyping || !hasKey} 
+            type="submit" disabled={!input.trim() || isTyping} 
             className="bg-blue-600 text-white p-4 rounded-2xl hover:bg-blue-500 disabled:opacity-20 transition-all active:scale-95 shadow-xl shadow-blue-600/30 flex items-center justify-center"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7m0 0l-7 7m7-7H3"/></svg>
