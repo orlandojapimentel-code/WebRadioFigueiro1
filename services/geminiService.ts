@@ -4,33 +4,28 @@ import { ChatMessage } from "../types";
 
 export const getRadioAssistantResponse = async (history: ChatMessage[], message: string) => {
   try {
-    // Usamos uma nova instância para garantir que pega a chave de API correta
+    // Nova instância para garantir o uso da API KEY atualizada
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const agora = new Date();
-    const hora = agora.getHours();
+    const hora = agora.getHours().toString().padStart(2, '0');
     const min = agora.getMinutes().toString().padStart(2, '0');
     const diaSemana = agora.toLocaleDateString('pt-PT', { weekday: 'long' });
     
-    // Prefixo de erro para filtrar falhas anteriores
     const ERROR_PREFIX = "Epa! O sinal";
 
     /**
-     * CONSTRUÇÃO DO CONTEÚDO (STRICT MODE)
-     * A API exige: USER -> MODEL -> USER...
-     * Não pode começar com MODEL.
+     * LIMPEZA E FORMATAÇÃO DO HISTÓRICO
+     * A API exige estritamente: USER -> MODEL -> USER...
      */
     const apiContents: any[] = [];
 
-    // 1. Filtramos e formatamos o histórico existente
     const filteredHistory = history.filter(msg => 
       msg.text && 
       !msg.text.startsWith(ERROR_PREFIX) &&
       msg.text.trim() !== ""
     );
 
-    // 2. Adicionamos ao histórico da API apenas se houver alternância correta
-    // Ignoramos a primeira mensagem se for do 'model' (boas-vindas inicial)
     filteredHistory.forEach((msg) => {
       const role = msg.role === 'user' ? 'user' : 'model';
       
@@ -46,45 +41,46 @@ export const getRadioAssistantResponse = async (history: ChatMessage[], message:
       }
     });
 
-    // 3. Garantimos que o último não é 'user' para não chocar com a nova pergunta
+    // Se o histórico terminar em 'user', removemos para não duplicar com a nova pergunta
     if (apiContents.length > 0 && apiContents[apiContents.length - 1].role === 'user') {
       apiContents.pop();
     }
 
-    // 4. Chamada com o modelo Flash Lite (muito mais rápido, evita timeouts de 10s do Vercel)
+    // Chamada otimizada para VELOCIDADE
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-lite-latest',
+      model: 'gemini-3-flash-preview',
       contents: [
         ...apiContents,
         { role: 'user', parts: [{ text: message }] }
       ],
       config: {
-        systemInstruction: `És o "Figueiró AI", locutor da Web Rádio Figueiró (Figueiró, Portugal). 🎙️
-        Hora: ${hora}:${min} (${diaSemana}).
+        // DESATIVAR O THINKING é crucial para evitar o timeout do Vercel
+        thinkingConfig: { thinkingBudget: 0 },
+        systemInstruction: `És o "Figueiró AI", o locutor virtual da Web Rádio Figueiró (Figueiró, Portugal). 📻
         
-        PERSONALIDADE:
-        - Estilo rádio FM: alegre, carismático e "boa onda".
-        - Linguagem: Português de Portugal.
-        - Sê muito breve (2-3 frases).
+        CONTEXTO ATUAL:
+        - Hora: ${hora}:${min} de ${diaSemana}.
+        - Estilo: Rádio FM profissional, alegre e próximo dos ouvintes.
+        - Idioma: Português de Portugal (PT-PT).
         
-        OBRIGATÓRIO:
-        - Sugere sempre uma música portuguesa animada.
-        - Menciona o parceiro "FM Rent a Car & Bicycle House de Felgueiras".
-        - Usa emojis (📻, ✨, 🎵).`,
-        temperature: 0.7,
-        topP: 0.8,
-        topK: 40,
+        REGRAS:
+        1. Sê breve (máximo 3 frases).
+        2. Usa sempre emojis (🎙️, 🎵, ✨).
+        3. Sugere artistas portugueses (Ex: Tony Carreira, Emanuel, Calema, Mariza).
+        4. Menciona o parceiro "FM Rent a Car & Bicycle House de Felgueiras".`,
+        temperature: 0.9,
+        maxOutputTokens: 300,
       },
     });
 
-    const text = response.text;
-    if (!text) throw new Error("Resposta vazia");
+    if (!response || !response.text) {
+      throw new Error("Resposta inválida");
+    }
     
-    return text;
+    return response.text;
 
   } catch (error: any) {
-    console.error("Erro no Assistente:", error);
-    // Retornamos a mensagem de erro que o componente já sabe lidar
+    console.error("ERRO FIGUEIRÓ AI:", error);
     return "Epa! O sinal aqui no estúdio digital deu um estalido! ⚡ Sintoniza lá outra vez a tua pergunta que eu perdi a ligação por um segundo, mas já estou de volta ao comando!";
   }
 };
