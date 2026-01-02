@@ -6,7 +6,7 @@ import { ChatMessage } from '../types';
 const GeminiAssistant: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([{ 
     role: 'model', 
-    text: '🎙️ Olá! Sou a Figueiró AI. Estás pronto para pedir a tua música?' 
+    text: '🎙️ Olá! Sou a Figueiró AI. Estás pronto para pedir a tua música? ✨' 
   }]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -51,15 +51,19 @@ const GeminiAssistant: React.FC = () => {
       setIsTyping(false);
       setStreamingText('');
       
-      let errorResponse = "🎙️ O sinal está com interferência. Podes repetir?";
-      
       if (err.message === "MISSING_KEY") {
-        errorResponse = "⚠️ DIAGNÓSTICO: A chave de API não foi encontrada no servidor (Vercel). Verifique se criou a variável API_KEY.";
+        setMessages(prev => [...prev, { 
+          role: 'model', 
+          text: '📢 [ADMIN] A API_KEY foi configurada no Vercel, mas é necessário fazer um **REDEPLOY** na aba "Deployments" para que o sistema a reconheça. Se já o fez, aguarde 1 minuto.' 
+        }]);
       } else if (err.message === "INVALID_KEY") {
-        errorResponse = "❌ ERRO DE CHAVE: A chave configurada no Vercel foi REJEITADA pelo Google. Verifique se copiou o código completo em aistudio.google.com";
+        setMessages(prev => [...prev, { 
+          role: 'model', 
+          text: '❌ [ADMIN] A chave de API no Vercel parece inválida ou expirou. Por favor, verifique no Google AI Studio.' 
+        }]);
+      } else {
+        setMessages(prev => [...prev, { role: 'model', text: '🎙️ O sinal está com interferência. Podes repetir?' }]);
       }
-
-      setMessages(prev => [...prev, { role: 'model', text: errorResponse }]);
     }
   };
 
@@ -76,6 +80,7 @@ const GeminiAssistant: React.FC = () => {
   return (
     <div className="bg-gray-950/95 rounded-[2.5rem] border border-blue-500/30 overflow-hidden flex flex-col shadow-[0_0_60px_rgba(59,130,246,0.15)] h-[560px] backdrop-blur-xl relative z-[60]">
       
+      {/* Header do Chat */}
       <div className="p-5 bg-gray-900/80 border-b border-white/5 flex items-center justify-between relative z-50">
         <div className="flex items-center space-x-3">
           <div className={`w-2.5 h-2.5 rounded-full ${status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></div>
@@ -83,6 +88,7 @@ const GeminiAssistant: React.FC = () => {
         </div>
       </div>
 
+      {/* Mensagens */}
       <div className="flex-grow overflow-y-auto p-5 space-y-4 scrollbar-hide">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -103,24 +109,30 @@ const GeminiAssistant: React.FC = () => {
         <div ref={scrollRef} />
       </div>
 
+      {/* Bloqueio apenas se estiver no Studio e sem chave */}
       {status === 'waiting' && isStudio && (
         <div className="absolute inset-0 bg-gray-950/95 z-[100] flex flex-col items-center justify-center p-8 text-center">
-           <div className="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mb-4">
+           <div className="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mb-4 border border-blue-500/30">
              <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
            </div>
-           <button onClick={handleAction} className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg">Sintonizar</button>
+           <button onClick={handleAction} className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg transition-all active:scale-95">Sintonizar</button>
         </div>
       )}
 
+      {/* Input de Texto */}
       <div className="p-4 bg-gray-900/90 border-t border-white/5 relative z-50">
         <form onSubmit={(e) => { e.preventDefault(); if (input.trim()) handleSend(input); }} className="flex gap-2">
           <input 
             type="text" value={input} 
             onChange={(e) => setInput(e.target.value)}
             placeholder="Diz algo à Figueiró AI..."
-            className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white focus:outline-none focus:border-blue-500"
+            className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
           />
-          <button type="submit" className="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center">
+          <button 
+            type="submit" 
+            disabled={!input.trim() || isTyping}
+            className="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-blue-500 disabled:opacity-20 transition-all active:scale-90"
+          >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 5l7 7m0 0l-7 7m7-7H3"/></svg>
           </button>
         </form>
