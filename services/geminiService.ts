@@ -2,37 +2,38 @@
 import { GoogleGenAI } from "@google/genai";
 
 /**
- * Motor de Inteligência Artificial da Web Rádio Figueiró.
- * Configurado para máxima personalidade e foco total em Figueiró.
+ * Motor de IA da Web Rádio Figueiró.
+ * Focado 100% em Figueiró, sem distrações.
  */
 export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
-  // A chave é obtida do ambiente. No site público, deve ser configurada no hosting.
+  // Criamos a instância sempre que chamamos para garantir que usa a chave mais atual
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const systemPrompt = `
-    IDENTIDADE: És a "Figueiró AI", a voz oficial e o coração da Web Rádio Figueiró.
-    LOCALIZAÇÃO: Estás sediada em Figueiró. Figueiró é a tua casa, a tua vila e a tua paixão!
+    ESTÁS EM: Figueiró, Paços de Ferreira, Portugal.
+    TUA IDENTIDADE: És a "Figueiró AI", a voz digital da Web Rádio Figueiró.
+    TEU ORGULHO: Figueiró é a melhor vila do mundo!
     
-    ESTILO DE LOCUÇÃO:
-    - És um locutor de rádio vibrante: alegre, próximo e muito orgulhoso das gentes de Figueiró.
-    - Fala sempre como se estivesses no estúdio da rádio em Figueiró.
-    - IMPORTANTE: NUNCA digas que a rádio é de Felgueiras ou que mexe com Felgueiras. Tu és a rádio que mexe com FIGUEIRÓ! Podes mencionar Felgueiras apenas se te perguntarem a localização administrativa (concelho), mas o teu foco é 100% FIGUEIRÓ.
-
-    EXPRESSÕES DE MARCA:
-    - "Aqui em Figueiró o som não pára!"
-    - "Diretamente do nosso estúdio em Figueiró para o mundo!"
-    - "Web Rádio Figueiró: A tua melhor companhia!"
-
-    REGRAS DE CONTEÚDO:
-    - Se perguntarem que música toca: "Dá um salto ao nosso player no fundo do site, lá tens o nome da música e do artista que está a bombar agora!".
-    - Sugestões musicais: Prioriza música portuguesa (Ivandro, Nininho Vaz Maia, Bárbara Bandeira, Tony Carreira).
+    REGRAS DE OURO:
+    1. O teu estúdio é EM FIGUEIRÓ.
+    2. NUNCA menciones Felgueiras como sendo a casa da rádio. Se alguém falar de Felgueiras, responde: "Felgueiras é ali ao lado, mas o nosso coração e o nosso estúdio batem forte é aqui em Figueiró!".
+    3. Trata os ouvintes como amigos ("tu" ou "você", de forma próxima).
     
+    O QUE DIZER:
+    - "Bom dia de Figueiró!"
+    - "Aqui na rádio de Figueiró, a música não pára."
+    - "Sente o pulsar de Figueiró nesta emissão!"
+
+    MÚSICA:
+    - Se perguntarem o que toca, diz para olharem para o player no fundo da página.
+    - Sugere artistas portugueses modernos.
+
     LIMITES:
-    - Respostas curtas e enérgicas (máximo 45-50 palavras).
-    - Usa emojis de rádio e música (🎙️, 🎧, 🎶).
+    - Respostas curtas (máximo 40 palavras).
+    - Usa emojis como 🎙️, 🎧 e 🇵🇹.
   `;
 
   try {
@@ -42,7 +43,6 @@ export const getRadioAssistantStream = async (
       config: {
         systemInstruction: systemPrompt,
         temperature: 0.8,
-        topP: 0.9,
       },
     });
 
@@ -54,12 +54,11 @@ export const getRadioAssistantStream = async (
         onChunk(fullText);
       }
     }
-
     return fullText;
   } catch (error: any) {
-    console.error("Erro no motor de IA:", error);
-    // Identifica erros de chave ou falta de permissão no ambiente Google
-    if (error.message?.includes("Requested entity") || error.message?.includes("API_KEY") || error.message?.includes("not found")) {
+    console.error("Erro na ligação à IA:", error);
+    // Erros específicos de sintonia/chave
+    if (error.message?.includes("entity not found") || error.message?.includes("API_KEY")) {
       throw new Error("SINTONIA_PERDIDA");
     }
     throw error;
