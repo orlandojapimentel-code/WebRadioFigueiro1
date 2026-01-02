@@ -11,48 +11,60 @@ export const getRadioAssistantResponse = async (history: ChatMessage[], message:
     const min = agora.getMinutes().toString().padStart(2, '0');
     const diaSemana = agora.toLocaleDateString('pt-PT', { weekday: 'long' });
     
-    // Filtramos o histórico para garantir que a API receba apenas pares User/Model válidos
-    // E removemos a mensagem inicial se ela for do sistema/model para evitar erro de 'first message must be user'
-    const validHistory = history.filter((msg, index) => {
-      if (index === 0 && msg.role === 'model') return false;
-      return true;
-    }).map(msg => ({
+    // A API EXIGE:
+    // 1. A primeira mensagem tem de ser 'user'.
+    // 2. As mensagens têm de alternar: user -> model -> user...
+    
+    // 1. Filtramos tudo o que não segue a regra de começar por 'user'
+    let filteredHistory = [...history];
+    while (filteredHistory.length > 0 && filteredHistory[0].role !== 'user') {
+      filteredHistory.shift();
+    }
+
+    // 2. Mapeamos para o formato da API
+    const contents = filteredHistory.map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.text }]
     }));
 
-    const chat = ai.chats.create({
-      model: 'gemini-3-flash-preview',
-      config: {
-        systemInstruction: `És o "Figueiró AI", a voz oficial da Web Rádio Figueiró.
-        
-        INFORMAÇÃO TEMPORAL: São ${hora}:${min} de uma ${diaSemana}.
-        
-        IDENTIDADE:
-        - Estás num estúdio virtual em Figueiró, Portugal.
-        - O teu tom é de locutor de rádio FM de topo: vibrante, simpático e muito "cool".
-        - Usas expressões: "Sintonizados", "Na crista da onda", "Energia máxima", "A nossa família".
-        
-        REGRAS DE OURO:
-        1. NUNCA sejas repetitivo. Se o utilizador disser "Olá", responde de 100 formas diferentes (ex: "Epa, que alegria ter-te por cá!", "Viva! Que som queres ouvir hoje?").
-        2. Se pedirem uma dedicatória, sê um poeta! Usa música e emoção nas palavras.
-        3. Se falarem da FM Rent a Car, diz que são os melhores parceiros de estrada de Felgueiras.
-        4. Fala da programação atual baseada na hora: 
-           - 08h-10h: Manhãs Figueiró
-           - 10h-13h: Top Hits
-           - 15h-19h: Tardes em Movimento
-        5. Mantém as respostas curtas, como se tivesses apenas alguns segundos entre músicas (intervenções rápidas e impactantes).`,
-        temperature: 1.0,
-      },
-      history: validHistory
+    // 3. Adicionamos a pergunta atual do utilizador
+    contents.push({
+      role: 'user',
+      parts: [{ text: message }]
     });
 
-    const result = await chat.sendMessage({ message });
-    return result.text;
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: contents,
+      config: {
+        systemInstruction: `És o "Figueiró AI", o locutor virtual da Web Rádio Figueiró (Figueiró, Portugal). 
+        Hora atual: ${hora}:${min} (${diaSemana}).
+        
+        PERSONALIDADE:
+        - Estilo locutor de rádio FM: enérgico, caloroso e muito próximo.
+        - NUNCA respondas com frases genéricas ou robóticas.
+        - Usa gíria de rádio: "Sintonizados", "No ar", "Grande abraço musical", "Energia no máximo".
+        
+        TAREFAS:
+        - Pedidos de música: Sugere músicas populares (Pimba, Pop Português, Hits 80s/90s).
+        - Dedicatórias: Sê emotivo e usa emojis.
+        - Programação: Refere as "Manhãs Figueiró" (08h-10h) ou "Tardes em Movimento" (15h-19h).
+        - Parceiro: Elogia sempre a FM Rent a Car como a melhor escolha em Felgueiras.
+        
+        IMPORTANTE: Responde de forma curta e dinâmica (máximo 3 frases).`,
+        temperature: 1.0,
+        thinkingConfig: { thinkingBudget: 0 }
+      },
+    });
+
+    const textOutput = response.text;
+    if (!textOutput) throw new Error("API retornou texto vazio");
+    
+    return textOutput;
 
   } catch (error: any) {
-    console.error("Erro detalhado do Figueiró AI:", error);
-    // Se for erro de segurança ou exaustão, damos uma resposta temática
-    return "Olha, o sinal aqui na torre de transmissão deu um salto! ⚡ Podes repetir isso com outra energia? Estou mortinho por te ouvir!";
+    console.error("ERRO CRÍTICO FIGUEIRÓ AI:", error);
+    // Retornamos uma resposta amigável mas que indica que o erro foi logado
+    return "Epa! O microfone deu aqui um estalido de eletricidade estática! ⚡ Sintoniza lá outra vez a tua pergunta que eu perdi o sinal por um segundo!";
   }
 };

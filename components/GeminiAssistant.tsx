@@ -12,9 +12,9 @@ const GeminiAssistant: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const quickActions = [
-    { label: "🎙️ Pedir Dedicatória", prompt: "Quero fazer uma dedicatória emocionante." },
-    { label: "🎵 Sugestão Musical", prompt: "Dá-me uma sugestão musical para agora." },
-    { label: "🚗 Parceiro FM", prompt: "Fala-me da FM Rent a Car." }
+    { label: "🎙️ Dedicatória", prompt: "Quero fazer uma dedicatória especial para a minha família." },
+    { label: "🎵 Sugestão", prompt: "Dá-me uma sugestão de música portuguesa para animar o dia!" },
+    { label: "🚗 FM Rent a Car", prompt: "Fala-me sobre as vantagens dos vossos parceiros da FM Rent a Car." }
   ];
 
   const scrollToBottom = () => {
@@ -28,18 +28,20 @@ const GeminiAssistant: React.FC = () => {
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || isTyping) return;
 
-    const userMessage: ChatMessage = { role: 'user', text };
-    const currentHistory = [...messages];
+    // Guardamos o histórico ANTES de adicionar a nova mensagem do user
+    // para o serviço tratar a inclusão da nova mensagem corretamente.
+    const historyBeforeNewMessage = [...messages];
     
+    const userMessage: ChatMessage = { role: 'user', text };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsTyping(true);
 
     try {
-      const responseText = await getRadioAssistantResponse(currentHistory, text);
+      const responseText = await getRadioAssistantResponse(historyBeforeNewMessage, text);
       setMessages(prev => [...prev, { role: 'model', text: responseText }]);
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'model', text: "O sinal falhou! Tenta outra vez, campeão!" }]);
+      setMessages(prev => [...prev, { role: 'model', text: "O sinal está com muita interferência agora! Tenta de novo em 5 segundos." }]);
     } finally {
       setIsTyping(false);
     }
@@ -52,6 +54,7 @@ const GeminiAssistant: React.FC = () => {
 
   return (
     <div className="bg-gray-800/90 rounded-[2.5rem] border border-blue-500/20 overflow-hidden flex flex-col shadow-2xl backdrop-blur-md transition-all duration-500 hover:border-blue-500/40">
+      {/* Cabeçalho */}
       <div className="p-5 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 flex items-center justify-between shadow-lg">
         <div className="flex items-center space-x-3">
           <div className="relative">
@@ -62,11 +65,12 @@ const GeminiAssistant: React.FC = () => {
           </div>
           <div>
             <h4 className="font-black text-white text-sm uppercase tracking-tight">Figueiró AI</h4>
-            <p className="text-[10px] text-blue-100 font-bold uppercase tracking-widest opacity-80">Locutor Virtual no Ar</p>
+            <p className="text-[10px] text-blue-100 font-bold uppercase tracking-widest opacity-80">No Ar • Estúdio Digital</p>
           </div>
         </div>
       </div>
 
+      {/* Mensagens */}
       <div className="h-96 overflow-y-auto p-4 space-y-4 scrollbar-hide bg-gray-950/30">
         {messages.map((m, i) => (
           <div 
@@ -85,47 +89,49 @@ const GeminiAssistant: React.FC = () => {
           </div>
         ))}
         {isTyping && (
-           <div className="flex flex-col items-start">
+           <div className="flex flex-col items-start animate-pulse">
              <div className="bg-gray-800/80 text-blue-400 rounded-2xl px-5 py-3 rounded-bl-none text-[10px] flex items-center space-x-3 border border-blue-500/20 shadow-lg">
                <div className="flex space-x-1.5">
-                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                </div>
-               <span className="font-black uppercase tracking-[0.2em]">Ouvindo o sinal...</span>
+               <span className="font-black uppercase tracking-[0.2em]">Processando Sinal...</span>
              </div>
            </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Ações Rápidas */}
       <div className="px-4 py-3 flex overflow-x-auto space-x-2 scrollbar-hide bg-gray-900/40 border-t border-white/5">
         {quickActions.map((action, i) => (
           <button
             key={i}
             onClick={() => handleSendMessage(action.prompt)}
-            className="flex-shrink-0 bg-white/5 hover:bg-blue-600/30 border border-white/10 rounded-full px-4 py-2 text-[10px] font-black text-gray-300 transition-all hover:border-blue-500/30 active:scale-95 shadow-sm"
+            className="flex-shrink-0 bg-white/5 hover:bg-blue-600/30 border border-white/10 rounded-full px-4 py-2 text-[10px] font-black text-gray-300 transition-all active:scale-95 shadow-sm whitespace-nowrap"
           >
             {action.label}
           </button>
         ))}
       </div>
 
+      {/* Input */}
       <form onSubmit={handleSubmit} className="p-4 bg-gray-900/80 flex space-x-2 items-center">
         <input 
           type="text" 
-          placeholder="Diga algo ao locutor..." 
+          placeholder="Escreve ao locutor..." 
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={isTyping}
-          className="flex-grow bg-gray-800 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600 font-medium"
+          className="flex-grow bg-gray-800 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-gray-600"
         />
         <button 
           type="submit" 
           disabled={isTyping || !input.trim()}
-          className="h-14 w-14 bg-blue-600 text-white rounded-2xl hover:bg-blue-500 transition-all disabled:opacity-50 disabled:bg-gray-700 flex items-center justify-center shadow-xl shadow-blue-600/20 active:scale-90 group"
+          className="h-14 w-14 bg-blue-600 text-white rounded-2xl hover:bg-blue-500 transition-all disabled:opacity-50 flex items-center justify-center shadow-xl shadow-blue-600/20 active:scale-90"
         >
-          <svg className="w-7 h-7 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
         </button>
       </form>
     </div>
