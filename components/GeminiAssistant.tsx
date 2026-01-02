@@ -18,15 +18,20 @@ const GeminiAssistant: React.FC = () => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText]);
 
-  // Lógica de verificação da chave (Vercel)
+  // Lógica de verificação da chave
   useEffect(() => {
     const checkStatus = () => {
+      // No Vercel, a API_KEY pode não estar exposta diretamente ao 'window' por segurança,
+      // mas o nosso serviço geminiService.ts consegue aceder-lhe durante a execução.
       const apiKey = process.env.API_KEY;
-      const isOk = apiKey && apiKey !== "undefined" && apiKey.length > 15;
-      setNeedsSync(!isOk);
+      const isOk = apiKey && apiKey !== "undefined" && apiKey.length > 10;
+      
+      // Só mostramos o estado "A Sintonizar" se tivermos a certeza absoluta que não há chave.
+      // Se houver dúvida, deixamos o chat aberto.
+      setNeedsSync(!isOk && !window.location.hostname.includes('webradiofigueiro.pt'));
     };
     checkStatus();
-    const interval = setInterval(checkStatus, 3000);
+    const interval = setInterval(checkStatus, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -53,14 +58,15 @@ const GeminiAssistant: React.FC = () => {
       setStreamingText('');
       setIsTyping(false);
     } catch (err: any) {
+      console.error("Erro no chat:", err);
       if (err.message === "SINTONIA_PERDIDA") {
         setNeedsSync(true);
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: '🎙️ O sinal da IA está a ser configurado. Por favor, aguarde o fim do Deployment no Vercel ou clique em Sintonizar.' 
+          text: '🎙️ O sinal da IA está a ser configurado. Se o erro persistir, verifique a chave no Vercel.' 
         }]);
       } else {
-        setMessages(prev => [...prev, { role: 'model', text: '🎙️ Estamos com algumas interferências. Tenta de novo, por favor!' }]);
+        setMessages(prev => [...prev, { role: 'model', text: '🎙️ Estamos com algumas interferências. Tente de novo dentro de instantes!' }]);
       }
       setIsTyping(false);
       setStreamingText('');
@@ -136,12 +142,12 @@ const GeminiAssistant: React.FC = () => {
       <div className="p-5 bg-gray-950/50 border-t border-white/5 backdrop-blur-md">
         <form onSubmit={(e) => { e.preventDefault(); handleSend(input); }} className="flex gap-3">
           <input 
-            type="text" value={input} onChange={(e) => setInput(e.target.value)} disabled={isTyping || needsSync}
-            placeholder={needsSync ? "Sinal a ser configurado..." : "Manda uma mensagem ao estúdio..."}
+            type="text" value={input} onChange={(e) => setInput(e.target.value)} disabled={isTyping}
+            placeholder="Manda uma mensagem ao estúdio..."
             className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-white/10"
           />
           <button 
-            type="submit" disabled={!input.trim() || isTyping || needsSync} 
+            type="submit" disabled={!input.trim() || isTyping} 
             className="bg-blue-600 text-white p-4 rounded-2xl hover:bg-blue-500 disabled:opacity-20 transition-all active:scale-95 shadow-xl shadow-blue-600/30 flex items-center justify-center"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7m0 0l-7 7m7-7H3"/></svg>
