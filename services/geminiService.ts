@@ -3,60 +3,66 @@ import { GoogleGenAI } from "@google/genai";
 import { ChatMessage } from "../types";
 
 export const getRadioAssistantResponse = async (history: ChatMessage[], message: string) => {
+  // Verifica se a API KEY existe no ambiente do Vercel
+  if (!process.env.API_KEY) {
+    console.error("API_KEY em falta");
+    return "Sintonizado! Mas o meu sistema de voz precisa da chave de ativação. Configura a API_KEY no painel.";
+  }
+
   try {
-    // Usamos o modelo Gemini 3 Flash que é extremamente rápido
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const agora = new Date();
-    const hora = agora.getHours().toString().padStart(2, '0');
-    const min = agora.getMinutes().toString().padStart(2, '0');
+    const timeStr = `${agora.getHours().toString().padStart(2, '0')}:${agora.getMinutes().toString().padStart(2, '0')}`;
     
-    // Mantemos apenas as últimas 4 mensagens para evitar excesso de dados e lentidão
-    const shortHistory = history.slice(-4);
-    const apiContents: any[] = [];
+    // Construção robusta do conteúdo para a API
+    const contents: any[] = [];
     
-    const validHistory = shortHistory.filter(m => 
+    // Filtramos o histórico para garantir que as mensagens são válidas e alternadas
+    const validHistory = history.filter(m => 
       m.text && 
+      m.text.length > 0 && 
       !m.text.includes("estalido") && 
-      !m.text.includes("interferência")
-    );
+      !m.text.includes("estática")
+    ).slice(-4); // Apenas as últimas 4 para máxima velocidade
 
     validHistory.forEach((msg) => {
       const role = msg.role === 'user' ? 'user' : 'model';
-      if (apiContents.length === 0) {
-        if (role === 'user') apiContents.push({ role, parts: [{ text: msg.text }] });
-      } else if (apiContents[apiContents.length - 1].role !== role) {
-        apiContents.push({ role, parts: [{ text: msg.text }] });
+      // Só adiciona se for o primeiro ou se o papel for diferente do anterior (regra da API)
+      if (contents.length === 0) {
+        if (role === 'user') contents.push({ role, parts: [{ text: msg.text }] });
+      } else if (contents[contents.length - 1].role !== role) {
+        contents.push({ role, parts: [{ text: msg.text }] });
       }
     });
 
-    if (apiContents.length > 0 && apiContents[apiContents.length - 1].role === 'user') {
-      apiContents.pop();
+    // A mensagem que vamos enviar agora é sempre 'user'. 
+    // Se a última do histórico também for 'user', removemos do histórico para não falhar a alternância.
+    if (contents.length > 0 && contents[contents.length - 1].role === 'user') {
+      contents.pop();
     }
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: [
-        ...apiContents,
+        ...contents,
         { role: 'user', parts: [{ text: message }] }
       ],
       config: {
-        // ESSENCIAL: Desativa o raciocínio para resposta imediata
-        thinkingConfig: { thinkingBudget: 0 },
-        systemInstruction: `És o "Figueiró AI", locutor da Web Rádio Figueiró (Figueiró, Portugal). 📻
-        Hora atual: ${hora}:${min}.
-        Estilo: Muito breve, alegre, usa emojis. 
+        systemInstruction: `És o "Figueiró AI", locutor da Web Rádio Figueiró. 📻
+        Hora atual: ${timeStr}.
+        Personalidade: Alegre, muito breve (máx 20 palavras) e entusiasta. 
         Sugere artistas portugueses e menciona a "FM Rent a Car".`,
         temperature: 0.8,
         maxOutputTokens: 100,
       },
     });
 
-    return response.text || "Sintonizado e pronto! Como posso ajudar?";
+    return response.text || "Sintonizado e a postos! O que queres ouvir?";
 
   } catch (error) {
-    console.error("Erro Crítico Gemini:", error);
-    // Erro amigável se a API demorar ou falhar
-    return "Epa! O sinal aqui no estúdio digital deu um estalido! ⚡ Mas já recuperei a ligação. O que dizias?";
+    console.error("Erro na resposta da IA:", error);
+    // Mensagem de fallback mais amigável
+    return "O sinal aqui no estúdio digital apanhou um pouco de estática! 📻 Mas a música continua. O que tens em mente?";
   }
 };
