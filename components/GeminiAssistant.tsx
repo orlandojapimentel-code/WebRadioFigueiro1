@@ -14,7 +14,7 @@ const GeminiAssistant: React.FC = () => {
   const quickActions = [
     { label: "🎙️ Dedicatória", prompt: "Quero fazer uma dedicatória especial para a minha família." },
     { label: "🎵 Sugestão", prompt: "Dá-me uma sugestão de música portuguesa para animar o dia!" },
-    { label: "🚗 FM Rent a Car", prompt: "Fala-me sobre as vantagens dos vossos parceiros da FM Rent a Car." }
+    { label: "🚗 FM Rent a Car", prompt: "Fala-me sobre as vantagens da FM Rent a Car." }
   ];
 
   const scrollToBottom = () => {
@@ -28,20 +28,20 @@ const GeminiAssistant: React.FC = () => {
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || isTyping) return;
 
-    // Guardamos o histórico ANTES de adicionar a nova mensagem do user
-    // para o serviço tratar a inclusão da nova mensagem corretamente.
-    const historyBeforeNewMessage = [...messages];
-    
     const userMessage: ChatMessage = { role: 'user', text };
+    const currentHistory = [...messages];
+    
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsTyping(true);
 
     try {
-      const responseText = await getRadioAssistantResponse(historyBeforeNewMessage, text);
+      // Passamos o histórico atual + a nova mensagem
+      const responseText = await getRadioAssistantResponse(currentHistory, text);
+      
       setMessages(prev => [...prev, { role: 'model', text: responseText }]);
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'model', text: "O sinal está com muita interferência agora! Tenta de novo em 5 segundos." }]);
+      setMessages(prev => [...prev, { role: 'model', text: "O sinal está com muita interferência! Tenta de novo." }]);
     } finally {
       setIsTyping(false);
     }

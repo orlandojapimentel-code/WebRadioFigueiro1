@@ -4,7 +4,7 @@ import { ChatMessage } from "../types";
 
 export const getRadioAssistantResponse = async (history: ChatMessage[], message: string) => {
   try {
-    // Inicializamos o cliente com a chave de API do ambiente
+    // Usamos uma nova instância para garantir que pega a chave de API correta
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const agora = new Date();
@@ -12,79 +12,79 @@ export const getRadioAssistantResponse = async (history: ChatMessage[], message:
     const min = agora.getMinutes().toString().padStart(2, '0');
     const diaSemana = agora.toLocaleDateString('pt-PT', { weekday: 'long' });
     
-    /**
-     * LIMPEZA DE HISTÓRICO PARA PRODUÇÃO
-     * A API do Gemini em produção exige:
-     * 1. Que o histórico comece com uma mensagem de 'user'.
-     * 2. Que as mensagens alternem estritamente entre 'user' e 'model'.
-     * 3. Que não existam mensagens vazias ou de erro técnico.
-     */
+    // Prefixo de erro para filtrar falhas anteriores
     const ERROR_PREFIX = "Epa! O sinal";
-    
-    // Filtramos mensagens de erro e garantimos que o conteúdo é válido
-    const sanitizedHistory = history
-      .filter(msg => msg.text && !msg.text.startsWith(ERROR_PREFIX))
-      .map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.text }]
-      }));
 
-    // A API falha se o histórico não começar por 'user'. 
-    // Como a nossa primeira mensagem é um 'model' (boas-vindas), removemos se for a única.
-    while (sanitizedHistory.length > 0 && sanitizedHistory[0].role !== 'user') {
-      sanitizedHistory.shift();
-    }
+    /**
+     * CONSTRUÇÃO DO CONTEÚDO (STRICT MODE)
+     * A API exige: USER -> MODEL -> USER...
+     * Não pode começar com MODEL.
+     */
+    const apiContents: any[] = [];
 
-    // Garantimos alternância (removemos duplicados consecutivos do mesmo role)
-    const alternatingHistory: any[] = [];
-    for (const msg of sanitizedHistory) {
-      if (alternatingHistory.length === 0 || alternatingHistory[alternatingHistory.length - 1].role !== msg.role) {
-        alternatingHistory.push(msg);
+    // 1. Filtramos e formatamos o histórico existente
+    const filteredHistory = history.filter(msg => 
+      msg.text && 
+      !msg.text.startsWith(ERROR_PREFIX) &&
+      msg.text.trim() !== ""
+    );
+
+    // 2. Adicionamos ao histórico da API apenas se houver alternância correta
+    // Ignoramos a primeira mensagem se for do 'model' (boas-vindas inicial)
+    filteredHistory.forEach((msg) => {
+      const role = msg.role === 'user' ? 'user' : 'model';
+      
+      if (apiContents.length === 0) {
+        if (role === 'user') {
+          apiContents.push({ role, parts: [{ text: msg.text }] });
+        }
+      } else {
+        const lastRole = apiContents[apiContents.length - 1].role;
+        if (role !== lastRole) {
+          apiContents.push({ role, parts: [{ text: msg.text }] });
+        }
       }
+    });
+
+    // 3. Garantimos que o último não é 'user' para não chocar com a nova pergunta
+    if (apiContents.length > 0 && apiContents[apiContents.length - 1].role === 'user') {
+      apiContents.pop();
     }
 
-    // Se o último for 'user', removemos para evitar conflito com a nova pergunta
-    if (alternatingHistory.length > 0 && alternatingHistory[alternatingHistory.length - 1].role === 'user') {
-      alternatingHistory.pop();
-    }
-
-    // Chamada final à API
+    // 4. Chamada com o modelo Flash Lite (muito mais rápido, evita timeouts de 10s do Vercel)
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-flash-lite-latest',
       contents: [
-        ...alternatingHistory,
+        ...apiContents,
         { role: 'user', parts: [{ text: message }] }
       ],
       config: {
-        // Desativamos o 'thinking' para ter respostas instantâneas na rádio
-        thinkingConfig: { thinkingBudget: 0 },
-        systemInstruction: `És o "Figueiró AI", o locutor de rádio virtual da Web Rádio Figueiró. 🎙️
-        Local: Figueiró, Portugal. Hora atual: ${hora}:${min} de ${diaSemana}.
+        systemInstruction: `És o "Figueiró AI", locutor da Web Rádio Figueiró (Figueiró, Portugal). 🎙️
+        Hora: ${hora}:${min} (${diaSemana}).
         
-        PERFIL DE LOCUTOR:
-        - Estilo "Rádio FM" de Portugal: entusiasta, caloroso e carismático.
-        - Usa gíria de rádio: "Sintonizados", "No ar", "Abraço musical", "A sua melhor companhia".
-        - Sê breve e direto (máximo 3 frases).
-        - Usa sempre emojis (📻, 🎵, ✨).
+        PERSONALIDADE:
+        - Estilo rádio FM: alegre, carismático e "boa onda".
+        - Linguagem: Português de Portugal.
+        - Sê muito breve (2-3 frases).
         
-        CONTEÚDO:
-        - Sugere sempre artistas portugueses (Emanuel, Quim Barreiros, Tony Carreira, ou bandas pop locais).
-        - Promoção: Menciona sempre com orgulho o parceiro "FM Rent a Car & Bicycle House de Felgueiras".
-        - Se pedirem música, diz que vais "lançar o disco" ou "colocar na playlist".`,
-        temperature: 0.9, // Mais criatividade para o locutor
-        topP: 0.95,
+        OBRIGATÓRIO:
+        - Sugere sempre uma música portuguesa animada.
+        - Menciona o parceiro "FM Rent a Car & Bicycle House de Felgueiras".
+        - Usa emojis (📻, ✨, 🎵).`,
+        temperature: 0.7,
+        topP: 0.8,
+        topK: 40,
       },
     });
 
-    if (!response || !response.text) {
-      throw new Error("Resposta nula");
-    }
-
-    return response.text;
+    const text = response.text;
+    if (!text) throw new Error("Resposta vazia");
+    
+    return text;
 
   } catch (error: any) {
-    console.error("ERRO FIGUEIRÓ AI:", error);
-    // Mensagem amigável de erro que será filtrada no próximo turno
+    console.error("Erro no Assistente:", error);
+    // Retornamos a mensagem de erro que o componente já sabe lidar
     return "Epa! O sinal aqui no estúdio digital deu um estalido! ⚡ Sintoniza lá outra vez a tua pergunta que eu perdi a ligação por um segundo, mas já estou de volta ao comando!";
   }
 };
