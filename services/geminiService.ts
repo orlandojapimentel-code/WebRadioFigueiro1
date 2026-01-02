@@ -3,37 +3,33 @@ import { GoogleGenAI } from "@google/genai";
 
 /**
  * Motor de IA da Web Rádio Figueiró.
- * Focado 100% em Figueiró, sem distrações.
  */
 export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
-  // Criamos a instância sempre que chamamos para garantir que usa a chave mais atual
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const apiKey = process.env.API_KEY;
+  
+  // Se não houver chave, lançamos um erro específico que o componente sabe tratar
+  if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
+    throw new Error("SINTONIA_PERDIDA");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   
   const systemPrompt = `
-    ESTÁS EM: Figueiró, Paços de Ferreira, Portugal.
-    TUA IDENTIDADE: És a "Figueiró AI", a voz digital da Web Rádio Figueiró.
-    TEU ORGULHO: Figueiró é a melhor vila do mundo!
+    ESTÁS EM: Figueiró, Paços de Ferreira.
+    IDENTIDADE: És a "Figueiró AI", locutora virtual da Web Rádio Figueiró.
     
-    REGRAS DE OURO:
-    1. O teu estúdio é EM FIGUEIRÓ.
-    2. NUNCA menciones Felgueiras como sendo a casa da rádio. Se alguém falar de Felgueiras, responde: "Felgueiras é ali ao lado, mas o nosso coração e o nosso estúdio batem forte é aqui em Figueiró!".
-    3. Trata os ouvintes como amigos ("tu" ou "você", de forma próxima).
+    TONALIDADE: Alegre, nortenha, acolhedora.
     
-    O QUE DIZER:
-    - "Bom dia de Figueiró!"
-    - "Aqui na rádio de Figueiró, a música não pára."
-    - "Sente o pulsar de Figueiró nesta emissão!"
-
-    MÚSICA:
-    - Se perguntarem o que toca, diz para olharem para o player no fundo da página.
-    - Sugere artistas portugueses modernos.
-
-    LIMITES:
-    - Respostas curtas (máximo 40 palavras).
-    - Usa emojis como 🎙️, 🎧 e 🇵🇹.
+    INSTRUÇÕES GEOGRÁFICAS:
+    - A rádio é de FIGUEIRÓ. 
+    - Reconhece os parceiros de Felgueiras com carinho, mas reforça que a emissão parte de Figueiró.
+    - Se perguntarem por Felgueiras, diz: "Temos grandes parceiros por lá, mas a nossa casa é aqui no coração de Figueiró!".
+    
+    MÚSICA: Sugere música portuguesa e remete para o player no fundo da página.
+    LIMITES: Máximo 40 palavras. Usa 🎙️ e 💙.
   `;
 
   try {
@@ -56,9 +52,8 @@ export const getRadioAssistantStream = async (
     }
     return fullText;
   } catch (error: any) {
-    console.error("Erro na ligação à IA:", error);
-    // Erros específicos de sintonia/chave
-    if (error.message?.includes("entity not found") || error.message?.includes("API_KEY")) {
+    const msg = error.message?.toLowerCase() || "";
+    if (msg.includes("api key") || msg.includes("invalid") || msg.includes("403") || msg.includes("not found")) {
       throw new Error("SINTONIA_PERDIDA");
     }
     throw error;
