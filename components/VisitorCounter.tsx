@@ -3,11 +3,10 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const VisitorCounter: React.FC = () => {
   const VALOR_BASE = 10170; 
-  const SITE_ID = 'webradiofigueiro_v3_prod';
+  const SITE_ID = 'webradiofigueiro_v4_prod';
   
   const [totalVisits, setTotalVisits] = useState(VALOR_BASE);
   const [hasNewEntry, setHasNewEntry] = useState(false);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   
   const hasHit = useRef(false);
 
@@ -21,17 +20,16 @@ const VisitorCounter: React.FC = () => {
       const data = await response.json();
       
       if (data && typeof data.count === 'number') {
-        const newCount = VALOR_BASE + data.count;
-        if (hasLoadedOnce && newCount > totalVisits) {
+        const newTotal = VALOR_BASE + data.count;
+        if (!isFirstLoad && newTotal > totalVisits) {
           setHasNewEntry(true);
-          setTimeout(() => setHasNewEntry(false), 3000);
+          setTimeout(() => setHasNewEntry(false), 2000);
         }
-        setTotalVisits(newCount);
-        setHasLoadedOnce(true);
+        setTotalVisits(newTotal);
       }
     } catch (err) {
-      // Falha silenciosa para não afetar a UI
-      console.warn("Sincronização de audiência pendente...");
+      // Mantém o valor atual se a rede falhar
+      console.debug("Counter sync deferred");
     }
   };
 
@@ -40,9 +38,9 @@ const VisitorCounter: React.FC = () => {
       performSync(true);
       hasHit.current = true;
     }
-    const interval = setInterval(() => performSync(false), 60000);
+    const interval = setInterval(() => performSync(false), 45000);
     return () => clearInterval(interval);
-  }, [totalVisits, hasLoadedOnce]);
+  }, [totalVisits]);
 
   const digits = totalVisits.toString().padStart(6, '0').split('');
 
@@ -67,7 +65,7 @@ const VisitorCounter: React.FC = () => {
 
       <div className="flex justify-center items-center space-x-1 md:space-x-2 relative z-10">
         {digits.map((digit, i) => (
-          <div key={i} className={`bg-black text-blue-500 text-3xl md:text-5xl font-mono font-black px-3 py-4 rounded-xl border border-white/5 shadow-inner transition-all duration-700 ${hasNewEntry ? 'text-white scale-110' : ''}`}>
+          <div key={i} className={`bg-black text-blue-500 text-3xl md:text-5xl font-mono font-black px-3 py-4 rounded-xl border border-white/5 shadow-inner transition-all duration-500 ${hasNewEntry ? 'text-white scale-110 shadow-blue-500/50' : ''}`}>
             {digit}
           </div>
         ))}
