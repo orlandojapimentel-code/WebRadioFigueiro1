@@ -5,8 +5,14 @@ export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
-  // Inicialização dinâmica da chave para garantir que usa a selecionada pelo utilizador
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+  const apiKey = process.env.API_KEY;
+  
+  // 1. Verificar se a variável de ambiente sequer existe
+  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    throw new Error("MISSING_KEY");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   
   const systemPrompt = `
     IDENTIDADE: És a "Figueiró AI", a voz digital da Web Rádio Figueiró.
@@ -39,9 +45,9 @@ export const getRadioAssistantStream = async (
     const errStatus = error.status;
     const errMessage = (error.message || "").toLowerCase();
     
-    // Se for erro de autorização ou chave inválida
+    // 2. Verificar se o Google rejeitou a chave (Chave Errada)
     if (errStatus === 403 || errStatus === 401 || errMessage.includes("api key") || errMessage.includes("invalid")) {
-      throw new Error("AUTH_ERROR");
+      throw new Error("INVALID_KEY");
     }
     throw error;
   }

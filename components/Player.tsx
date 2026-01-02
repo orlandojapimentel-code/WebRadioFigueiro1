@@ -103,11 +103,11 @@ const Player: React.FC = () => {
   }));
 
   return (
-    <div className="fixed bottom-6 left-4 right-4 md:left-8 md:right-8 z-[100] transition-all duration-700 pointer-events-none">
-      {/* Glow de Fundo Dinâmico - pointer-events-none para não bloquear cliques */}
+    <div className="fixed bottom-6 left-4 right-4 md:left-8 md:right-8 z-[80] transition-all duration-700 pointer-events-none">
+      {/* Glow de Fundo Dinâmico */}
       <div className={`absolute -inset-4 bg-blue-600/20 blur-[100px] rounded-full transition-opacity duration-1000 pointer-events-none ${isPlaying ? 'opacity-100 scale-110' : 'opacity-0'}`} />
 
-      {/* Container Interno do Player - pointer-events-auto para permitir cliques aqui */}
+      {/* Container do Player */}
       <div className="relative bg-gray-950/80 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] p-3 md:p-5 shadow-[0_20px_80px_rgba(0,0,0,0.9)] overflow-hidden group pointer-events-auto">
         
         <div className="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent w-full opacity-30"></div>
