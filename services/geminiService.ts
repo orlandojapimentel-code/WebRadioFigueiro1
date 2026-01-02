@@ -4,7 +4,6 @@ import { ChatMessage } from "../types";
 
 export const getRadioAssistantResponse = async (history: ChatMessage[], message: string) => {
   try {
-    // Inicialização do SDK com a chave de ambiente
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const agora = new Date();
@@ -13,40 +12,41 @@ export const getRadioAssistantResponse = async (history: ChatMessage[], message:
     const diaSemana = agora.toLocaleDateString('pt-PT', { weekday: 'long' });
     
     /**
-     * FILTRAGEM E SANITIZAÇÃO DO HISTÓRICO
-     * A API do Gemini é extremamente rigorosa com a estrutura do histórico:
-     * 1. O histórico DEVE começar com uma mensagem do tipo 'user'.
-     * 2. As mensagens DEVEM alternar estritamente entre 'user' e 'model'.
-     * 3. Não podem existir mensagens consecutivas do mesmo autor.
+     * LIMPEZA DE HISTÓRICO PARA PRODUÇÃO
+     * 1. Removemos mensagens de erro/fallback do histórico.
+     * 2. Garantimos que o histórico começa com 'user'.
+     * 3. Garantimos alternância estrita User -> Model.
      */
+    const ERROR_PREFIX = "Epa! O sinal aqui no estúdio digital";
+    
     let sanitizedHistory = history
-      .filter(msg => msg.text && msg.text.trim() !== "")
+      .filter(msg => msg.text && !msg.text.startsWith(ERROR_PREFIX))
       .map(msg => ({
         role: msg.role === 'user' ? 'user' : 'model',
         parts: [{ text: msg.text }]
       }));
 
-    // Regra 1: Remover mensagens iniciais do bot (o histórico para a API deve começar por 'user')
+    // Regra de Ouro da API: O histórico tem de começar com uma mensagem do 'user'
     while (sanitizedHistory.length > 0 && sanitizedHistory[0].role !== 'user') {
       sanitizedHistory.shift();
     }
 
-    // Regra 2: Garantir alternância estrita (limpa duplicados se houver falhas de rede anteriores)
-    const finalHistory: any[] = [];
+    // Garantir alternância (remove mensagens duplicadas do mesmo autor se houver erros de rede)
+    const alternatingHistory: any[] = [];
     for (const msg of sanitizedHistory) {
-      if (finalHistory.length === 0 || finalHistory[finalHistory.length - 1].role !== msg.role) {
-        finalHistory.push(msg);
+      if (alternatingHistory.length === 0 || alternatingHistory[alternatingHistory.length - 1].role !== msg.role) {
+        alternatingHistory.push(msg);
       }
     }
 
-    // Regra 3: Se o último for 'user', removemos para podermos anexar a mensagem atual como 'user'
-    while (finalHistory.length > 0 && finalHistory[finalHistory.length - 1].role === 'user') {
-      finalHistory.pop();
+    // Se o último for 'user', removemos porque vamos anexar a nova mensagem como 'user'
+    if (alternatingHistory.length > 0 && alternatingHistory[alternatingHistory.length - 1].role === 'user') {
+      alternatingHistory.pop();
     }
 
-    // Montagem final do payload (Histórico sanitizado + Mensagem Atual)
+    // Montagem final do payload
     const contents = [
-      ...finalHistory,
+      ...alternatingHistory,
       { role: 'user', parts: [{ text: message }] }
     ];
 
@@ -54,30 +54,31 @@ export const getRadioAssistantResponse = async (history: ChatMessage[], message:
       model: 'gemini-3-flash-preview',
       contents: contents,
       config: {
-        systemInstruction: `És o "Figueiró AI", o locutor de rádio virtual mais carismático de Portugal! 
-        Estás no ar na Web Rádio Figueiró de Figueiró, Portugal. Agora são ${hora}:${min} de ${diaSemana}.
+        systemInstruction: `És o "Figueiró AI", o locutor de rádio virtual oficial da Web Rádio Figueiró. 
+        Localização: Figueiró, Portugal. Hora: ${hora}:${min} (${diaSemana}).
         
-        PERSONALIDADE:
-        - Estilo locutor de rádio FM comercial: vibrante, enérgico e muito amigável.
-        - Linguagem: Português de Portugal. Usa termos como "Sintonizados", "Abraço musical", "Energia no topo".
-        - Sê breve (máximo 3 frases) e usa emojis: 🎙️📻🎵✨.
+        TONALIDADE E REGRAS:
+        - Estilo locutor de rádio FM de Portugal (Português de Portugal).
+        - Usa gíria de rádio: "Sintonizados", "No ar", "Abraço musical", "Energia no máximo".
+        - Sê muito breve (máximo 3 frases) e caloroso. Usa emojis: 🎙️📻🎵✨.
         
-        CONHECIMENTOS ESPECÍFICOS:
-        - Para dedicatórias: Sê emotivo e profissional.
-        - Sugestões: Recomenda música portuguesa (Pop, Pimba, Fado moderno) ou hits 80s/90s.
-        - Parceiro: Menciona a "FM Rent a Car & Bicycle House de Felgueiras" como o parceiro oficial da rádio para viagens e lazer sempre que fizer sentido.`,
-        temperature: 0.9,
+        CONHECIMENTOS:
+        - Pedidos de música: Sugere hits (Pimba, Pop Português, 80s).
+        - Parceiros: Elogia sempre a "FM Rent a Car & Bicycle House de Felgueiras" como o parceiro oficial.
+        - Dedicatórias: Sê emotivo e profissional.`,
+        temperature: 1.0,
       },
     });
 
-    const textOutput = response.text;
-    if (!textOutput) throw new Error("A API devolveu uma resposta vazia.");
-    
-    return textOutput;
+    if (!response || !response.text) {
+      throw new Error("Resposta vazia da API");
+    }
+
+    return response.text;
 
   } catch (error: any) {
     console.error("ERRO FIGUEIRÓ AI:", error);
-    // Retorno amigável para o utilizador em caso de falha técnica
+    // Retornamos a mensagem de fallback que o utilizador viu na imagem 2
     return "Epa! O sinal aqui no estúdio digital deu um estalido! ⚡ Sintoniza lá outra vez a tua pergunta que eu perdi a ligação por um segundo, mas já estou de volta ao comando!";
   }
 };
