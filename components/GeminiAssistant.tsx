@@ -11,36 +11,12 @@ const GeminiAssistant: React.FC = () => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [streamingText, setStreamingText] = useState('');
-  // Em produção, assumimos que temos a chave configurada no Vercel
-  const [hasKey, setHasKey] = useState(true);
+  const [status, setStatus] = useState<'online' | 'error'>('online');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText]);
-
-  // Verificação de ambiente apenas para exibir o botão se estivermos no AI Studio
-  useEffect(() => {
-    const checkEnvironment = async () => {
-      if ((window as any).aistudio) {
-        const hasManual = await (window as any).aistudio.hasSelectedApiKey();
-        if (!hasManual && !process.env.API_KEY) {
-          setHasKey(false);
-        }
-      }
-    };
-    checkEnvironment();
-  }, []);
-
-  const handleSintonizar = async () => {
-    if ((window as any).aistudio?.openSelectKey) {
-      await (window as any).aistudio.openSelectKey();
-      setHasKey(true);
-    } else {
-      // Se não estiver no AI Studio, avisamos que a chave deve vir do Vercel
-      alert("A sintonização é automática via Vercel. Verifique as variáveis de ambiente no seu painel de controlo.");
-    }
-  };
 
   const handleSend = async (text: string) => {
     if (!text.trim() || isTyping) return;
@@ -57,21 +33,18 @@ const GeminiAssistant: React.FC = () => {
       setMessages(prev => [...prev, { role: 'model', text: result }]);
       setStreamingText('');
       setIsTyping(false);
-      setHasKey(true); // Se funcionou, temos a chave
+      setStatus('online');
     } catch (err: any) {
       console.error("Erro na Figueiró AI:", err);
       setIsTyping(false);
       setStreamingText('');
+      setStatus('error');
       
-      if (err.message === "SINTONIA_PERM") {
-        setHasKey(false);
-        setMessages(prev => [...prev, { 
-          role: 'model', 
-          text: '🎙️ Erro de Autenticação. Por favor, verifique se a API_KEY no Vercel está correta e se o projeto foi reimplantado (Redeploy).' 
-        }]);
-      } else {
-        setMessages(prev => [...prev, { role: 'model', text: '🎙️ Estamos com algumas interferências no sinal. Tente de novo dentro de instantes!' }]);
-      }
+      const errorMsg = err.message === "AUTH_ERROR" 
+        ? "🎙️ Erro de Autenticação. Verifique se a API_KEY no Vercel está correta e faça um REDEPLOY no painel do Vercel para aplicar as mudanças."
+        : "🎙️ Tivemos uma pequena interferência. Pode tentar de novo?";
+        
+      setMessages(prev => [...prev, { role: 'model', text: errorMsg }]);
     }
   };
 
@@ -81,29 +54,20 @@ const GeminiAssistant: React.FC = () => {
       <div className="p-5 bg-gradient-to-r from-blue-600/20 to-indigo-600/10 flex items-center justify-between border-b border-white/5 shrink-0">
         <div className="flex items-center space-x-3">
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30">
-              <svg className="w-5 h-5 text-blue-400 animate-pulse" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${status === 'online' ? 'bg-blue-500/20 border-blue-400/30' : 'bg-red-500/20 border-red-400/30'}`}>
+              <svg className={`w-5 h-5 ${status === 'online' ? 'text-blue-400 animate-pulse' : 'text-red-400'}`} fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
             </div>
-            {hasKey && (
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-gray-950 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
-            )}
+            <span className={`absolute -top-1 -right-1 w-3.5 h-3.5 border-2 border-gray-950 rounded-full shadow-lg ${status === 'online' ? 'bg-green-500' : 'bg-red-500'}`}></span>
           </div>
           <div>
             <h4 className="text-white font-black text-xs uppercase tracking-[0.2em] leading-none">Figueiró AI</h4>
-            <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest">{hasKey ? 'No Ar em Direto' : 'Erro de Sinal'}</span>
+            <span className={`text-[9px] font-bold uppercase tracking-widest ${status === 'online' ? 'text-blue-400' : 'text-red-400'}`}>
+              {status === 'online' ? 'No Ar em Direto' : 'Erro de Configuração'}
+            </span>
           </div>
         </div>
         
-        {!hasKey && (
-          <button 
-            onClick={handleSintonizar}
-            className="text-[9px] px-4 py-2 bg-red-500 text-white rounded-full font-black uppercase tracking-widest animate-pulse shadow-lg shadow-red-500/30"
-          >
-            Verificar Chave
-          </button>
-        )}
-        
-        {hasKey && (
+        {status === 'online' && (
           <div className="flex space-x-1">
             <div className="w-1 h-3 bg-blue-500 rounded-full animate-[wave_1s_infinite]"></div>
             <div className="w-1 h-3 bg-blue-400 rounded-full animate-[wave_1s_0.2s_infinite]"></div>
@@ -127,7 +91,7 @@ const GeminiAssistant: React.FC = () => {
         ))}
         {streamingText && (
           <div className="flex justify-start">
-            <div className="max-w-[85%] px-5 py-3.5 rounded-2xl rounded-tl-none bg-gray-800/80 text-blue-300 text-[13px] border border-blue-500/20 italic shadow-inner">
+            <div className="max-w-[85%] px-5 py-3.5 rounded-2xl rounded-tl-none bg-gray-800/80 text-blue-300 text-[13px] border border-blue-500/20 italic">
               {streamingText}<span className="inline-block w-2 h-4 bg-blue-500 ml-1 animate-pulse align-middle"></span>
             </div>
           </div>
@@ -147,7 +111,7 @@ const GeminiAssistant: React.FC = () => {
         <form onSubmit={(e) => { e.preventDefault(); handleSend(input); }} className="flex gap-3">
           <input 
             type="text" value={input} onChange={(e) => setInput(e.target.value)} disabled={isTyping}
-            placeholder="Manda uma mensagem ao estúdio..."
+            placeholder="Escreva ao estúdio..."
             className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-white/10"
           />
           <button 
