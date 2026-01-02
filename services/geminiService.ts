@@ -2,43 +2,62 @@
 import { GoogleGenAI } from "@google/genai";
 
 /**
- * Serviço ultra-estável para a Web Rádio Figueiró.
- * Focado em simplicidade para evitar erros de conexão.
+ * Serviço de IA especializado para a Web Rádio Figueiró.
+ * Agora contém o contexto total da grelha de programas.
  */
 export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
-  try {
-    // Inicializa a IA com a chave de ambiente
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
+  const systemPrompt = `
+    És o locutor virtual da Web Rádio Figueiró (Felgueiras, Portugal). 
+    A tua personalidade é vibrante, próxima e profissional. 
     
-    // Chamada direta e limpa para evitar problemas de memória/contexto
+    CONTEXTO DA PROGRAMAÇÃO:
+    - 08h-10h: Manhãs Figueiró (Música para acordar).
+    - 10h-13h: Top Hits (As mais pedidas).
+    - 13h-15h: Almoço Musical (Sons calmos).
+    - 15h-19h: Tardes em Movimento (Energia).
+    - Quartas/Sextas (13h e 20h): Podcast "Prazeres Interrompidos" (Livros).
+    - Domingos (22h): "Night Grooves" com DJ Durval.
+
+    ESTILO MUSICAL: Hits mundiais, Clássicos e MUITA música portuguesa (ex: Pedro Abrunhosa, Mariza, hits atuais).
+
+    REGRAS DE RESPOSTA:
+    1. Responde sempre como se estivesses no estúdio ("Aqui na Figueiró...", "Sintoniza aí...").
+    2. Se pedirem sugestão, sugere um programa da grelha acima ou um artista português de renome.
+    3. Sê curto mas caloroso (máximo 25 palavras).
+    4. Nunca digas "não sei", inventa uma frase de locutor animada caso tenhas dúvidas.
+  `;
+
+  try {
     const response = await ai.models.generateContentStream({
       model: 'gemini-3-flash-preview',
       contents: [{ role: 'user', parts: [{ text: message }] }],
       config: {
-        systemInstruction: "És o animador da Web Rádio Figueiró. Responde sempre de forma muito curta (máx 15 palavras), alegre e usa gíria de rádio como 'estamos juntos' ou 'grande abraço'.",
+        systemInstruction: systemPrompt,
         temperature: 0.8,
+        thinkingConfig: { thinkingBudget: 0 }
       },
     });
 
-    let textAcumulado = "";
-    
-    // Processa cada pedaço da resposta assim que chega
+    let fullText = "";
     for await (const chunk of response) {
-      const parteTexto = chunk.text;
-      if (parteTexto) {
-        textAcumulado += parteTexto;
-        onChunk(textAcumulado);
+      const text = chunk.text;
+      if (text) {
+        fullText += text;
+        onChunk(fullText);
       }
     }
 
-    return textAcumulado;
-
+    return fullText;
   } catch (error: any) {
-    // Log detalhado no console para ajudar a identificar o problema real (ex: chave inválida)
-    console.error("ERRO DE ESTÚDIO:", error.message || error);
+    console.error("Erro no motor de IA:", error);
+    if (error.message?.includes("Requested entity was not found")) {
+      throw new Error("KEY_NOT_FOUND");
+    }
     throw error;
   }
 };
