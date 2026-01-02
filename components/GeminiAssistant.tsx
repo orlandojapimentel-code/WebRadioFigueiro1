@@ -12,9 +12,9 @@ const GeminiAssistant: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const quickActions = [
-    { label: "🎙️ Pedir Dedicatória", prompt: "Quero fazer uma dedicatória emocionante para alguém especial." },
-    { label: "🎵 Sugestão Musical", prompt: "Dá-me uma sugestão musical para este momento da rádio." },
-    { label: "🚗 FM Rent a Car", prompt: "Fala-me sobre os vossos parceiros da FM Rent a Car." }
+    { label: "🎙️ Pedir Dedicatória", prompt: "Quero fazer uma dedicatória emocionante." },
+    { label: "🎵 Sugestão Musical", prompt: "Dá-me uma sugestão musical para agora." },
+    { label: "🚗 Parceiro FM", prompt: "Fala-me da FM Rent a Car." }
   ];
 
   const scrollToBottom = () => {
@@ -29,15 +29,20 @@ const GeminiAssistant: React.FC = () => {
     if (!text.trim() || isTyping) return;
 
     const userMessage: ChatMessage = { role: 'user', text };
+    const currentHistory = [...messages];
+    
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsTyping(true);
 
-    // Obtém resposta do serviço (passando o histórico para manter contexto)
-    const responseText = await getRadioAssistantResponse(messages, text);
-    
-    setMessages(prev => [...prev, { role: 'model', text: responseText }]);
-    setIsTyping(false);
+    try {
+      const responseText = await getRadioAssistantResponse(currentHistory, text);
+      setMessages(prev => [...prev, { role: 'model', text: responseText }]);
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'model', text: "O sinal falhou! Tenta outra vez, campeão!" }]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,7 +52,6 @@ const GeminiAssistant: React.FC = () => {
 
   return (
     <div className="bg-gray-800/90 rounded-[2.5rem] border border-blue-500/20 overflow-hidden flex flex-col shadow-2xl backdrop-blur-md transition-all duration-500 hover:border-blue-500/40">
-      {/* Header do Chat */}
       <div className="p-5 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 flex items-center justify-between shadow-lg">
         <div className="flex items-center space-x-3">
           <div className="relative">
@@ -63,7 +67,6 @@ const GeminiAssistant: React.FC = () => {
         </div>
       </div>
 
-      {/* Área de Mensagens */}
       <div className="h-96 overflow-y-auto p-4 space-y-4 scrollbar-hide bg-gray-950/30">
         {messages.map((m, i) => (
           <div 
@@ -96,7 +99,6 @@ const GeminiAssistant: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Quick Actions */}
       <div className="px-4 py-3 flex overflow-x-auto space-x-2 scrollbar-hide bg-gray-900/40 border-t border-white/5">
         {quickActions.map((action, i) => (
           <button
@@ -109,7 +111,6 @@ const GeminiAssistant: React.FC = () => {
         ))}
       </div>
 
-      {/* Input de Mensagem */}
       <form onSubmit={handleSubmit} className="p-4 bg-gray-900/80 flex space-x-2 items-center">
         <input 
           type="text" 
