@@ -4,54 +4,42 @@ import { getRadioAssistantStream } from '../services/geminiService';
 import { ChatMessage } from '../types';
 
 const GeminiAssistant: React.FC = () => {
-  const defaultMessage: ChatMessage = { 
+  const mensagemInicial: ChatMessage = { 
     role: 'model', 
-    text: 'Sintonizados! Sou o Figueiró AI. 🎙️ Queres pedir uma música ou deixar uma dedicatória?' 
+    text: 'Sintonizados! Sou o Figueiró AI. 🎙️ Como posso animar o seu dia?' 
   };
 
-  const [messages, setMessages] = useState<ChatMessage[]>([defaultMessage]);
+  const [messages, setMessages] = useState<ChatMessage[]>([mensagemInicial]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [streamingText, setStreamingText] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const quickActions = [
-    { label: "🎙️ Dedicatória", prompt: "Quero fazer uma dedicatória!" },
-    { label: "🎵 Sugestão", prompt: "Dá-me um hit português!" },
-    { label: "🚗 FM Rent a Car", prompt: "Fala-me da FM Rent a Car!" }
-  ];
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollToBottom();
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText]);
 
-  const handleSendMessage = async (text: string) => {
-    if (!text.trim() || isTyping) return;
+  const enviarMensagem = async (texto: string) => {
+    if (!texto.trim() || isTyping) return;
 
-    const userMsg: ChatMessage = { role: 'user', text };
-    setMessages(prev => [...prev, userMsg]);
+    const novaMsg: ChatMessage = { role: 'user', text: texto };
+    setMessages(prev => [...prev, novaMsg]);
     setInput('');
     setIsTyping(true);
     setStreamingText('');
 
     try {
-      // Passamos um histórico vazio ou muito curto para evitar timeouts
-      const result = await getRadioAssistantStream([], text, (chunk) => {
+      const respostaFinal = await getRadioAssistantStream(texto, (chunk) => {
         setStreamingText(chunk);
       });
       
-      setMessages(prev => [...prev, { role: 'model', text: result }]);
+      setMessages(prev => [...prev, { role: 'model', text: respostaFinal }]);
       setStreamingText('');
       setIsTyping(false);
     } catch (err) {
-      // Se falhar, limpamos o estado e mostramos uma mensagem simpática
       setMessages(prev => [...prev, { 
         role: 'model', 
-        text: "Tivemos uma pequena interferência, mas a música não pára! 🎙️ Tenta perguntar outra vez, ouvinte!" 
+        text: "Sinal fraco no estúdio! 🎙️ Mas a música continua, tente novamente daqui a pouco." 
       }]);
       setStreamingText('');
       setIsTyping(false);
@@ -59,58 +47,91 @@ const GeminiAssistant: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-950/60 rounded-[2.5rem] border border-blue-500/20 overflow-hidden flex flex-col shadow-2xl backdrop-blur-3xl h-[450px]">
-      <div className="p-4 bg-gradient-to-r from-blue-700 to-indigo-900 flex items-center justify-between">
-        <div className="flex items-center space-x-3 text-white">
-          <div className={`w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 ${isTyping ? 'animate-pulse' : ''}`}>
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
+    <div className="bg-gray-900 rounded-[2.5rem] border border-blue-500/30 overflow-hidden flex flex-col shadow-2xl h-[480px] transition-all hover:border-blue-500/60">
+      {/* Topo do Chat - Estilo Mesa de Mistura */}
+      <div className="p-4 bg-gradient-to-r from-blue-600 to-indigo-800 flex items-center justify-between shadow-lg">
+        <div className="flex items-center space-x-3">
+          <div className="relative">
+            <div className={`w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20 ${isTyping ? 'animate-pulse' : ''}`}>
+              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
+            </div>
+            <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-900 ${isTyping ? 'bg-red-500 animate-ping' : 'bg-green-500'}`}></div>
           </div>
           <div>
-            <h4 className="font-bold text-xs uppercase tracking-widest">Figueiró AI</h4>
-            <span className="text-[8px] opacity-70 font-bold uppercase tracking-tighter">Estúdio em Direto</span>
+            <h4 className="text-white font-black text-xs uppercase tracking-widest">Figueiró AI</h4>
+            <p className="text-[9px] text-blue-200 font-bold uppercase tracking-tighter">Estúdio em Direto</p>
           </div>
         </div>
-        <button onClick={() => setMessages([defaultMessage])} className="text-white/40 hover:text-white transition-colors p-1">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <button onClick={() => setMessages([mensagemInicial])} title="Limpar Conversa" className="p-2 text-white/40 hover:text-white transition-colors">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         </button>
       </div>
 
-      <div className="flex-grow overflow-y-auto p-4 space-y-4 scrollbar-hide bg-black/5">
+      {/* Janela de Conversa */}
+      <div className="flex-grow overflow-y-auto p-5 space-y-4 scrollbar-hide bg-gray-900/40">
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed shadow-sm ${
-              m.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-gray-800 text-gray-200 rounded-tl-none'
+          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+            <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-[13px] leading-relaxed shadow-md ${
+              m.role === 'user' 
+                ? 'bg-blue-600 text-white rounded-tr-none' 
+                : 'bg-gray-800 text-gray-200 rounded-tl-none border border-white/5'
             }`}>
               {m.text}
             </div>
           </div>
         ))}
+        
+        {/* Texto em tempo real */}
         {streamingText && (
-          <div className="flex justify-start">
-            <div className="max-w-[85%] px-4 py-2.5 rounded-2xl rounded-tl-none bg-gray-800 text-blue-100 text-xs animate-in fade-in">
+          <div className="flex justify-start animate-in fade-in">
+            <div className="max-w-[85%] px-4 py-3 rounded-2xl rounded-tl-none bg-gray-800 text-blue-100 text-[13px] border border-blue-500/20 shadow-lg">
               {streamingText}
-              <span className="inline-block w-1.5 h-3 bg-blue-500 ml-1 animate-pulse"></span>
+              <span className="inline-block w-2 h-4 bg-blue-500 ml-1 animate-pulse rounded-full align-middle"></span>
             </div>
           </div>
         )}
+
+        {isTyping && !streamingText && (
+          <div className="flex items-center space-x-2 bg-white/5 w-fit px-4 py-2 rounded-full border border-white/5">
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></div>
+          </div>
+        )}
+        <div ref={scrollRef} />
       </div>
 
-      <div className="p-4 bg-gray-900/50 border-t border-white/5 space-y-3">
-        <div className="flex space-x-2 overflow-x-auto scrollbar-hide">
-          {quickActions.map((q, i) => (
-            <button key={i} onClick={() => handleSendMessage(q.prompt)} className="whitespace-nowrap bg-white/5 hover:bg-blue-600/20 border border-white/10 rounded-full px-3 py-1 text-[9px] font-bold text-blue-300 transition-colors">
-              {q.label}
+      {/* Zona de Envio */}
+      <div className="p-4 bg-gray-950 border-t border-white/5 space-y-3">
+        <div className="flex space-x-2 overflow-x-auto scrollbar-hide pb-1">
+          {["🎙️ Dedicatória", "🎵 Sugestão", "🚗 Rent a Car"].map((tag) => (
+            <button 
+              key={tag} 
+              onClick={() => enviarMensagem(`Quero uma ${tag.split(' ')[1]}`)}
+              className="bg-white/5 hover:bg-blue-600/30 border border-white/10 rounded-full px-3 py-1 text-[10px] text-blue-400 font-bold transition-all whitespace-nowrap"
+            >
+              {tag}
             </button>
           ))}
         </div>
-        <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(input); }} className="flex gap-2">
+        <form 
+          onSubmit={(e) => { e.preventDefault(); enviarMensagem(input); }} 
+          className="flex items-center bg-white/5 border border-white/10 rounded-2xl px-3 py-1 focus-within:border-blue-500/50 transition-all"
+        >
           <input 
-            type="text" value={input} onChange={(e) => setInput(e.target.value)} disabled={isTyping}
-            placeholder="Diz algo ao estúdio..."
-            className="flex-grow bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-blue-500/40"
+            type="text" 
+            value={input} 
+            onChange={(e) => setInput(e.target.value)} 
+            disabled={isTyping}
+            placeholder="Mensagem para o estúdio..."
+            className="flex-grow bg-transparent border-none py-3 text-xs text-white focus:ring-0 placeholder:text-gray-600"
           />
-          <button type="submit" disabled={isTyping || !input.trim()} className="bg-blue-600 text-white p-2.5 rounded-xl hover:bg-blue-500 transition-all disabled:opacity-30">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          <button 
+            type="submit" 
+            disabled={isTyping || !input.trim()} 
+            className="p-2 text-blue-500 hover:text-blue-400 disabled:text-gray-700 transition-colors"
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </form>
       </div>

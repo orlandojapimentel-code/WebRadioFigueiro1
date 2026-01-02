@@ -1,48 +1,44 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { ChatMessage } from "../types";
 
 /**
- * Serviço de IA Ultra-Rápido para Web Rádio Figueiró.
- * Corrigido para a sintaxe exata da SDK @google/genai.
+ * Serviço ultra-estável para a Web Rádio Figueiró.
+ * Focado em simplicidade para evitar erros de conexão.
  */
 export const getRadioAssistantStream = async (
-  history: ChatMessage[], 
   message: string, 
   onChunk: (text: string) => void
 ) => {
   try {
+    // Inicializa a IA com a chave de ambiente
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // Simplificamos ao máximo para evitar erros de contexto da API
-    // Enviamos apenas a última mensagem para garantir que a resposta é rápida e sem erros
+    // Chamada direta e limpa para evitar problemas de memória/contexto
     const response = await ai.models.generateContentStream({
       model: 'gemini-3-flash-preview',
       contents: [{ role: 'user', parts: [{ text: message }] }],
       config: {
-        thinkingConfig: { thinkingBudget: 0 },
-        systemInstruction: `És o locutor "Figueiró AI" da Web Rádio Figueiró. 🎙️
-        Personalidade: Alegre, direto, frases curtas de rádio.
-        Regra: Máximo 12 palavras. 
-        Exemplo: "Na melhor companhia! Que música queres ouvir agora?"`,
-        temperature: 0.9,
+        systemInstruction: "És o animador da Web Rádio Figueiró. Responde sempre de forma muito curta (máx 15 palavras), alegre e usa gíria de rádio como 'estamos juntos' ou 'grande abraço'.",
+        temperature: 0.8,
       },
     });
 
-    let fullText = "";
-    // CORREÇÃO: A iteração deve ser feita diretamente no objeto de resposta
+    let textAcumulado = "";
+    
+    // Processa cada pedaço da resposta assim que chega
     for await (const chunk of response) {
-      const text = chunk.text;
-      if (text) {
-        fullText += text;
-        onChunk(fullText);
+      const parteTexto = chunk.text;
+      if (parteTexto) {
+        textAcumulado += parteTexto;
+        onChunk(textAcumulado);
       }
     }
 
-    return fullText;
+    return textAcumulado;
 
-  } catch (error) {
-    console.error("Erro na comunicação com o estúdio digital:", error);
+  } catch (error: any) {
+    // Log detalhado no console para ajudar a identificar o problema real (ex: chave inválida)
+    console.error("ERRO DE ESTÚDIO:", error.message || error);
     throw error;
   }
 };
