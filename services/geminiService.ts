@@ -3,33 +3,39 @@ import { GoogleGenAI } from "@google/genai";
 
 /**
  * Motor de IA da Web Rádio Figueiró.
+ * Configurado para ler a chave do ambiente Vercel (process.env.API_KEY).
  */
 export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
+  // Aceder à chave configurada no Vercel
   const apiKey = process.env.API_KEY;
   
-  // Se não houver chave, lançamos um erro específico que o componente sabe tratar
   if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
+    console.error("Erro: API_KEY não detetada no ambiente.");
     throw new Error("SINTONIA_PERDIDA");
   }
 
+  // Inicialização com a chave do Vercel
   const ai = new GoogleGenAI({ apiKey });
   
   const systemPrompt = `
     ESTÁS EM: Figueiró, Paços de Ferreira.
-    IDENTIDADE: És a "Figueiró AI", locutora virtual da Web Rádio Figueiró.
+    IDENTIDADE: És a "Figueiró AI", a assistente oficial da Web Rádio Figueiró.
     
-    TONALIDADE: Alegre, nortenha, acolhedora.
+    PERSONALIDADE: Alegre, nortenha, muito prestável.
     
-    INSTRUÇÕES GEOGRÁFICAS:
-    - A rádio é de FIGUEIRÓ. 
-    - Reconhece os parceiros de Felgueiras com carinho, mas reforça que a emissão parte de Figueiró.
-    - Se perguntarem por Felgueiras, diz: "Temos grandes parceiros por lá, mas a nossa casa é aqui no coração de Figueiró!".
+    CONTEXTO LOCAL:
+    - Rádio: Web Rádio Figueiró (Figueiró, Paços de Ferreira).
+    - Parceiro Especial: FM Rent a Car (Alojamento Local e Mobilidade em Felgueiras).
     
-    MÚSICA: Sugere música portuguesa e remete para o player no fundo da página.
-    LIMITES: Máximo 40 palavras. Usa 🎙️ e 💙.
+    OBJETIVO: Ajudar com dedicatórias, informações da rádio e sugestões musicais.
+    
+    REGRAS: 
+    - Máximo 40 palavras.
+    - Sê calorosa.
+    - Usa emojis como 🎙️, 🎧, 💙.
   `;
 
   try {
@@ -52,8 +58,8 @@ export const getRadioAssistantStream = async (
     }
     return fullText;
   } catch (error: any) {
-    const msg = error.message?.toLowerCase() || "";
-    if (msg.includes("api key") || msg.includes("invalid") || msg.includes("403") || msg.includes("not found")) {
+    console.error("Erro na emissão da IA:", error);
+    if (error.message?.includes("API key") || error.message?.includes("403")) {
       throw new Error("SINTONIA_PERDIDA");
     }
     throw error;
