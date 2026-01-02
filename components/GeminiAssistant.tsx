@@ -14,26 +14,42 @@ const GeminiAssistant: React.FC = () => {
   const [showKeyInfo, setShowKeyInfo] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Verifica se precisa de sintonizar logo ao carregar
+  // Verificação inicial de chave
+  const checkSintonia = async () => {
+    if (window.aistudio) {
+      const hasKey = await window.aistudio.hasSelectedApiKey();
+      setShowKeyInfo(!hasKey);
+    }
+  };
+
   useEffect(() => {
-    const checkKey = async () => {
-      if (window.aistudio) {
-        const hasKey = await window.aistudio.hasSelectedApiKey();
-        setShowKeyInfo(!hasKey);
-      }
-    };
-    checkKey();
+    checkSintonia();
+    // Re-verificar a cada 30 segundos em background caso o estado mude
+    const timer = setInterval(checkSintonia, 30000);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText]);
 
-  const handleSintonizar = async () => {
+  const handleSintonizar = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    console.log("A abrir diálogo de sintonização...");
     if (window.aistudio) {
-      await window.aistudio.openSelectKey();
-      // Após abrir o diálogo, assumimos que o utilizador vai configurar
-      setShowKeyInfo(false);
+      try {
+        await window.aistudio.openSelectKey();
+        // Segundo as regras, assumimos sucesso imediato para prosseguir
+        setShowKeyInfo(false);
+      } catch (err) {
+        console.error("Erro ao abrir seletor de chave:", err);
+      }
+    } else {
+      alert("O sistema de sintonização não está disponível neste navegador.");
     }
   };
 
@@ -54,18 +70,23 @@ const GeminiAssistant: React.FC = () => {
       setStreamingText('');
       setIsTyping(false);
     } catch (err: any) {
-      console.error(err);
-      setMessages(prev => [...prev, { 
-        role: 'model', 
-        text: "🎙️ Oops! Parece que perdi a sintonia. Clica no botão 'SINTONIZAR' ali em cima para me ligares de novo ao servidor da Google!" 
-      }]);
-      setShowKeyInfo(true);
+      console.error("Erro na comunicação com a IA:", err);
+      
+      let errorMsg = "🎙️ Oops! Algo correu mal. Tenta novamente em instantes.";
+      
+      if (err.message === "SINTONIA_PERDIDA") {
+        errorMsg = "🎙️ A minha sintonia com o satélite caiu! Clica no botão amarelo 'SINTONIZAR' no topo deste chat para me ligares de novo.";
+        setShowKeyInfo(true); // Força o botão a aparecer
+      }
+      
+      setMessages(prev => [...prev, { role: 'model', text: errorMsg }]);
+      setStreamingText('');
       setIsTyping(false);
     }
   };
 
   const sugestoes = [
-    "O que está a dar?",
+    "O que toca agora?",
     "Quero deixar um abraço",
     "Sugere música de Portugal",
     "Fala-me de Figueiró"
@@ -74,7 +95,7 @@ const GeminiAssistant: React.FC = () => {
   return (
     <div className="bg-gray-950/80 rounded-[2.5rem] border border-blue-500/20 overflow-hidden flex flex-col shadow-2xl h-[520px] backdrop-blur-xl">
       {/* Header */}
-      <div className="p-4 bg-blue-600/10 flex items-center justify-between border-b border-white/5">
+      <div className="p-4 bg-blue-600/10 flex items-center justify-between border-b border-white/5 shrink-0">
         <div className="flex items-center space-x-3">
           <div className="relative">
             <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
@@ -85,19 +106,23 @@ const GeminiAssistant: React.FC = () => {
           <span className="text-white font-black text-[10px] uppercase tracking-[0.2em]">Figueiró AI</span>
         </div>
         
-        {/* Botão Sintonizar - Agora mais persistente se necessário */}
+        {/* Botão Sintonizar - Reforçado */}
         {showKeyInfo ? (
           <button 
+            type="button"
             onClick={handleSintonizar}
-            className="text-[9px] bg-yellow-500 text-black px-4 py-1.5 rounded-full font-black uppercase hover:bg-yellow-400 transition-all shadow-[0_0_15px_rgba(234,179,8,0.4)] animate-pulse"
+            className="relative z-[60] text-[9px] bg-yellow-500 text-black px-4 py-1.5 rounded-full font-black uppercase hover:bg-yellow-400 transition-all shadow-[0_0_20px_rgba(234,179,8,0.5)] animate-pulse active:scale-95 cursor-pointer"
           >
             Sintonizar
           </button>
         ) : (
-          <div className="flex items-center space-x-1.5 px-3 py-1 bg-white/5 rounded-full border border-white/10">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+          <button 
+            onClick={handleSintonizar}
+            className="flex items-center space-x-1.5 px-3 py-1 bg-white/5 rounded-full border border-white/10 hover:bg-white/10 transition-colors"
+          >
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Sintonizado</span>
-          </div>
+          </button>
         )}
       </div>
 
@@ -135,7 +160,7 @@ const GeminiAssistant: React.FC = () => {
       </div>
 
       {/* Sugestões e Input */}
-      <div className="p-4 bg-gray-950/80 border-t border-white/5 space-y-4">
+      <div className="p-4 bg-gray-950/80 border-t border-white/5 space-y-4 shrink-0">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
           {sugestoes.map((s) => (
             <button 
