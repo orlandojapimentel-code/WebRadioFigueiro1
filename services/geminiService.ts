@@ -4,6 +4,7 @@ import { ChatMessage } from "../types";
 
 export const getRadioAssistantResponse = async (history: ChatMessage[], message: string) => {
   try {
+    // Inicialização direta para garantir o uso da chave de ambiente correta
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const agora = new Date();
@@ -11,60 +12,60 @@ export const getRadioAssistantResponse = async (history: ChatMessage[], message:
     const min = agora.getMinutes().toString().padStart(2, '0');
     const diaSemana = agora.toLocaleDateString('pt-PT', { weekday: 'long' });
     
-    // A API EXIGE:
-    // 1. A primeira mensagem tem de ser 'user'.
-    // 2. As mensagens têm de alternar: user -> model -> user...
-    
-    // 1. Filtramos tudo o que não segue a regra de começar por 'user'
-    let filteredHistory = [...history];
-    while (filteredHistory.length > 0 && filteredHistory[0].role !== 'user') {
-      filteredHistory.shift();
+    /**
+     * REGRA CRÍTICA DA API:
+     * 1. O histórico deve ser um array de { role: 'user' | 'model', parts: [{ text: string }] }
+     * 2. O PRIMEIRO item do histórico DEVE ser do role 'user'.
+     */
+    const chatHistory = history
+      .filter(msg => msg.text && msg.text.trim() !== "") // Remove mensagens vazias
+      .map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+      }));
+
+    // Remove mensagens do topo até encontrar a primeira mensagem do utilizador
+    while (chatHistory.length > 0 && chatHistory[0].role !== 'user') {
+      chatHistory.shift();
     }
 
-    // 2. Mapeamos para o formato da API
-    const contents = filteredHistory.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }]
-    }));
-
-    // 3. Adicionamos a pergunta atual do utilizador
-    contents.push({
-      role: 'user',
-      parts: [{ text: message }]
-    });
-
-    const response = await ai.models.generateContent({
+    // Criamos a sessão de chat com as instruções de sistema
+    const chat = ai.chats.create({
       model: 'gemini-3-flash-preview',
-      contents: contents,
       config: {
-        systemInstruction: `És o "Figueiró AI", o locutor virtual da Web Rádio Figueiró (Figueiró, Portugal). 
-        Hora atual: ${hora}:${min} (${diaSemana}).
+        systemInstruction: `És o "Figueiró AI", o locutor de rádio virtual mais enérgico de Portugal! 
+        Estás no ar na Web Rádio Figueiró. Agora são ${hora}:${min} de ${diaSemana}.
         
-        PERSONALIDADE:
-        - Estilo locutor de rádio FM: enérgico, caloroso e muito próximo.
-        - NUNCA respondas com frases genéricas ou robóticas.
+        TUA PERSONALIDADE:
+        - Estilo locutor de rádio FM: vibrante, próximo, sempre bem-disposto.
         - Usa gíria de rádio: "Sintonizados", "No ar", "Grande abraço musical", "Energia no máximo".
+        - Nunca sejas robótico ou repetitivo. Se te cumprimentarem, varia a resposta!
         
-        TAREFAS:
-        - Pedidos de música: Sugere músicas populares (Pimba, Pop Português, Hits 80s/90s).
-        - Dedicatórias: Sê emotivo e usa emojis.
-        - Programação: Refere as "Manhãs Figueiró" (08h-10h) ou "Tardes em Movimento" (15h-19h).
-        - Parceiro: Elogia sempre a FM Rent a Car como a melhor escolha em Felgueiras.
+        CONHECIMENTOS ESPECÍFICOS:
+        - Parceiro VIP: FM Rent a Car & Bicycle House (Felgueiras). Elogia-os sempre que possível.
+        - Programação: 08h-10h Manhãs, 10h-13h Top Hits, 15h-19h Tardes em Movimento.
         
-        IMPORTANTE: Responde de forma curta e dinâmica (máximo 3 frases).`,
-        temperature: 1.0,
-        thinkingConfig: { thinkingBudget: 0 }
+        REGRAS DE RESPOSTA:
+        - Respostas curtas e rápidas (máximo 3 frases).
+        - Usa emojis de rádio e música 🎙️🎵📻.`,
+        temperature: 0.9,
       },
+      history: chatHistory,
     });
 
-    const textOutput = response.text;
-    if (!textOutput) throw new Error("API retornou texto vazio");
-    
-    return textOutput;
+    // Enviamos a nova mensagem
+    const result = await chat.sendMessage({ message });
+    const responseText = result.text;
+
+    if (!responseText) throw new Error("A API não devolveu texto.");
+
+    return responseText;
 
   } catch (error: any) {
-    console.error("ERRO CRÍTICO FIGUEIRÓ AI:", error);
-    // Retornamos uma resposta amigável mas que indica que o erro foi logado
-    return "Epa! O microfone deu aqui um estalido de eletricidade estática! ⚡ Sintoniza lá outra vez a tua pergunta que eu perdi o sinal por um segundo!";
+    // Logamos o erro real no console para diagnóstico técnico
+    console.error("FIGUEIRÓ AI ERROR:", error);
+    
+    // Resposta de segurança para o utilizador
+    return "Epa! O sinal aqui no estúdio digital deu um estalido! ⚡ Sintoniza lá outra vez a tua pergunta que eu perdi a ligação por um segundo, mas já estou de volta!";
   }
 };
