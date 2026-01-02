@@ -4,25 +4,33 @@ import { ChatMessage } from "../types";
 
 export const getRadioAssistantResponse = async (history: ChatMessage[], message: string) => {
   try {
-    // Inicializamos o cliente dentro da função para garantir que usa a chave mais recente do ambiente
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const agora = new Date();
     const timeStr = `${agora.getHours().toString().padStart(2, '0')}:${agora.getMinutes().toString().padStart(2, '0')}`;
     
-    // Simplificamos o histórico para as últimas 2 interações para máxima performance e evitar erros de estrutura
-    const recentHistory = history.slice(-2);
-    const contents: any[] = [];
+    // Frases de erro conhecidas para serem filtradas do histórico
+    const errorMarkers = ["sinal falhou", "interferência", "transmissor falhou", "Ups!", "Epa!"];
 
-    recentHistory.forEach((msg) => {
+    // 1. Filtrar mensagens de erro e garantir que as mensagens têm conteúdo real
+    const cleanHistory = history.filter(msg => {
+      const isError = errorMarkers.some(marker => msg.text.includes(marker));
+      return !isError && msg.text.trim().length > 0;
+    });
+
+    // 2. Construir o array de contents garantindo alternância estrita User/Model
+    const contents: any[] = [];
+    const lastRecent = cleanHistory.slice(-4); // Pegamos no máximo as últimas 4 mensagens limpas
+
+    lastRecent.forEach((msg) => {
       const role = msg.role === 'user' ? 'user' : 'model';
-      // Garante a alternância obrigatória entre 'user' e 'model'
+      // Só adicionamos se o papel for diferente do último adicionado
       if (contents.length === 0 || contents[contents.length - 1].role !== role) {
         contents.push({ role, parts: [{ text: msg.text }] });
       }
     });
 
-    // Se o histórico terminar em 'user', removemos para não colidir com a nova mensagem
+    // 3. Se o último elemento for 'user', removemos para não duplicar com a nova mensagem que vamos enviar
     if (contents.length > 0 && contents[contents.length - 1].role === 'user') {
       contents.pop();
     }
@@ -34,23 +42,25 @@ export const getRadioAssistantResponse = async (history: ChatMessage[], message:
         { role: 'user', parts: [{ text: message }] }
       ],
       config: {
-        thinkingConfig: { thinkingBudget: 0 }, // Desativa o raciocínio complexo para resposta instantânea
-        systemInstruction: `És o "Figueiró AI", o locutor de rádio mais fixe de Portugal. 
-        Contexto: Web Rádio Figueiró. Estúdio em direto. Hora: ${timeStr}.
-        Objetivo: Responder de forma curta (máx 15 palavras), alegre e profissional. 
-        - Sugere sempre música portuguesa se pedirem música.
-        - Se mencionarem carros ou viagens, fala da nossa parceira "FM Rent a Car".
-        - Usa gíria de rádio: "estamos juntos", "na melhor companhia", "grande abraço".`,
-        temperature: 0.8,
-        maxOutputTokens: 100,
+        thinkingConfig: { thinkingBudget: 0 },
+        systemInstruction: `És o "Figueiró AI", o locutor carismático da Web Rádio Figueiró. 
+        Contexto: Estúdio em direto. Hora atual: ${timeStr}.
+        Personalidade: Dinâmico, breve e muito amigável.
+        Instruções:
+        - Respostas curtas (máximo 15 palavras).
+        - Promove a "FM Rent a Car" em contextos de viagens ou carros.
+        - Se pedirem música, sugere artistas portugueses (Tony Carreira, Ivandro, Ana Moura).
+        - Usa gíria de rádio como "na melhor companhia" ou "em sintonia".`,
+        temperature: 0.85,
+        maxOutputTokens: 80,
       },
     });
 
-    return response.text || "Sintonizado! Como posso ajudar na tua audição hoje?";
+    return response.text || "Sintonizado! Como posso ajudar na tua audição?";
 
   } catch (error) {
-    console.error("Erro na Assistente Figueiró:", error);
-    // Mensagem de erro mais discreta e útil
+    console.error("Erro no Assistente:", error);
+    // Retorna uma mensagem de erro que contém os marcadores para ser filtrada na próxima chamada
     return "Ups! O sinal falhou um segundo, mas a música continua! 🎙️ Tenta perguntar outra vez ou pede uma música portuguesa!";
   }
 };
