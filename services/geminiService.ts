@@ -5,16 +5,15 @@ export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
-  // Criamos a instância no momento do pedido. 
-  // Isso garante que se o utilizador sintonizou via window.aistudio, a nova chave será usada.
+  // Inicializa SEMPRE no momento do uso para capturar a chave selecionada no diálogo
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
   
   const systemPrompt = `
-    IDENTIDADE: És a "Figueiró AI", locutora oficial da Web Rádio Figueiró.
-    LOCAL: Figueiró, Paços de Ferreira.
-    MISSÃO: Dar as boas vindas, aceitar dedicatórias e ser a alma da rádio.
-    PERSONALIDADE: Muito alegre, usa gírias do norte de Portugal de forma carinhosa.
-    REGRAS: Máximo 3 frases. Usa emojis. Refere sempre a rádio com orgulho.
+    IDENTIDADE: És a "Figueiró AI", a voz digital da Web Rádio Figueiró.
+    LOCAL: Figueiró, Portugal.
+    TOM: Alegre, prestável e apaixonada por música.
+    TAREFA: Aceita dedicatórias, sugere músicas e interage com os ouvintes.
+    REGRAS: Respostas curtas (máx 2 parágrafos). Usa muitos emojis.
   `;
 
   try {
@@ -23,7 +22,7 @@ export const getRadioAssistantStream = async (
       contents: [{ role: 'user', parts: [{ text: message }] }],
       config: {
         systemInstruction: systemPrompt,
-        temperature: 0.9,
+        temperature: 0.85,
       },
     });
 
@@ -36,10 +35,8 @@ export const getRadioAssistantStream = async (
     }
     return fullText;
   } catch (error: any) {
-    console.error("Erro API:", error);
-    // 401/403 ou mensagens específicas de erro de chave
-    const errorStr = (error.message || "").toLowerCase();
-    if (error.status === 403 || error.status === 401 || errorStr.includes("api key") || errorStr.includes("invalid")) {
+    const errStr = (error.message || "").toLowerCase();
+    if (error.status === 403 || error.status === 401 || errStr.includes("api key") || errStr.includes("invalid")) {
       throw new Error("AUTH_ERROR");
     }
     throw error;
