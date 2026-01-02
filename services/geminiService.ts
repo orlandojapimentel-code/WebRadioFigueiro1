@@ -4,7 +4,6 @@ import { ChatMessage } from "../types";
 
 export const getRadioAssistantResponse = async (history: ChatMessage[], message: string) => {
   try {
-    // Inicialização direta para garantir o uso da chave de ambiente correta
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const agora = new Date();
@@ -13,59 +12,58 @@ export const getRadioAssistantResponse = async (history: ChatMessage[], message:
     const diaSemana = agora.toLocaleDateString('pt-PT', { weekday: 'long' });
     
     /**
-     * REGRA CRÍTICA DA API:
-     * 1. O histórico deve ser um array de { role: 'user' | 'model', parts: [{ text: string }] }
-     * 2. O PRIMEIRO item do histórico DEVE ser do role 'user'.
+     * CONSTRUÇÃO DO CONTEÚDO PARA A API
+     * 1. Filtramos o histórico para garantir que comece por 'user'
+     * 2. Garantimos que role é 'user' ou 'model' (não 'assistant')
      */
-    const chatHistory = history
-      .filter(msg => msg.text && msg.text.trim() !== "") // Remove mensagens vazias
+    let filteredHistory = history
+      .filter(msg => msg.text && msg.text.trim() !== "")
       .map(msg => ({
         role: msg.role === 'user' ? 'user' : 'model',
         parts: [{ text: msg.text }]
       }));
 
-    // Remove mensagens do topo até encontrar a primeira mensagem do utilizador
-    while (chatHistory.length > 0 && chatHistory[0].role !== 'user') {
-      chatHistory.shift();
+    // A API REJEITA se o histórico não começar por 'user'. 
+    // Removemos mensagens do topo (como a saudação inicial do bot) até encontrarmos um 'user'.
+    while (filteredHistory.length > 0 && filteredHistory[0].role !== 'user') {
+      filteredHistory.shift();
     }
 
-    // Criamos a sessão de chat com as instruções de sistema
-    const chat = ai.chats.create({
+    // Adicionamos a mensagem atual do utilizador ao final
+    const contents = [
+      ...filteredHistory,
+      { role: 'user', parts: [{ text: message }] }
+    ];
+
+    // Chamada direta ao generateContent (mais estável para ambientes serverless/vercel)
+    const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
+      contents: contents,
       config: {
-        systemInstruction: `És o "Figueiró AI", o locutor de rádio virtual mais enérgico de Portugal! 
-        Estás no ar na Web Rádio Figueiró. Agora são ${hora}:${min} de ${diaSemana}.
+        systemInstruction: `És o "Figueiró AI", o locutor virtual oficial da Web Rádio Figueiró. 
+        Localização: Figueiró, Portugal. Hora atual: ${hora}:${min} (${diaSemana}).
         
-        TUA PERSONALIDADE:
-        - Estilo locutor de rádio FM: vibrante, próximo, sempre bem-disposto.
-        - Usa gíria de rádio: "Sintonizados", "No ar", "Grande abraço musical", "Energia no máximo".
-        - Nunca sejas robótico ou repetitivo. Se te cumprimentarem, varia a resposta!
+        TONALIDADE:
+        - Estilo locutor de rádio FM: enérgico, caloroso e muito "fixe".
+        - Usa gíria de rádio portuguesa: "Sintonizados", "No ar", "Grande abraço musical", "Energia no máximo".
+        - Sê breve (máximo 3 frases) e usa emojis: 🎙️🎵📻.
         
-        CONHECIMENTOS ESPECÍFICOS:
-        - Parceiro VIP: FM Rent a Car & Bicycle House (Felgueiras). Elogia-os sempre que possível.
-        - Programação: 08h-10h Manhãs, 10h-13h Top Hits, 15h-19h Tardes em Movimento.
-        
-        REGRAS DE RESPOSTA:
-        - Respostas curtas e rápidas (máximo 3 frases).
-        - Usa emojis de rádio e música 🎙️🎵📻.`,
-        temperature: 0.9,
+        CONTEÚDO:
+        - Dedicatórias: Sê emotivo.
+        - Pedidos de música: Sugere hits (Pimba, Pop Português, 80s).
+        - Parceiros: Elogia sempre a FM Rent a Car & Bicycle House de Felgueiras.`,
+        temperature: 1.0,
       },
-      history: chatHistory,
     });
 
-    // Enviamos a nova mensagem
-    const result = await chat.sendMessage({ message });
-    const responseText = result.text;
-
-    if (!responseText) throw new Error("A API não devolveu texto.");
-
-    return responseText;
+    const textOutput = response.text;
+    if (!textOutput) throw new Error("A API retornou uma resposta vazia.");
+    
+    return textOutput;
 
   } catch (error: any) {
-    // Logamos o erro real no console para diagnóstico técnico
-    console.error("FIGUEIRÓ AI ERROR:", error);
-    
-    // Resposta de segurança para o utilizador
-    return "Epa! O sinal aqui no estúdio digital deu um estalido! ⚡ Sintoniza lá outra vez a tua pergunta que eu perdi a ligação por um segundo, mas já estou de volta!";
+    console.error("ERRO FIGUEIRÓ AI:", error);
+    // Mensagem de fallback amigável
+    return "Epa! O sinal aqui no estúdio digital deu um estalido! ⚡ Sintoniza lá outra vez a tua pergunta que eu perdi o sinal por um segundo, mas já estou aqui no ar!";
   }
 };
