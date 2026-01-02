@@ -3,8 +3,8 @@ import { GoogleGenAI } from "@google/genai";
 import { ChatMessage } from "../types";
 
 /**
- * Serviço otimizado para a Web Rádio Figueiró.
- * Focado em streaming imediato e baixíssima latência.
+ * Serviço de IA Ultra-Rápido para Web Rádio Figueiró.
+ * Configurado para latência mínima e máxima estabilidade.
  */
 export const getRadioAssistantStream = async (
   history: ChatMessage[], 
@@ -12,25 +12,26 @@ export const getRadioAssistantStream = async (
   onChunk: (text: string) => void
 ) => {
   try {
+    // Inicialização direta para garantir o uso da chave mais recente
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const agora = new Date();
     const timeStr = agora.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
     
-    // Limpeza agressiva de histórico para evitar erros de contexto
-    // Filtramos erros anteriores e limitamos a 2 mensagens (1 par user/model)
+    // FILTRAGEM AGRESSIVA: Removemos qualquer mensagem de erro do histórico para não "contaminar" a IA
     const cleanHistory = history
       .filter(msg => 
         msg.text.length > 0 && 
         !msg.text.includes("interferência") && 
-        !msg.text.includes("Ups!")
+        !msg.text.includes("Ups!") &&
+        !msg.text.includes("sinal falhou")
       )
-      .slice(-2);
+      .slice(-2); // Apenas as últimas 2 mensagens para garantir resposta instantânea
 
     const contents: any[] = [];
     cleanHistory.forEach((msg) => {
       const role = msg.role === 'user' ? 'user' : 'model';
-      // Garante alternância estrita user -> model -> user
+      // Garantia de alternância obrigatória exigida pela API
       if (contents.length === 0 || contents[contents.length - 1].role !== role) {
         contents.push({ role, parts: [{ text: msg.text }] });
       }
@@ -43,37 +44,36 @@ export const getRadioAssistantStream = async (
         { role: 'user', parts: [{ text: message }] }
       ],
       config: {
-        thinkingConfig: { thinkingBudget: 0 }, // Resposta imediata
-        systemInstruction: `És o "Figueiró AI", o locutor digital da Web Rádio Figueiró. 📻
-        Contexto: Direto de Figueiró, Portugal. Hora: ${timeStr}.
+        // O segredo da velocidade: orçamento de pensamento ZERO
+        thinkingConfig: { thinkingBudget: 0 }, 
+        systemInstruction: `És o locutor de serviço da Web Rádio Figueiró. 🎙️
+        Contexto: Estúdio principal em Figueiró. Hora atual: ${timeStr}.
+        Personalidade: Curto, direto, voz de rádio, muito animado.
         
-        ESTILO:
-        - Curto, enérgico e carismático.
-        - Máximo de 15 palavras.
-        - Usa gíria de rádio: "estamos juntos", "na melhor companhia", "forte abraço".
-        
-        REGRAS:
-        - Se pedirem música: sugere Ivandro, Nininho Vaz Maia ou Tony Carreira.
-        - Se falarem de viagens/carros: elogia a "FM Rent a Car".
-        - Responde como se tivesses o microfone aberto agora mesmo!`,
-        temperature: 0.9,
-        maxOutputTokens: 80,
+        REGRAS DE OURO:
+        - Máximo de 12 palavras por resposta.
+        - Nunca uses listas.
+        - Usa frases como: "Estamos juntos!", "Na melhor companhia!", "Grande abraço ouvinte!".
+        - Se pedirem música: sugere Ivandro, Tony Carreira ou Nininho Vaz Maia.
+        - Se falarem de carros: menciona a "FM Rent a Car".`,
+        temperature: 1, // Mais criativo e natural
+        maxOutputTokens: 60, // Respostas curtas carregam mais depressa
       },
     });
 
-    let accumulatedText = "";
+    let fullResponse = "";
     for await (const chunk of result.stream) {
       const chunkText = chunk.text;
       if (chunkText) {
-        accumulatedText += chunkText;
-        onChunk(accumulatedText);
+        fullResponse += chunkText;
+        onChunk(fullResponse);
       }
     }
 
-    return accumulatedText;
+    return fullResponse;
 
   } catch (error) {
-    console.error("Erro no Fluxo Gemini:", error);
+    console.error("Erro crítico no assistente:", error);
     throw error;
   }
 };
