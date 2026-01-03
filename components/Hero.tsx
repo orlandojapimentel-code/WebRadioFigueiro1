@@ -39,7 +39,7 @@ const Hero: React.FC = () => {
               <ul className="text-xs space-y-2 text-gray-300">
                 <li className="flex items-center space-x-2">
                   <span className="w-1 h-1 bg-blue-500 rounded-full"></span>
-                  <span><strong>Localização:</strong> Figueiró, Portugal</span>
+                  <span><strong>Localização:</strong> Figueiró, Amarante, Portugal</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <span className="w-1 h-1 bg-blue-500 rounded-full"></span>
