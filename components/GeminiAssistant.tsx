@@ -12,7 +12,7 @@ const GeminiAssistant: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [status, setStatus] = useState<'online' | 'waiting'>('online');
-  const [isStudio, setIsStudio] = useState(false);
+  const [showTuneButton, setShowTuneButton] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -20,15 +20,29 @@ const GeminiAssistant: React.FC = () => {
   }, [messages, streamingText]);
 
   useEffect(() => {
-    const win = window as any;
-    const aiStudio = win.aistudio || win.parent?.aistudio;
-    setIsStudio(!!aiStudio);
+    const checkKey = () => {
+      let keyFound = false;
+      try {
+        // @ts-ignore
+        if (process.env.API_KEY && process.env.API_KEY !== "undefined") keyFound = true;
+        // @ts-ignore
+        if (process.env.VITE_API_KEY && process.env.VITE_API_KEY !== "undefined") keyFound = true;
+      } catch (e) {
+        if ((window as any).API_KEY || (window as any).VITE_API_KEY) keyFound = true;
+      }
 
-    if (aiStudio?.hasSelectedApiKey) {
-      aiStudio.hasSelectedApiKey().then((has: boolean) => {
-        if (!has) setStatus('waiting');
-      });
-    }
+      if (!keyFound) {
+        setStatus('waiting');
+        setShowTuneButton(true);
+      } else {
+        setStatus('online');
+        setShowTuneButton(false);
+      }
+    };
+    
+    // Pequeno delay para garantir que o ambiente carregou
+    const timer = setTimeout(checkKey, 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSend = async (text: string) => {
@@ -47,6 +61,7 @@ const GeminiAssistant: React.FC = () => {
       setMessages(prev => [...prev, { role: 'model', text: result }]);
       setStreamingText('');
       setIsTyping(false);
+      setStatus('online');
     } catch (err: any) {
       setIsTyping(false);
       setStreamingText('');
@@ -54,46 +69,60 @@ const GeminiAssistant: React.FC = () => {
       if (err.message === "MISSING_KEY") {
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: '📢 [ADMIN] A API_KEY foi configurada no Vercel, mas é necessário fazer um **REDEPLOY** na aba "Deployments" para que o sistema a reconheça. Se já o fez, aguarde 1 minuto.' 
+          text: '📢 [SISTEMA] A Figueiró AI precisa de ser sintonizada. Se és o administrador, usa o botão "Sintonizar IA" no topo. 🎙️' 
         }]);
+        setStatus('waiting');
+        setShowTuneButton(true);
       } else if (err.message === "INVALID_KEY") {
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: '❌ [ADMIN] A chave de API no Vercel parece inválida ou expirou. Por favor, verifique no Google AI Studio.' 
+          text: '❌ [SISTEMA] A chave de rádio é inválida. Por favor, verifique as configurações no Vercel.' 
         }]);
+        setStatus('waiting');
+        setShowTuneButton(true);
       } else {
         setMessages(prev => [...prev, { role: 'model', text: '🎙️ O sinal está com interferência. Podes repetir?' }]);
       }
     }
   };
 
-  const handleAction = async () => {
+  const handleManualTune = async () => {
     const win = window as any;
     const aiStudio = win.aistudio || win.parent?.aistudio;
     if (aiStudio?.openSelectKey) {
       await aiStudio.openSelectKey();
       setStatus('online');
-      setMessages([{ role: 'model', text: '🎙️ Sintonizado! Como te posso ajudar?' }]);
+      setShowTuneButton(false);
+      setMessages(prev => [...prev, { role: 'model', text: '🎙️ Sintonizado! A Figueiró AI já te consegue ouvir. O que queres pedir? ✨' }]);
+    } else {
+      alert("Aviso: O Vercel ainda não propagou a chave que inseriu. Aguarde alguns minutos ou use o Google AI Studio para testes.");
     }
   };
 
   return (
     <div className="bg-gray-950/95 rounded-[2.5rem] border border-blue-500/30 overflow-hidden flex flex-col shadow-[0_0_60px_rgba(59,130,246,0.15)] h-[560px] backdrop-blur-xl relative z-[60]">
       
-      {/* Header do Chat */}
       <div className="p-5 bg-gray-900/80 border-b border-white/5 flex items-center justify-between relative z-50">
         <div className="flex items-center space-x-3">
           <div className={`w-2.5 h-2.5 rounded-full ${status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></div>
           <span className="text-white font-black text-[10px] uppercase tracking-[0.2em]">Figueiró AI</span>
         </div>
+        
+        {showTuneButton && (
+          <button 
+            onClick={handleManualTune}
+            className="text-[10px] bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-xl border border-blue-400/30 transition-all font-bold uppercase tracking-widest shadow-lg shadow-blue-600/20 active:scale-95"
+          >
+            Sintonizar IA
+          </button>
+        )}
       </div>
 
-      {/* Mensagens */}
       <div className="flex-grow overflow-y-auto p-5 space-y-4 scrollbar-hide">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-[13px] leading-relaxed ${
-              m.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-gray-800/80 text-gray-200 rounded-tl-none border border-white/5'
+              m.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-gray-800/80 text-gray-200 rounded-tl-none border border-white/5 shadow-lg'
             }`}>
               {m.text}
             </div>
@@ -101,7 +130,7 @@ const GeminiAssistant: React.FC = () => {
         ))}
         {streamingText && (
           <div className="flex justify-start">
-            <div className="max-w-[85%] px-4 py-3 rounded-2xl rounded-tl-none bg-gray-800 text-blue-300 text-[13px] italic border border-blue-500/20">
+            <div className="max-w-[85%] px-4 py-3 rounded-2xl rounded-tl-none bg-gray-800 text-blue-300 text-[13px] italic border border-blue-500/20 shadow-inner">
               {streamingText}
             </div>
           </div>
@@ -109,17 +138,6 @@ const GeminiAssistant: React.FC = () => {
         <div ref={scrollRef} />
       </div>
 
-      {/* Bloqueio apenas se estiver no Studio e sem chave */}
-      {status === 'waiting' && isStudio && (
-        <div className="absolute inset-0 bg-gray-950/95 z-[100] flex flex-col items-center justify-center p-8 text-center">
-           <div className="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mb-4 border border-blue-500/30">
-             <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-           </div>
-           <button onClick={handleAction} className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg transition-all active:scale-95">Sintonizar</button>
-        </div>
-      )}
-
-      {/* Input de Texto */}
       <div className="p-4 bg-gray-900/90 border-t border-white/5 relative z-50">
         <form onSubmit={(e) => { e.preventDefault(); if (input.trim()) handleSend(input); }} className="flex gap-2">
           <input 
@@ -131,7 +149,7 @@ const GeminiAssistant: React.FC = () => {
           <button 
             type="submit" 
             disabled={!input.trim() || isTyping}
-            className="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-blue-500 disabled:opacity-20 transition-all active:scale-90"
+            className="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-blue-500 disabled:opacity-20 transition-all active:scale-90 shadow-lg shadow-blue-600/20"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 5l7 7m0 0l-7 7m7-7H3"/></svg>
           </button>

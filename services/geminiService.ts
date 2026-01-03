@@ -5,9 +5,23 @@ export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
-  const apiKey = process.env.API_KEY;
+  let apiKey: string | undefined;
   
-  // 1. Verificar se a variável de ambiente sequer existe
+  try {
+    // Tenta primeiro a chave padrão exigida
+    // @ts-ignore
+    apiKey = process.env.API_KEY;
+    
+    // Se estiver vazia, tenta a VITE_API_KEY que vimos nas fotos do Vercel
+    if (!apiKey || apiKey === "undefined") {
+      // @ts-ignore
+      apiKey = process.env.VITE_API_KEY;
+    }
+  } catch (e) {
+    // Fallback para window caso o process.env não seja injetado no browser pelo Vercel
+    apiKey = (window as any).API_KEY || (window as any).VITE_API_KEY;
+  }
+  
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
     throw new Error("MISSING_KEY");
   }
@@ -19,7 +33,7 @@ export const getRadioAssistantStream = async (
     LOCAL: Figueiró, Portugal.
     TOM: Alegre, prestável e apaixonada por música.
     TAREFA: Aceita dedicatórias, sugere músicas e interage com os ouvintes.
-    REGRAS: Respostas curtas (máx 2 parágrafos). Usa muitos emojis. 🎙️📻✨
+    REGRAS: Respostas curtas. Usa emojis. 🎙️📻✨
   `;
 
   try {
@@ -41,14 +55,8 @@ export const getRadioAssistantStream = async (
     }
     return fullText;
   } catch (error: any) {
-    console.error("Gemini Service Error:", error);
-    const errStatus = error.status;
-    const errMessage = (error.message || "").toLowerCase();
-    
-    // 2. Verificar se o Google rejeitou a chave (Chave Errada)
-    if (errStatus === 403 || errStatus === 401 || errMessage.includes("api key") || errMessage.includes("invalid")) {
-      throw new Error("INVALID_KEY");
-    }
+    console.error("Gemini Error:", error);
+    if (error.status === 403 || error.status === 401) throw new Error("INVALID_KEY");
     throw error;
   }
 };
