@@ -12,38 +12,11 @@ const GeminiAssistant: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [status, setStatus] = useState<'online' | 'waiting'>('online');
-  const [showTuneButton, setShowTuneButton] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText]);
-
-  useEffect(() => {
-    const checkKey = () => {
-      let keyFound = false;
-      try {
-        // @ts-ignore
-        if (process.env.API_KEY && process.env.API_KEY !== "undefined") keyFound = true;
-        // @ts-ignore
-        if (process.env.VITE_API_KEY && process.env.VITE_API_KEY !== "undefined") keyFound = true;
-      } catch (e) {
-        if ((window as any).API_KEY || (window as any).VITE_API_KEY) keyFound = true;
-      }
-
-      if (!keyFound) {
-        setStatus('waiting');
-        setShowTuneButton(true);
-      } else {
-        setStatus('online');
-        setShowTuneButton(false);
-      }
-    };
-    
-    // Pequeno delay para garantir que o ambiente carregou
-    const timer = setTimeout(checkKey, 1000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleSend = async (text: string) => {
     if (!text.trim() || isTyping) return;
@@ -53,6 +26,7 @@ const GeminiAssistant: React.FC = () => {
     setInput('');
     setIsTyping(true);
     setStreamingText('');
+    setStatus('online');
 
     try {
       const result = await getRadioAssistantStream(userMsg, (chunk) => {
@@ -61,61 +35,34 @@ const GeminiAssistant: React.FC = () => {
       setMessages(prev => [...prev, { role: 'model', text: result }]);
       setStreamingText('');
       setIsTyping(false);
-      setStatus('online');
     } catch (err: any) {
       setIsTyping(false);
       setStreamingText('');
       
+      // Mensagem amigável para o ouvinte caso a chave ainda não tenha propagado no Vercel
       if (err.message === "MISSING_KEY") {
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: '📢 [SISTEMA] A Figueiró AI precisa de ser sintonizada. Se és o administrador, usa o botão "Sintonizar IA" no topo. 🎙️' 
+          text: '🎙️ Peço desculpa, o meu sinal de rádio está a ser configurado. Tenta novamente dentro de alguns minutos! 📻✨' 
         }]);
         setStatus('waiting');
-        setShowTuneButton(true);
-      } else if (err.message === "INVALID_KEY") {
-        setMessages(prev => [...prev, { 
-          role: 'model', 
-          text: '❌ [SISTEMA] A chave de rádio é inválida. Por favor, verifique as configurações no Vercel.' 
-        }]);
-        setStatus('waiting');
-        setShowTuneButton(true);
       } else {
-        setMessages(prev => [...prev, { role: 'model', text: '🎙️ O sinal está com interferência. Podes repetir?' }]);
+        setMessages(prev => [...prev, { role: 'model', text: '🎙️ Tive uma pequena interferência no sinal. Podes repetir o que disseste?' }]);
       }
-    }
-  };
-
-  const handleManualTune = async () => {
-    const win = window as any;
-    const aiStudio = win.aistudio || win.parent?.aistudio;
-    if (aiStudio?.openSelectKey) {
-      await aiStudio.openSelectKey();
-      setStatus('online');
-      setShowTuneButton(false);
-      setMessages(prev => [...prev, { role: 'model', text: '🎙️ Sintonizado! A Figueiró AI já te consegue ouvir. O que queres pedir? ✨' }]);
-    } else {
-      alert("Aviso: O Vercel ainda não propagou a chave que inseriu. Aguarde alguns minutos ou use o Google AI Studio para testes.");
     }
   };
 
   return (
     <div className="bg-gray-950/95 rounded-[2.5rem] border border-blue-500/30 overflow-hidden flex flex-col shadow-[0_0_60px_rgba(59,130,246,0.15)] h-[560px] backdrop-blur-xl relative z-[60]">
       
-      <div className="p-5 bg-gray-900/80 border-b border-white/5 flex items-center justify-between relative z-50">
+      <div className="p-5 bg-gray-900/80 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className={`w-2.5 h-2.5 rounded-full ${status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></div>
           <span className="text-white font-black text-[10px] uppercase tracking-[0.2em]">Figueiró AI</span>
         </div>
-        
-        {showTuneButton && (
-          <button 
-            onClick={handleManualTune}
-            className="text-[10px] bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-xl border border-blue-400/30 transition-all font-bold uppercase tracking-widest shadow-lg shadow-blue-600/20 active:scale-95"
-          >
-            Sintonizar IA
-          </button>
-        )}
+        <div className="px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-400 text-[9px] font-black uppercase tracking-widest">
+          Estúdio Digital
+        </div>
       </div>
 
       <div className="flex-grow overflow-y-auto p-5 space-y-4 scrollbar-hide">
@@ -138,18 +85,18 @@ const GeminiAssistant: React.FC = () => {
         <div ref={scrollRef} />
       </div>
 
-      <div className="p-4 bg-gray-900/90 border-t border-white/5 relative z-50">
+      <div className="p-4 bg-gray-900/90 border-t border-white/5">
         <form onSubmit={(e) => { e.preventDefault(); if (input.trim()) handleSend(input); }} className="flex gap-2">
           <input 
             type="text" value={input} 
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Diz algo à Figueiró AI..."
-            className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+            placeholder="Pede uma música à Figueiró AI..."
+            className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-colors"
           />
           <button 
             type="submit" 
             disabled={!input.trim() || isTyping}
-            className="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-blue-500 disabled:opacity-20 transition-all active:scale-90 shadow-lg shadow-blue-600/20"
+            className="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-blue-500 disabled:opacity-20 transition-all active:scale-95 shadow-lg shadow-blue-600/20"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 5l7 7m0 0l-7 7m7-7H3"/></svg>
           </button>

@@ -5,35 +5,34 @@ export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
+  // Procura a chave em todas as localizações possíveis injetadas pelo Vercel
   let apiKey: string | undefined;
   
   try {
-    // Tenta primeiro a chave padrão exigida
     // @ts-ignore
-    apiKey = process.env.API_KEY;
-    
-    // Se estiver vazia, tenta a VITE_API_KEY que vimos nas fotos do Vercel
-    if (!apiKey || apiKey === "undefined") {
-      // @ts-ignore
-      apiKey = process.env.VITE_API_KEY;
-    }
+    apiKey = process.env.VITE_API_KEY || process.env.API_KEY;
   } catch (e) {
-    // Fallback para window caso o process.env não seja injetado no browser pelo Vercel
-    apiKey = (window as any).API_KEY || (window as any).VITE_API_KEY;
+    // Fallback para variáveis globais injetadas no browser
+    apiKey = (window as any).VITE_API_KEY || (window as any).API_KEY;
   }
   
+  // Se a chave for "undefined" (comum em builds estáticos do Vercel), tentamos usar a env diretamente
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    // @ts-ignore
+    apiKey = typeof process !== 'undefined' ? process.env?.API_KEY : undefined;
+  }
+
+  if (!apiKey) {
     throw new Error("MISSING_KEY");
   }
 
   const ai = new GoogleGenAI({ apiKey });
   
   const systemPrompt = `
-    IDENTIDADE: És a "Figueiró AI", a voz digital da Web Rádio Figueiró.
-    LOCAL: Figueiró, Portugal.
-    TOM: Alegre, prestável e apaixonada por música.
-    TAREFA: Aceita dedicatórias, sugere músicas e interage com os ouvintes.
-    REGRAS: Respostas curtas. Usa emojis. 🎙️📻✨
+    IDENTIDADE: És a "Figueiró AI", a voz digital da Web Rádio Figueiró (Figueiró, Paços de Ferreira).
+    TOM: Muito alegre, prestável e próxima dos ouvintes.
+    MISSÃO: Aceita pedidos de música, lê dedicatórias e promove a rádio.
+    REGRAS: Respostas curtas e calorosas. Usa emojis como 🎙️, 📻 e ✨.
   `;
 
   try {
@@ -42,7 +41,7 @@ export const getRadioAssistantStream = async (
       contents: [{ role: 'user', parts: [{ text: message }] }],
       config: {
         systemInstruction: systemPrompt,
-        temperature: 0.85,
+        temperature: 0.8,
       },
     });
 
@@ -56,7 +55,6 @@ export const getRadioAssistantStream = async (
     return fullText;
   } catch (error: any) {
     console.error("Gemini Error:", error);
-    if (error.status === 403 || error.status === 401) throw new Error("INVALID_KEY");
     throw error;
   }
 };
