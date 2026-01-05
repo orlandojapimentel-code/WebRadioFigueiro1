@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Player from './components/Player';
@@ -9,14 +9,17 @@ import Partnerships from './components/Partnerships';
 import Socials from './components/Socials';
 import News from './components/News';
 import VisitorCounter from './components/VisitorCounter';
+import AgendaCultural from './components/AgendaCultural';
 
 const App: React.FC = () => {
+  const [isAgendaOpen, setIsAgendaOpen] = useState(false);
+
   return (
     <div className="min-h-screen flex flex-col pb-32 bg-gray-900">
       <Header />
       
       <main className="flex-grow container mx-auto px-4 space-y-16 py-8">
-        <Hero />
+        <Hero onOpenAgenda={() => setIsAgendaOpen(true)} />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-12">
@@ -48,6 +51,8 @@ const App: React.FC = () => {
       </footer>
 
       <Player />
+      
+      {isAgendaOpen && <AgendaCultural onClose={() => setIsAgendaOpen(false)} />}
     </div>
   );
 };

@@ -1,7 +1,11 @@
 
 import React from 'react';
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  onOpenAgenda: () => void;
+}
+
+const Hero: React.FC<HeroProps> = ({ onOpenAgenda }) => {
   return (
     <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-blue-900 via-indigo-950 to-gray-900 p-8 md:p-16 text-center shadow-2xl border border-white/5">
       {/* Efeitos de luz de fundo */}
@@ -26,6 +30,27 @@ const Hero: React.FC = () => {
           <p className="text-lg md:text-2xl text-blue-100/90 font-medium tracking-wide">
             A Sua Melhor Companhia, em qualquer parte do mundo.
           </p>
+
+          {/* NOVOS BOTÕES DE AÇÃO RÁPIDA */}
+          <div className="flex flex-wrap justify-center gap-4 py-4">
+            <button 
+              onClick={onOpenAgenda}
+              className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-yellow-500/20 transform transition-all hover:-translate-y-1 active:scale-95 flex items-center space-x-3"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <span>Agenda Cultural</span>
+            </button>
+            
+            <a 
+              href="https://portalnacional.com.pt/porto/amarante/farmacias/permanente/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/10 px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest backdrop-blur-md transform transition-all hover:-translate-y-1 active:scale-95 flex items-center space-x-3"
+            >
+              <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a2 2 0 00-1.96 1.414l-.722 2.166a10.003 10.003 0 01-4.415-4.415l2.166-.722a2 2 0 001.414-1.96l-.477-2.387a2 2 0 00-.547-1.022L7.887 3.688a2 2 0 00-2.828 0L3.688 5.059a2 2 0 000 2.828l1.371 1.371a2 2 0 001.022.547l2.387.477a2 2 0 001.96-1.414l.722-2.166a10.003 10.003 0 014.415 4.415l-2.166.722a2 2 0 00-1.414 1.96l.477 2.387a2 2 0 00.547 1.022l1.371 1.371a2 2 0 002.828 0l1.371-1.371a2 2 0 000-2.828l-1.371-1.371z"/></svg>
+              <span>Farmácias de Serviço</span>
+            </a>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
             <div className="bg-black/30 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 text-left">
