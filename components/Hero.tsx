@@ -31,7 +31,7 @@ const Hero: React.FC<HeroProps> = ({ onOpenAgenda }) => {
             A Sua Melhor Companhia, em qualquer parte do mundo.
           </p>
 
-          {/* NOVOS BOTÕES DE AÇÃO RÁPIDA */}
+          {/* BOTÕES DE AÇÃO RÁPIDA */}
           <div className="flex flex-wrap justify-center gap-4 py-4">
             <button 
               onClick={onOpenAgenda}
@@ -42,7 +42,7 @@ const Hero: React.FC<HeroProps> = ({ onOpenAgenda }) => {
             </button>
             
             <a 
-              href="https://portalnacional.com.pt/porto/amarante/farmacias/permanente/" 
+              href="https://www.farmaciasdeservico.net/mapa/3719" 
               target="_blank" 
               rel="noopener noreferrer"
               className="bg-white/10 hover:bg-white/20 text-white border border-white/10 px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest backdrop-blur-md transform transition-all hover:-translate-y-1 active:scale-95 flex items-center space-x-3"
