@@ -14,6 +14,17 @@ const GeminiAssistant: React.FC = () => {
   const [connectionStatus, setConnectionStatus] = useState<'online' | 'tuning' | 'error'>('online');
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Guideline: Check whether an API key has been selected using hasSelectedApiKey
+  useEffect(() => {
+    const checkInitialKey = async () => {
+      // @ts-ignore
+      if (window.aistudio && !(await window.aistudio.hasSelectedApiKey())) {
+        setConnectionStatus('tuning');
+      }
+    };
+    checkInitialKey();
+  }, []);
+
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText, isTyping]);
@@ -24,6 +35,7 @@ const GeminiAssistant: React.FC = () => {
       if (window.aistudio) {
         // @ts-ignore
         await window.aistudio.openSelectKey();
+        // Guideline: Proceed to the app assuming key selection was successful
         setConnectionStatus('online');
         setMessages(prev => [...prev, { 
           role: 'model', 

@@ -1,34 +1,18 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-const getApiKey = () => {
-  // Procura em todas as localizações possíveis num ambiente web moderno
-  const env = (typeof process !== 'undefined' ? process.env : {}) as any;
-  const viteEnv = (typeof import.meta !== 'undefined' && (import.meta as any).env) ? (import.meta as any).env : {};
-  const win = window as any;
-
-  return (
-    env.API_KEY || 
-    env.VITE_API_KEY || 
-    viteEnv.VITE_API_KEY || 
-    viteEnv.API_KEY ||
-    win.API_KEY ||
-    win.VITE_API_KEY ||
-    null
-  );
-};
-
+// Always obtain the API key exclusively from process.env.API_KEY
 export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
-  const apiKey = getApiKey();
+  const apiKey = process.env.API_KEY;
 
-  // Se não encontrar chave, tentamos verificar se o utilizador já sintonizou via AI Studio
-  if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
+  if (!apiKey || apiKey === "undefined") {
     throw new Error("MISSING_KEY");
   }
 
+  // Always use named parameter for initialization and use it directly
   const ai = new GoogleGenAI({ apiKey });
   
   const systemPrompt = `
@@ -41,6 +25,7 @@ export const getRadioAssistantStream = async (
   `;
 
   try {
+    // Calling generateContentStream with model name and prompt directly
     const response = await ai.models.generateContentStream({
       model: 'gemini-3-flash-preview',
       contents: [{ role: 'user', parts: [{ text: message }] }],
@@ -52,6 +37,7 @@ export const getRadioAssistantStream = async (
 
     let fullText = "";
     for await (const chunk of response) {
+      // Accessing the .text property directly (not a method)
       if (chunk.text) {
         fullText += chunk.text;
         onChunk(fullText);
@@ -60,8 +46,8 @@ export const getRadioAssistantStream = async (
     return fullText;
   } catch (error: any) {
     console.error("Erro na Figueiró AI:", error);
-    // Erros de permissão ou chave inválida
-    if (error.status === 403 || error.message?.includes("key")) {
+    // Handle key-related errors and trigger re-selection in the UI
+    if (error.status === 403 || error.message?.includes("key") || error.message?.includes("Requested entity was not found")) {
       throw new Error("INVALID_KEY");
     }
     throw error;

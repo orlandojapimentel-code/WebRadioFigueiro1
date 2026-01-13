@@ -9,12 +9,70 @@ interface Photo {
   description: string;
 }
 
+const PhotoCard: React.FC<{ photo: Photo; onClick: (p: Photo) => void }> = ({ photo, onClick }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const fallbackImages = {
+      estudio: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop",
+      eventos: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop",
+      lugares: "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?q=80&w=800&auto=format&fit=crop"
+    };
+    e.currentTarget.src = fallbackImages[photo.category];
+    setHasError(true);
+  };
+
+  return (
+    <div 
+      onClick={() => isLoaded && onClick(photo)}
+      className="group relative h-80 rounded-[2.5rem] overflow-hidden cursor-pointer border border-white/5 bg-gray-800 shadow-xl transition-all duration-500 hover:-translate-y-2"
+    >
+      {/* Skeleton / Shimmer Effect */}
+      {!isLoaded && !hasError && (
+        <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 bg-[length:200%_100%] animate-[shimmer_1.5s_infinite] opacity-50" />
+          <div className="absolute flex flex-col items-center">
+             <svg className="w-8 h-8 text-gray-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+             </svg>
+          </div>
+        </div>
+      )}
+
+      {/* A Imagem Real */}
+      <img 
+        src={photo.url} 
+        alt={photo.title}
+        onLoad={() => setIsLoaded(true)}
+        onError={handleImageError}
+        className={`w-full h-full object-cover transition-all duration-1000 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'} group-hover:scale-110`}
+        loading="lazy"
+      />
+
+      {/* Overlay de Informação (Só aparece se a imagem estiver carregada) */}
+      <div className={`absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent flex flex-col justify-end p-8 transition-opacity duration-500 ${isLoaded ? 'opacity-0 group-hover:opacity-100' : 'opacity-0'}`}>
+        <span className="inline-block w-fit px-3 py-1 rounded-lg bg-blue-600 text-[9px] font-black uppercase tracking-widest text-white mb-3">
+          {photo.category}
+        </span>
+        <h4 className="text-white font-black text-2xl tracking-tighter mb-2">{photo.title}</h4>
+        <p className="text-gray-300 text-sm leading-relaxed line-clamp-2">{photo.description}</p>
+      </div>
+
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
 const PhotoGallery: React.FC = () => {
   const [filter, setFilter] = useState<'todos' | 'eventos' | 'lugares' | 'estudio'>('todos');
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
-  // --- CONFIGURAÇÃO DAS FOTOS COM LINKS DIRETOS CORRIGIDOS ---
-  
   const FOTOS_ESTUDIO: Photo[] = [
     { id: 1, url: "https://i.ibb.co/CsszM3Kd/estudio-1.png", title: "Estúdio Principal", category: "estudio", description: "Onde a magia da rádio acontece em direto." },
     { id: 2, url: "https://i.ibb.co/wNdZrQsq/estudio-7.png", title: "Produção Criativa", category: "estudio", description: "Preparando os melhores conteúdos para os nossos ouvintes." },
@@ -41,17 +99,6 @@ const PhotoGallery: React.FC = () => {
 
   const allPhotos: Photo[] = [...FOTOS_ESTUDIO, ...FOTOS_EVENTOS, ...FOTOS_LUGARES];
   const filteredPhotos = filter === 'todos' ? allPhotos : allPhotos.filter(p => p.category === filter);
-
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    const fallbackImages = {
-      estudio: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop",
-      eventos: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop",
-      lugares: "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?q=80&w=800&auto=format&fit=crop"
-    };
-    
-    const category = (e.currentTarget.getAttribute('data-category') as keyof typeof fallbackImages) || 'estudio';
-    e.currentTarget.src = fallbackImages[category];
-  };
 
   return (
     <div className="space-y-8">
@@ -92,30 +139,10 @@ const PhotoGallery: React.FC = () => {
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Grid de Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredPhotos.map((photo) => (
-          <div 
-            key={photo.id}
-            onClick={() => setSelectedPhoto(photo)}
-            className="group relative h-80 rounded-[2.5rem] overflow-hidden cursor-pointer border border-white/5 bg-gray-800 shadow-xl transition-all duration-500 hover:-translate-y-2"
-          >
-            <img 
-              src={photo.url} 
-              alt={photo.title}
-              data-category={photo.category}
-              onError={handleImageError}
-              className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
-              <span className="inline-block w-fit px-3 py-1 rounded-lg bg-blue-600 text-[9px] font-black uppercase tracking-widest text-white mb-3">
-                {photo.category}
-              </span>
-              <h4 className="text-white font-black text-2xl tracking-tighter mb-2">{photo.title}</h4>
-              <p className="text-gray-300 text-sm leading-relaxed line-clamp-2">{photo.description}</p>
-            </div>
-          </div>
+          <PhotoCard key={photo.id} photo={photo} onClick={setSelectedPhoto} />
         ))}
       </div>
 
@@ -126,12 +153,10 @@ const PhotoGallery: React.FC = () => {
           onClick={() => setSelectedPhoto(null)}
         >
           <div className="max-w-5xl w-full flex flex-col items-center animate-in fade-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
-            <div className="relative group w-full">
+            <div className="relative group w-full bg-gray-900 rounded-[2.5rem] overflow-hidden">
               <img 
                 src={selectedPhoto.url} 
                 alt={selectedPhoto.title}
-                data-category={selectedPhoto.category}
-                onError={handleImageError}
                 className="rounded-[2.5rem] shadow-2xl max-h-[75vh] w-full object-contain border border-white/10"
               />
               <button 
@@ -155,4 +180,5 @@ const PhotoGallery: React.FC = () => {
   );
 };
 
+// Fixing missing default export
 export default PhotoGallery;
