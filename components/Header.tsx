@@ -1,7 +1,12 @@
 
 import React, { useState } from 'react';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  isDark: boolean;
+  onToggleTheme: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ isDark, onToggleTheme }) => {
   const [imgError, setImgError] = useState(false);
   const logoPath = "logo.png";
 
@@ -18,10 +23,10 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-md border-b border-white/10">
+    <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-white/10 transition-colors duration-500">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <div className="flex items-center space-x-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <div className="h-12 w-12 rounded-full border-2 border-blue-500 p-0.5 overflow-hidden bg-gray-800 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <div className="h-12 w-12 rounded-full border-2 border-blue-500 p-0.5 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center shadow-lg shadow-blue-500/10 dark:shadow-blue-500/20">
             {!imgError ? (
               <img 
                 src={logoPath} 
@@ -38,33 +43,53 @@ const Header: React.FC = () => {
             )}
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white leading-none">Web Rádio Figueiró</h1>
-            <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest mt-1">A Sua Melhor Companhia</p>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-none transition-colors">Web Rádio Figueiró</h1>
+            <p className="text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest mt-1">A Sua Melhor Companhia</p>
           </div>
         </div>
 
-        <nav className="hidden md:flex items-center space-x-8">
+        <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
           <button 
             onClick={() => scrollToSection('programacao')} 
-            className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
+            className="text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white transition-colors"
           >
             Programação
           </button>
           <button 
             onClick={() => scrollToSection('galeria')} 
-            className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
+            className="text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white transition-colors"
           >
             Galeria
           </button>
           <button 
             onClick={() => scrollToSection('parcerias')} 
-            className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
+            className="text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white transition-colors"
           >
             Parcerias
           </button>
+          
+          <div className="h-6 w-[1px] bg-gray-200 dark:bg-white/10 mx-2"></div>
+
+          {/* Botão Switch Tema */}
+          <button 
+            onClick={onToggleTheme}
+            className="p-2.5 rounded-xl bg-gray-100 dark:bg-white/5 text-slate-600 dark:text-blue-400 border border-transparent hover:border-blue-500/30 transition-all active:scale-95"
+            title={isDark ? "Mudar para Modo Dia" : "Mudar para Modo Noite"}
+          >
+            {isDark ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            )}
+          </button>
+
           <button 
             onClick={handleMailTo}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
           >
             Seja Parceiro
           </button>

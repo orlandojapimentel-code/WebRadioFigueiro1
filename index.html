@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +19,11 @@
     <meta name="theme-color" content="#111827">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <style>
         @keyframes pulse-ring {
             0% { transform: scale(0.33); opacity: 0.8; }
@@ -36,10 +41,7 @@
             animation: wave 1s ease-in-out infinite;
         }
         body {
-            background-color: #111827;
-            min-height: 100vh;
-            color: #f3f4f6;
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
@@ -60,12 +62,15 @@
             border-spacing: 0 0.5rem;
         }
         .cc_recenttracks_list tr {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(128, 128, 128, 0.05);
             border-radius: 0.75rem;
             transition: all 0.2s;
         }
+        .dark .cc_recenttracks_list tr {
+            background: rgba(255, 255, 255, 0.03);
+        }
         .cc_recenttracks_list tr:hover {
-            background: rgba(255, 255, 255, 0.07);
+            background: rgba(96, 165, 250, 0.1);
             transform: translateX(2px);
         }
         .cc_recenttracks_list td {
@@ -74,16 +79,22 @@
         }
         .cc_recenttracks_track {
             font-weight: 700;
-            color: #ffffff;
+            color: #111827;
             display: block;
             margin-bottom: 2px;
         }
+        .dark .cc_recenttracks_track {
+            color: #ffffff;
+        }
         .cc_recenttracks_artist {
-            color: #60a5fa;
+            color: #2563eb;
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-weight: 800;
+        }
+        .dark .cc_recenttracks_artist {
+            color: #60a5fa;
         }
         .cc_recenttracks_header { display: none; }
         .cc_recenttracks_footer { display: none; }
@@ -99,7 +110,7 @@
 }
 </script>
 </head>
-<body class="bg-gray-900 overflow-x-hidden">
+<body class="bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-gray-100 overflow-x-hidden">
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
 </body>
