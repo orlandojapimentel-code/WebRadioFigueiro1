@@ -51,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({ isDark, onToggleTheme }) => {
         </div>
 
         {/* LADO DIREITO: AÇÕES E NAV */}
-        <div className="flex items-center space-x-2 md:space-x-6">
+        <div className="flex items-center space-x-2 md:space-x-4">
           
           {/* NAV LINKS: APENAS DESKTOP */}
           <nav className="hidden lg:flex items-center space-x-6 lg:space-x-8 mr-4">
@@ -85,14 +85,12 @@ const Header: React.FC<HeaderProps> = ({ isDark, onToggleTheme }) => {
             )}
           </button>
 
-          {/* BOTÃO PARCEIRO: ADAPTADO PARA MOBILE */}
+          {/* BOTÃO PARCEIRO: AGORA APENAS VISÍVEL NO PC/DESKTOP (md) */}
           <button 
             onClick={handleMailTo}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-3 md:px-6 py-2.5 md:py-3 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center space-x-2"
+            className="hidden md:flex bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 items-center space-x-2"
           >
-            <svg className="w-4 h-4 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-            <span className="hidden md:inline">Seja Parceiro</span>
-            <span className="md:hidden">Parceiro</span>
+            <span>Seja Parceiro</span>
           </button>
         </div>
       </div>
