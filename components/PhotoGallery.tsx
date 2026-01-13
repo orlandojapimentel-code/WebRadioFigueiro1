@@ -14,19 +14,19 @@ const PhotoGallery: React.FC = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
   // --- CONFIGURAÇÃO DAS FOTOS ---
-  // IMPORTANTE: O nome do ficheiro (ex: foto1.jpg) deve ser EXATAMENTE igual ao que carregar no GitHub.
+  // Atualizado para .png conforme os ficheiros no seu GitHub
   
   const FOTOS_EVENTOS: Photo[] = [
     {
       id: 101,
-      url: "images/eventos/evento_1.jpg", 
+      url: "images/eventos/evento_1.png", 
       title: "Evento na Praça",
       category: "eventos",
       description: "Momento de convívio com os nossos ouvintes."
     },
     {
       id: 102,
-      url: "images/eventos/evento_2.jpg",
+      url: "images/eventos/evento_2.png",
       title: "Aniversário da Rádio",
       category: "eventos",
       description: "Celebração especial nos nossos estúdios."
@@ -36,7 +36,7 @@ const PhotoGallery: React.FC = () => {
   const FOTOS_LUGARES: Photo[] = [
     {
       id: 201,
-      url: "images/lugares/lugar_1.jpg",
+      url: "images/lugares/lugar_1.png",
       title: "Vistas de Figueiró",
       category: "lugares",
       description: "A beleza natural que nos rodeia todos os dias."
@@ -46,7 +46,7 @@ const PhotoGallery: React.FC = () => {
   const FOTOS_ESTUDIO: Photo[] = [
     {
       id: 301,
-      url: "images/estudio/estudio_1.jpg",
+      url: "images/estudio/estudio_1.png",
       title: "Estúdio Principal",
       category: "estudio",
       description: "Onde a magia da rádio acontece em direto."
@@ -57,7 +57,7 @@ const PhotoGallery: React.FC = () => {
   const filteredPhotos = filter === 'todos' ? allPhotos : allPhotos.filter(p => p.category === filter);
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    // Se a foto não existir na pasta, mostra uma imagem bonita de rádio como reserva
+    // Se a foto não existir, mostra uma imagem de reserva (stock)
     e.currentTarget.src = "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop"; 
   };
 
