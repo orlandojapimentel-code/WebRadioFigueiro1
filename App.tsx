@@ -10,6 +10,7 @@ import Socials from './components/Socials';
 import News from './components/News';
 import VisitorCounter from './components/VisitorCounter';
 import AgendaCultural from './components/AgendaCultural';
+import PhotoGallery from './components/PhotoGallery';
 
 const App: React.FC = () => {
   const [isAgendaOpen, setIsAgendaOpen] = useState(false);
@@ -25,6 +26,10 @@ const App: React.FC = () => {
           <div className="lg:col-span-2 space-y-12">
             <section id="programacao">
               <Schedule />
+            </section>
+            
+            <section id="galeria">
+              <PhotoGallery />
             </section>
             
             <section id="parcerias">
@@ -44,7 +49,15 @@ const App: React.FC = () => {
       <footer className="bg-gray-800 py-8 border-t border-gray-700">
         <div className="container mx-auto px-4 text-center text-gray-400">
           <p>© {new Date().getFullYear()} Web Rádio Figueiró. Todos os direitos reservados.</p>
-          <p className="mt-2">Email: <a href="mailto:webradiofigueiro@gmail.pt" className="hover:text-blue-400 transition-colors">webradiofigueiro@gmail.pt</a></p>
+          <p className="mt-2">
+            Email: 
+            <button 
+              onClick={() => window.location.href = "mailto:webradiofigueiro@gmail.pt"}
+              className="ml-1 text-blue-400 hover:underline"
+            >
+              webradiofigueiro@gmail.pt
+            </button>
+          </p>
           <p>Telefone: +351 910270085</p>
           <p className="mt-2 text-xs">Desenvolvido para a melhor experiência auditiva.</p>
         </div>
