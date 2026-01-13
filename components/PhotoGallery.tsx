@@ -14,19 +14,19 @@ const PhotoGallery: React.FC = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
   // --- CONFIGURAÇÃO DAS FOTOS ---
-  // Nota: Adicionado ./ para garantir que o navegador procure a partir da raiz do domínio.
+  // IMPORTANTE: Usamos / no início para garantir que o navegador procure a partir da raiz do domínio webradiofigueiro.pt
   
   const FOTOS_EVENTOS: Photo[] = [
     {
       id: 101,
-      url: "./images/eventos/evento_1.png", 
+      url: "/images/eventos/evento_1.png", 
       title: "Evento na Praça",
       category: "eventos",
       description: "Momento de convívio com os nossos ouvintes."
     },
     {
       id: 102,
-      url: "./images/eventos/evento_2.png",
+      url: "/images/eventos/evento_2.png",
       title: "Aniversário da Rádio",
       category: "eventos",
       description: "Celebração especial nos nossos estúdios."
@@ -36,7 +36,7 @@ const PhotoGallery: React.FC = () => {
   const FOTOS_LUGARES: Photo[] = [
     {
       id: 201,
-      url: "./images/lugares/lugar_1.png",
+      url: "/images/lugares/lugar_1.png",
       title: "Vistas de Figueiró",
       category: "lugares",
       description: "A beleza natural que nos rodeia todos os dias."
@@ -46,7 +46,7 @@ const PhotoGallery: React.FC = () => {
   const FOTOS_ESTUDIO: Photo[] = [
     {
       id: 301,
-      url: "./images/estudio/estudio_1.png",
+      url: "/images/estudio/estudio_1.png",
       title: "Estúdio Principal",
       category: "estudio",
       description: "Onde a magia da rádio acontece em direto."
@@ -57,7 +57,8 @@ const PhotoGallery: React.FC = () => {
   const filteredPhotos = filter === 'todos' ? allPhotos : allPhotos.filter(p => p.category === filter);
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    // Se a imagem falhar, mostramos uma de reserva (stock)
+    // Se a foto não for encontrada (404), mostramos uma imagem de reserva (stock) temporária
+    console.error("Erro ao carregar imagem em:", e.currentTarget.src);
     e.currentTarget.src = "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop"; 
   };
 
