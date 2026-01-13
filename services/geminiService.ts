@@ -5,27 +5,26 @@ export const getRadioAssistantStream = async (
   message: string, 
   onChunk: (text: string) => void
 ) => {
-  // Obtém a chave diretamente do ambiente
+  // Tenta obter a chave do processo (Vercel/Produção)
   const apiKey = process.env.API_KEY;
 
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.error("Erro: API_KEY não configurada no ambiente.");
+    console.error("ERRO CRÍTICO: API_KEY não detetada no ambiente de produção.");
     throw new Error("MISSING_KEY");
   }
 
-  // Inicializa o cliente GenAI com a chave obtida
-  const ai = new GoogleGenAI({ apiKey });
-  
-  const systemPrompt = `
-    IDENTIDADE: És a "Figueiró AI", a assistente oficial da Web Rádio Figueiró.
-    LOCAL: Figueiró, Portugal.
-    PERSONALIDADE: Muito alegre, usa termos de rádio.
-    MISSÃO: Receber pedidos de música e dedicatórias.
-    REGRAS: Respostas em Português de Portugal, curtas (máx 2 frases). Usa emojis 🎙️📻.
-    NOTA: Avisa que o ouvinte pode clicar no botão "Enviar para o DJ" para enviar via WhatsApp.
-  `;
-
   try {
+    const ai = new GoogleGenAI({ apiKey });
+    
+    const systemPrompt = `
+      IDENTIDADE: És a "Figueiró AI", a assistente oficial da Web Rádio Figueiró.
+      LOCAL: Figueiró, Portugal.
+      PERSONALIDADE: Alegre, entusiasta, usa termos de rádio.
+      MISSÃO: Receber pedidos de música e dedicatórias.
+      REGRAS: Português de Portugal, respostas curtas (máx 2 frases). Usa emojis 🎙️📻.
+      NOTA: Incentiva o uso do botão "Enviar para o Estúdio" (WhatsApp).
+    `;
+
     const response = await ai.models.generateContentStream({
       model: 'gemini-3-flash-preview',
       contents: [{ role: 'user', parts: [{ text: message }] }],
@@ -45,15 +44,8 @@ export const getRadioAssistantStream = async (
     return fullText;
   } catch (error: any) {
     console.error("Erro na Figueiró AI:", error);
-    
-    // Tratamento de erros de chave conforme as guidelines
-    const errorMessage = error.message || "";
-    if (
-      error.status === 403 || 
-      errorMessage.includes("key") || 
-      errorMessage.includes("API key not valid") ||
-      errorMessage.includes("Requested entity was not found")
-    ) {
+    const msg = error.message || "";
+    if (msg.includes("key") || msg.includes("API key") || msg.includes("403")) {
       throw new Error("INVALID_KEY");
     }
     throw error;
