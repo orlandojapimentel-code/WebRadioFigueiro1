@@ -12,9 +12,10 @@ const GeminiAssistant: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [connectionStatus, setConnectionStatus] = useState<'online' | 'tuning' | 'error'>('online');
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Verifica se temos uma chave válida ao iniciar
+  // Verifica se temos uma chave válida ao iniciar sem resetar o estado
   useEffect(() => {
     const checkKey = async () => {
       // @ts-ignore
@@ -27,7 +28,7 @@ const GeminiAssistant: React.FC = () => {
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamingText, isTyping]);
+  }, [messages, streamingText, isTyping, connectionStatus]);
 
   const handleSintonizar = async () => {
     try {
@@ -35,29 +36,36 @@ const GeminiAssistant: React.FC = () => {
       if (window.aistudio) {
         // @ts-ignore
         await window.aistudio.openSelectKey();
-        // Assume sucesso imediato para melhorar UX
         setConnectionStatus('online');
-        setMessages(prev => [...prev, { 
-          role: 'model', 
-          text: '📻 Sinal recuperado com sucesso! Já podes fazer o teu pedido.' 
-        }]);
+        
+        // Se havia uma mensagem pendente que falhou, tenta re-enviar automaticamente
+        if (lastFailedMessage) {
+          const msgToRetry = lastFailedMessage;
+          setLastFailedMessage(null);
+          handleSend(msgToRetry, true);
+        }
       } else {
-        // Se não houver window.aistudio (como no Vercel direto), tentamos resetar o estado
         setConnectionStatus('online');
       }
     } catch (err) {
-      console.error("Erro ao abrir seletor de chave:", err);
+      console.error("Erro ao sintonizar:", err);
     }
   };
 
-  const handleSend = async (text: string) => {
+  const handleSend = async (text: string, isRetry = false) => {
     if (!text.trim() || isTyping) return;
 
     const userMsg = text.trim();
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    
+    // Só adiciona ao histórico se não for um re-envio (retry)
+    if (!isRetry) {
+      setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    }
+    
     setInput('');
     setIsTyping(true);
     setStreamingText('');
+    setConnectionStatus('online');
 
     try {
       const result = await getRadioAssistantStream(userMsg, (chunk) => {
@@ -66,21 +74,20 @@ const GeminiAssistant: React.FC = () => {
       setMessages(prev => [...prev, { role: 'model', text: result }]);
       setStreamingText('');
       setIsTyping(false);
-      setConnectionStatus('online');
+      setLastFailedMessage(null);
     } catch (err: any) {
       setIsTyping(false);
       setStreamingText('');
       
       if (err.message === "MISSING_KEY" || err.message === "INVALID_KEY") {
+        // Guarda a mensagem para tentar novamente após sintonizar
+        setLastFailedMessage(userMsg);
         setConnectionStatus('tuning');
-        setMessages(prev => [...prev, { 
-          role: 'model', 
-          text: '📡 O meu sinal está com interferência técnica. Por favor, clica em Sintonizar para restabelecer a ligação! 🛠️' 
-        }]);
+        // NOTA: Não adicionamos mensagem de erro ao histórico para não "voltar ao início" visualmente
       } else {
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: '🎙️ Muita estática no ar... Podes repetir o teu pedido?' 
+          text: '🎙️ Estás a chegar com um pouco de estática... Podes repetir o pedido?' 
         }]);
       }
     }
@@ -99,21 +106,22 @@ const GeminiAssistant: React.FC = () => {
   return (
     <div className="bg-gray-950/95 rounded-[2.5rem] border border-indigo-500/30 overflow-hidden flex flex-col shadow-[0_0_60px_rgba(79,70,229,0.15)] h-[580px] backdrop-blur-xl relative z-[60]">
       
+      {/* Cabeçalho */}
       <div className="p-5 bg-gradient-to-r from-indigo-900/80 to-blue-900/80 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className={`w-2.5 h-2.5 rounded-full ${connectionStatus === 'online' ? 'bg-green-500 animate-pulse' : 'bg-orange-500'}`}></div>
-          <span className="text-white font-black text-[10px] uppercase tracking-[0.2em]">Figueiró AI v2.2</span>
+          <span className="text-white font-black text-[10px] uppercase tracking-[0.2em]">Figueiró AI v2.3</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70 text-[8px] font-black uppercase tracking-widest">
-            {connectionStatus === 'online' ? 'Em Direto' : 'Ajustando Sinal...'}
+            {connectionStatus === 'online' ? 'Em Direto' : 'Sinal Fraco'}
           </div>
         </div>
       </div>
 
-      <div className="flex-grow overflow-y-auto p-5 space-y-4 scrollbar-hide bg-black/20">
+      <div className="flex-grow overflow-y-auto p-5 space-y-4 scrollbar-hide bg-black/20 relative">
         {messages.map((m, i) => (
-          <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
+          <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
             <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-[13px] leading-relaxed shadow-lg ${
               m.role === 'user' 
                 ? 'bg-indigo-600 text-white rounded-tr-none' 
@@ -132,7 +140,28 @@ const GeminiAssistant: React.FC = () => {
           </div>
         )}
 
-        {hasUserMessages && !isTyping && !streamingText && (
+        {/* Overlay de Sintonização (Aparece sobre o chat sem o apagar) */}
+        {connectionStatus === 'tuning' && (
+          <div className="absolute inset-x-0 bottom-4 px-4 z-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-indigo-900/90 backdrop-blur-md border border-indigo-400/50 p-6 rounded-[2rem] shadow-2xl text-center">
+              <div className="flex justify-center mb-3">
+                <div className="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center text-indigo-300 animate-pulse">
+                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+                </div>
+              </div>
+              <p className="text-white font-bold text-sm mb-1">Interferência no Sinal AI</p>
+              <p className="text-indigo-200 text-[11px] mb-5 leading-tight">Precisamos de sintonizar a frequência para processar o teu pedido.</p>
+              <button 
+                onClick={handleSintonizar}
+                className="w-full bg-white text-indigo-950 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-indigo-50 transition-all active:scale-95"
+              >
+                Sintonizar Agora
+              </button>
+            </div>
+          </div>
+        )}
+
+        {hasUserMessages && !isTyping && !streamingText && connectionStatus === 'online' && (
           <div className="flex justify-center pt-4 pb-2 animate-in fade-in zoom-in duration-300">
             <button 
               onClick={sendToWhatsApp}
@@ -146,17 +175,6 @@ const GeminiAssistant: React.FC = () => {
           </div>
         )}
 
-        {connectionStatus === 'tuning' && (
-          <div className="flex justify-center pt-2 animate-bounce">
-            <button 
-              onClick={handleSintonizar}
-              className="bg-indigo-500 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-indigo-400 transition-all active:scale-95 border border-indigo-400"
-            >
-              Sintonizar Sinal AI
-            </button>
-          </div>
-        )}
-
         <div ref={scrollRef} />
       </div>
 
@@ -165,13 +183,14 @@ const GeminiAssistant: React.FC = () => {
           <input 
             type="text" value={input} 
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Pede a tua música aqui..."
-            className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all"
+            disabled={connectionStatus !== 'online'}
+            placeholder={connectionStatus === 'online' ? "Pede a tua música aqui..." : "Sintoniza para continuar..."}
+            className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all disabled:opacity-30"
           />
           <button 
             type="submit" 
-            disabled={!input.trim() || isTyping}
-            className="bg-indigo-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-indigo-500 disabled:opacity-20 transition-all"
+            disabled={!input.trim() || isTyping || connectionStatus !== 'online'}
+            className="bg-indigo-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-indigo-500 disabled:opacity-20 transition-all shadow-lg shadow-indigo-600/20"
           >
             {isTyping ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
