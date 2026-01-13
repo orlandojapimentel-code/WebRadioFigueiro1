@@ -4,18 +4,42 @@ import { getRadioAssistantStream } from '../services/geminiService';
 import { ChatMessage } from '../types';
 
 const GeminiAssistant: React.FC = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([{ 
-    role: 'model', 
-    text: '🎙️ Olá! Sou a Figueiró AI. Estás pronto para pedir a tua música? ✨' 
-  }]);
+  // Carrega mensagens guardadas ou inicia com a mensagem de boas-vindas
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const saved = sessionStorage.getItem('wrf_chat_v2');
+    return saved ? JSON.parse(saved) : [{ 
+      role: 'model', 
+      text: '🎙️ Olá! Sou a Figueiró AI. Estás pronto para pedir a tua música? ✨' 
+    }];
+  });
+
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [connectionStatus, setConnectionStatus] = useState<'online' | 'tuning' | 'error'>('online');
-  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
+  
+  // Guarda o último pedido que falhou para o tentar reenviar
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(() => {
+    return sessionStorage.getItem('wrf_last_failed');
+  });
+
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Verifica se temos uma chave válida ao iniciar sem resetar o estado
+  // Guarda o histórico sempre que as mensagens mudam
+  useEffect(() => {
+    sessionStorage.setItem('wrf_chat_v2', JSON.stringify(messages));
+  }, [messages]);
+
+  // Guarda a mensagem que falhou
+  useEffect(() => {
+    if (lastFailedMessage) {
+      sessionStorage.setItem('wrf_last_failed', lastFailedMessage);
+    } else {
+      sessionStorage.removeItem('wrf_last_failed');
+    }
+  }, [lastFailedMessage]);
+
+  // Verifica estado inicial da chave
   useEffect(() => {
     const checkKey = async () => {
       // @ts-ignore
@@ -38,7 +62,7 @@ const GeminiAssistant: React.FC = () => {
         await window.aistudio.openSelectKey();
         setConnectionStatus('online');
         
-        // Se havia uma mensagem pendente que falhou, tenta re-enviar automaticamente
+        // Se havia um pedido pendente, tenta reenviar agora que temos sinal
         if (lastFailedMessage) {
           const msgToRetry = lastFailedMessage;
           setLastFailedMessage(null);
@@ -57,7 +81,7 @@ const GeminiAssistant: React.FC = () => {
 
     const userMsg = text.trim();
     
-    // Só adiciona ao histórico se não for um re-envio (retry)
+    // Adiciona ao histórico apenas se não for um re-envio automático
     if (!isRetry) {
       setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     }
@@ -80,14 +104,13 @@ const GeminiAssistant: React.FC = () => {
       setStreamingText('');
       
       if (err.message === "MISSING_KEY" || err.message === "INVALID_KEY") {
-        // Guarda a mensagem para tentar novamente após sintonizar
         setLastFailedMessage(userMsg);
         setConnectionStatus('tuning');
-        // NOTA: Não adicionamos mensagem de erro ao histórico para não "voltar ao início" visualmente
+        // Não limpamos as mensagens, apenas mostramos o aviso de sintonização por cima
       } else {
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: '🎙️ Estás a chegar com um pouco de estática... Podes repetir o pedido?' 
+          text: '🎙️ A estática está forte... Podes repetir o pedido?' 
         }]);
       }
     }
@@ -110,7 +133,7 @@ const GeminiAssistant: React.FC = () => {
       <div className="p-5 bg-gradient-to-r from-indigo-900/80 to-blue-900/80 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className={`w-2.5 h-2.5 rounded-full ${connectionStatus === 'online' ? 'bg-green-500 animate-pulse' : 'bg-orange-500'}`}></div>
-          <span className="text-white font-black text-[10px] uppercase tracking-[0.2em]">Figueiró AI v2.3</span>
+          <span className="text-white font-black text-[10px] uppercase tracking-[0.2em]">Figueiró AI v2.4</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70 text-[8px] font-black uppercase tracking-widest">
@@ -140,22 +163,22 @@ const GeminiAssistant: React.FC = () => {
           </div>
         )}
 
-        {/* Overlay de Sintonização (Aparece sobre o chat sem o apagar) */}
+        {/* Overlay de Sintonização (Aparece sobre o chat sem o resetar) */}
         {connectionStatus === 'tuning' && (
-          <div className="absolute inset-x-0 bottom-4 px-4 z-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-indigo-900/90 backdrop-blur-md border border-indigo-400/50 p-6 rounded-[2rem] shadow-2xl text-center">
-              <div className="flex justify-center mb-3">
-                <div className="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center text-indigo-300 animate-pulse">
-                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+          <div className="absolute inset-x-0 bottom-4 px-4 z-20 animate-in fade-in slide-in-from-bottom-6 duration-500">
+            <div className="bg-indigo-950/95 backdrop-blur-2xl border border-indigo-400/50 p-6 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-14 h-14 bg-indigo-500/20 rounded-full flex items-center justify-center text-indigo-300 animate-pulse border border-indigo-500/30">
+                   <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
                 </div>
               </div>
-              <p className="text-white font-bold text-sm mb-1">Interferência no Sinal AI</p>
-              <p className="text-indigo-200 text-[11px] mb-5 leading-tight">Precisamos de sintonizar a frequência para processar o teu pedido.</p>
+              <p className="text-white font-black text-sm mb-1 uppercase tracking-wider">Sinal AI em Baixa</p>
+              <p className="text-indigo-200/70 text-[10px] mb-6 leading-tight uppercase font-bold tracking-widest">Sintoniza a frequência para processar o teu pedido</p>
               <button 
                 onClick={handleSintonizar}
-                className="w-full bg-white text-indigo-950 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-indigo-50 transition-all active:scale-95"
+                className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-500 transition-all active:scale-95 border border-indigo-400/30"
               >
-                Sintonizar Agora
+                Recuperar Sinal AI
               </button>
             </div>
           </div>
