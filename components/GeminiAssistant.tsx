@@ -80,7 +80,7 @@ const GeminiAssistant: React.FC = () => {
           setConnectionStatus('error');
           setMessages(prev => [...prev, { 
             role: 'model', 
-            text: '📡 Erro. Usa o WhatsApp! 🎙️' 
+            text: '📡 Usa o WhatsApp! 🎙️' 
           }]);
         }
       } else {
