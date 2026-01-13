@@ -5,6 +5,7 @@ import Hero from './components/Hero';
 import Player from './components/Player';
 import Schedule from './components/Schedule';
 import GeminiAssistant from './components/GeminiAssistant';
+import RecentTracks from './components/RecentTracks';
 import Partnerships from './components/Partnerships';
 import Socials from './components/Socials';
 import News from './components/News';
@@ -39,6 +40,7 @@ const App: React.FC = () => {
           
           <aside className="space-y-8">
             <GeminiAssistant />
+            <RecentTracks />
             <VisitorCounter />
             <News />
             <Socials />

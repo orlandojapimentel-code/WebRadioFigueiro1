@@ -48,6 +48,45 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        /* Estilização Customizada para o Widget do Centova Cast */
+        .cc_recenttracks_list {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        .cc_recenttracks_list table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+        .cc_recenttracks_list tr {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 0.75rem;
+            transition: all 0.2s;
+        }
+        .cc_recenttracks_list tr:hover {
+            background: rgba(255, 255, 255, 0.07);
+            transform: translateX(2px);
+        }
+        .cc_recenttracks_list td {
+            padding: 10px 14px;
+            border: none;
+        }
+        .cc_recenttracks_track {
+            font-weight: 700;
+            color: #ffffff;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .cc_recenttracks_artist {
+            color: #60a5fa;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 800;
+        }
+        .cc_recenttracks_header { display: none; }
+        .cc_recenttracks_footer { display: none; }
     </style>
 <script type="importmap">
 {
