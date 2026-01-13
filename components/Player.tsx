@@ -10,7 +10,8 @@ const Player: React.FC = () => {
   const [imgError, setImgError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const logoPath = "logo.png";
+  // Caminho relativo explícito
+  const logoPath = "./logo.png";
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
   const statsUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/status-json.xsl";
 
@@ -115,14 +116,21 @@ const Player: React.FC = () => {
           <div className="flex items-center space-x-4 md:space-x-6 w-full md:w-auto">
             <div className="relative group flex-shrink-0">
               <div className={`absolute -inset-2 bg-gradient-to-tr from-blue-600/40 to-indigo-600/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-700 ${isPlaying ? 'opacity-100 animate-pulse' : ''}`} />
-              <div className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden shadow-2xl border-2 border-white/10 bg-gray-900 flex items-center justify-center transition-transform duration-[3000ms] ease-linear ${isPlaying ? 'rotate-[360deg] infinite' : ''}`}
+              <div className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden shadow-2xl border-2 border-white/10 bg-white flex items-center justify-center transition-transform duration-[3000ms] ease-linear`}
                    style={{ animation: isPlaying ? 'spin 5s linear infinite' : 'none' }}>
                 {!imgError ? (
-                  <img src={logoPath} alt="WRF" className="h-full w-full object-cover" onError={() => setImgError(true)} />
+                  <img 
+                    src={logoPath} 
+                    alt="WRF" 
+                    className="h-full w-full object-contain" 
+                    onError={() => setImgError(true)} 
+                  />
                 ) : (
-                  <span className="text-blue-500 font-black text-xl italic">WRF</span>
+                  <div className="bg-slate-900 w-full h-full flex items-center justify-center">
+                    <span className="text-blue-500 font-black text-xl italic">WRF</span>
+                  </div>
                 )}
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="w-2 h-2 bg-gray-950 rounded-full border border-white/20 shadow-inner"></div>
                 </div>
               </div>
