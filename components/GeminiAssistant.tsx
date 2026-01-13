@@ -8,7 +8,7 @@ const GeminiAssistant: React.FC = () => {
     const saved = sessionStorage.getItem('wrf_chat_v2.4');
     return saved ? JSON.parse(saved) : [{ 
       role: 'model', 
-      text: '🎙️ Olá! Sou a Figueiró AI. Estás pronto para pedir a tua música? ✨' 
+      text: '🎙️ Olá! Estás pronto/a para pedir a tua música? ✨' 
     }];
   });
 
