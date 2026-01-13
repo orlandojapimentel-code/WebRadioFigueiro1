@@ -8,7 +8,7 @@ const GeminiAssistant: React.FC = () => {
     const saved = sessionStorage.getItem('wrf_chat_v2.4');
     return saved ? JSON.parse(saved) : [{ 
       role: 'model', 
-      text: '🎙️ Olá! Estás pronto/a para pedir a tua música? ✨' 
+      text: '🎙️ Olá! Como posso ajudar hoje? ✨' 
     }];
   });
 
@@ -80,13 +80,13 @@ const GeminiAssistant: React.FC = () => {
           setConnectionStatus('error');
           setMessages(prev => [...prev, { 
             role: 'model', 
-            text: '📡 Dificuldades técnicas no sinal AI. Usa o WhatsApp abaixo! 🎙️' 
+            text: '📡 Erro de sinal. Usa o WhatsApp! 🎙️' 
           }]);
         }
       } else {
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: '🎙️ Muita estática no ar... Podes repetir?' 
+          text: '🎙️ Tente novamente, por favor.' 
         }]);
       }
     }
@@ -101,25 +101,25 @@ const GeminiAssistant: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-950/95 rounded-[2.5rem] border border-indigo-500/30 overflow-hidden flex flex-col shadow-[0_0_60px_rgba(79,70,229,0.15)] h-[480px] backdrop-blur-xl relative z-[60]">
+    <div className="bg-gray-950/95 rounded-[2rem] border border-indigo-500/30 overflow-hidden flex flex-col shadow-[0_0_50px_rgba(79,70,229,0.1)] h-[380px] backdrop-blur-xl relative z-[60]">
       
-      <div className="p-4 bg-gradient-to-r from-indigo-900/80 to-blue-900/80 border-b border-white/5 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className={`w-2 h-2 rounded-full ${connectionStatus === 'online' ? 'bg-green-500 animate-pulse' : connectionStatus === 'tuning' ? 'bg-orange-500' : 'bg-red-500'}`}></div>
-          <span className="text-white font-black text-[9px] uppercase tracking-[0.2em]">Figueiró AI v2.5</span>
+      <div className="p-3 bg-gradient-to-r from-indigo-900/80 to-blue-900/80 border-b border-white/5 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <div className={`w-1.5 h-1.5 rounded-full ${connectionStatus === 'online' ? 'bg-green-500 animate-pulse' : connectionStatus === 'tuning' ? 'bg-orange-500' : 'bg-red-500'}`}></div>
+          <span className="text-white font-black text-[8px] uppercase tracking-[0.2em]">Figueiró AI</span>
         </div>
-        <div className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/70 text-[7px] font-black uppercase tracking-widest">
-          {connectionStatus === 'online' ? 'ON' : 'OFF'}
+        <div className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/50 text-[6px] font-black uppercase tracking-widest">
+          {connectionStatus === 'online' ? 'LIVE' : 'OFF'}
         </div>
       </div>
 
-      <div className="flex-grow overflow-y-auto p-4 space-y-4 scrollbar-hide bg-black/20 relative">
+      <div className="flex-grow overflow-y-auto p-3 space-y-3 scrollbar-hide bg-black/10 relative">
         {messages.map((m, i) => (
-          <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-            <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-[12px] leading-relaxed shadow-lg ${
+          <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-1 duration-200`}>
+            <div className={`max-w-[90%] px-3 py-2 rounded-xl text-[11px] leading-snug shadow-sm ${
               m.role === 'user' 
                 ? 'bg-indigo-600 text-white rounded-tr-none' 
-                : 'bg-gray-800/95 text-gray-200 rounded-tl-none border border-white/5'
+                : 'bg-gray-800/90 text-gray-200 rounded-tl-none border border-white/5'
             }`}>
               {m.text}
             </div>
@@ -128,19 +128,19 @@ const GeminiAssistant: React.FC = () => {
         
         {streamingText && (
           <div className="flex justify-start">
-            <div className="max-w-[85%] px-4 py-2.5 rounded-2xl rounded-tl-none bg-indigo-900/30 text-indigo-200 text-[12px] border border-indigo-500/20">
+            <div className="max-w-[90%] px-3 py-2 rounded-xl rounded-tl-none bg-indigo-900/20 text-indigo-200 text-[11px] border border-indigo-500/10">
               {streamingText}
             </div>
           </div>
         )}
 
         {connectionStatus === 'tuning' && (
-          <div className="absolute inset-x-0 bottom-2 px-4 z-20">
-            <div className="bg-indigo-950/95 backdrop-blur-2xl border border-indigo-400/50 p-5 rounded-[2rem] shadow-2xl text-center">
-              <p className="text-white font-black text-xs mb-3 uppercase tracking-wider">Sinal AI Baixo</p>
+          <div className="absolute inset-x-0 bottom-1 px-3 z-20">
+            <div className="bg-indigo-950/95 backdrop-blur-2xl border border-indigo-400/50 p-4 rounded-xl shadow-2xl text-center">
+              <p className="text-white font-black text-[10px] mb-2 uppercase tracking-wider">Sinal Baixo</p>
               <button 
                 onClick={handleSintonizar}
-                className="w-full bg-indigo-600 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-500 transition-all active:scale-95"
+                className="w-full bg-indigo-600 text-white py-2 rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-indigo-500 transition-all"
               >
                 Sintonizar
               </button>
@@ -149,13 +149,13 @@ const GeminiAssistant: React.FC = () => {
         )}
 
         {messages.some(m => m.role === 'user') && !isTyping && !streamingText && (
-          <div className="flex justify-center pt-2 pb-1 animate-in fade-in zoom-in duration-300">
+          <div className="flex justify-center pt-1 animate-in fade-in zoom-in duration-200">
             <button 
               onClick={sendToWhatsApp}
-              className="flex items-center space-x-2 px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.1em] transition-all border border-green-400 shadow-lg"
+              className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-[8px] font-black uppercase tracking-wider transition-all shadow-md"
             >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-              <span>Enviar para o Estúdio</span>
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              <span>Estúdio</span>
             </button>
           </div>
         )}
@@ -163,24 +163,24 @@ const GeminiAssistant: React.FC = () => {
         <div ref={scrollRef} />
       </div>
 
-      <div className="p-3 bg-gray-900/95 border-t border-white/5">
-        <form onSubmit={(e) => { e.preventDefault(); if (input.trim()) handleSend(input); }} className="flex gap-2">
+      <div className="p-2 bg-gray-900/95 border-t border-white/5">
+        <form onSubmit={(e) => { e.preventDefault(); if (input.trim()) handleSend(input); }} className="flex gap-1.5">
           <input 
             type="text" value={input} 
             onChange={(e) => setInput(e.target.value)}
             disabled={connectionStatus === 'error'}
-            placeholder={connectionStatus === 'online' ? "Pede a tua música..." : "Offline"}
-            className="flex-grow bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-all"
+            placeholder={connectionStatus === 'online' ? "Diz algo..." : "Off"}
+            className="flex-grow bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[11px] text-white focus:outline-none focus:border-indigo-500 transition-all placeholder:opacity-40"
           />
           <button 
             type="submit" 
             disabled={!input.trim() || isTyping || connectionStatus === 'error'}
-            className="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20"
+            className="bg-indigo-600 text-white w-9 h-9 rounded-lg flex items-center justify-center hover:bg-indigo-500 transition-all shadow-md active:scale-95"
           >
             {isTyping ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
             ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 5l7 7m0 0l-7 7m7-7H3"/></svg>
             )}
           </button>
         </form>
