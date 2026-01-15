@@ -12,6 +12,7 @@ import News from './components/News';
 import VisitorCounter from './components/VisitorCounter';
 import AgendaCultural from './components/AgendaCultural';
 import PhotoGallery from './components/PhotoGallery';
+import WeatherWidget from './components/WeatherWidget';
 
 const App: React.FC = () => {
   const [isAgendaOpen, setIsAgendaOpen] = useState(false);
@@ -55,6 +56,7 @@ const App: React.FC = () => {
           </div>
           
           <aside className="space-y-8">
+            <WeatherWidget />
             <GeminiAssistant />
             <RecentTracks />
             <VisitorCounter />
