@@ -5,12 +5,10 @@ const Player: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [previousVolume, setPreviousVolume] = useState(0.8);
-  const [isLoading, setIsLoading] = useState(false);
   const [metadata, setMetadata] = useState("Web Rádio Figueiró - Sintonizando...");
   const [imgError, setImgError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Caminho relativo explícito
   const logoPath = "./logo.png";
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
   const statsUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/status-json.xsl";
@@ -97,70 +95,58 @@ const Player: React.FC = () => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  const bars = Array.from({ length: 18 }, (_, i) => ({
+  const bars = Array.from({ length: 24 }, (_, i) => ({
     id: i,
-    delay: `${i * 0.05}s`,
-    duration: `${0.5 + Math.random() * 1}s`
+    delay: `${i * 0.04}s`,
+    duration: `${0.4 + Math.random() * 0.8}s`
   }));
 
   return (
     <div className="fixed bottom-6 left-4 right-4 md:left-8 md:right-8 z-[70] transition-all duration-700 pointer-events-none">
-      <div className={`absolute -inset-4 bg-blue-600/20 blur-[100px] rounded-full transition-opacity duration-1000 pointer-events-none ${isPlaying ? 'opacity-100 scale-110' : 'opacity-0'}`} />
+      <div className={`absolute -inset-10 bg-blue-600/10 blur-[120px] rounded-full transition-opacity duration-1000 pointer-events-none ${isPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`} />
 
-      <div className="relative bg-gray-950/80 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] p-3 md:p-5 shadow-[0_20px_80px_rgba(0,0,0,0.9)] overflow-hidden group pointer-events-auto">
+      <div className="relative bg-gray-950/90 border border-white/5 backdrop-blur-3xl rounded-[2.5rem] p-3 md:p-5 shadow-[0_32px_120px_rgba(0,0,0,0.8)] overflow-hidden pointer-events-auto">
         
-        <div className="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent w-full opacity-30"></div>
-
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           
-          <div className="flex items-center space-x-4 md:space-x-6 w-full md:w-auto">
-            <div className="relative group flex-shrink-0">
-              <div className={`absolute -inset-2 bg-gradient-to-tr from-blue-600/40 to-indigo-600/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-700 ${isPlaying ? 'opacity-100 animate-pulse' : ''}`} />
-              <div className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden shadow-2xl border-2 border-white/10 bg-white flex items-center justify-center transition-transform duration-[3000ms] ease-linear`}
-                   style={{ animation: isPlaying ? 'spin 5s linear infinite' : 'none' }}>
+          <div className="flex items-center space-x-6 w-full md:w-auto">
+            {/* LOGO DO PLAYER COM BRANDING */}
+            <div className="relative flex-shrink-0">
+              <div className={`absolute -inset-2 bg-blue-600/30 rounded-full blur-md transition-opacity duration-1000 ${isPlaying ? 'opacity-100 animate-pulse' : 'opacity-0'}`} />
+              <div className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden bg-white flex items-center justify-center shadow-2xl border-2 border-white/5 ${isPlaying ? 'animate-spin-slow' : ''}`}
+                   style={{ animationDuration: '12s' }}>
                 {!imgError ? (
-                  <img 
-                    src={logoPath} 
-                    alt="WRF" 
-                    className="h-full w-full object-contain" 
-                    onError={() => setImgError(true)} 
-                  />
+                  <img src={logoPath} alt="WRF" className="h-[75%] w-[75%] object-contain" onError={() => setImgError(true)} />
                 ) : (
-                  <div className="bg-slate-900 w-full h-full flex items-center justify-center">
-                    <span className="text-blue-500 font-black text-xl italic">WRF</span>
-                  </div>
+                  <span className="text-blue-600 font-black text-xl italic leading-none">F</span>
                 )}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-2 h-2 bg-gray-950 rounded-full border border-white/20 shadow-inner"></div>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
               </div>
             </div>
             
             <div className="min-w-0 flex-grow">
               <div className="flex items-center space-x-2 mb-1">
-                <span className="flex h-2 w-2 relative">
+                <span className="flex h-1.5 w-1.5 relative">
                   <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isPlaying ? 'bg-red-500' : 'bg-gray-500'} opacity-75`}></span>
-                  <span className={`relative inline-flex rounded-full h-2 w-2 ${isPlaying ? 'bg-red-600' : 'bg-gray-600'}`}></span>
+                  <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${isPlaying ? 'bg-red-600' : 'bg-gray-600'}`}></span>
                 </span>
-                <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Live Stream</span>
+                <span className="text-[9px] text-gray-400 font-black uppercase tracking-[0.3em]">Em Direto</span>
               </div>
               
-              <div className="overflow-hidden">
-                <p className="text-white text-sm md:text-lg font-bold truncate uppercase tracking-wide">
-                  {metadata}
-                </p>
-              </div>
+              <p className="text-white text-sm md:text-lg font-brand font-bold truncate tracking-tight mb-2">
+                {metadata}
+              </p>
               
-              <div className="flex items-end space-x-[2px] h-6 mt-2">
+              <div className="flex items-end space-x-[2px] h-4">
                 {bars.map((bar) => (
                   <div
                     key={bar.id}
-                    className="w-1 bg-gradient-to-t from-blue-600 via-blue-400 to-indigo-400 rounded-full visualizer-bar origin-bottom"
+                    className="w-1 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full visualizer-bar origin-bottom"
                     style={{ 
                       animationDelay: bar.delay, 
                       animationDuration: bar.duration,
                       animationPlayState: isPlaying ? 'running' : 'paused',
-                      opacity: isPlaying ? 1 : 0.2,
+                      opacity: isPlaying ? 0.8 : 0.1,
                       transform: isPlaying ? 'none' : 'scaleY(0.2)'
                     }}
                   />
@@ -169,35 +155,33 @@ const Player: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-8">
             <button 
               onClick={togglePlay}
-              className="group relative h-16 w-16 md:h-20 md:w-20 bg-white text-gray-950 rounded-full flex items-center justify-center shadow-[0_10px_40px_rgba(255,255,255,0.2)] transition-all transform active:scale-90 hover:scale-110 hover:shadow-white/30"
+              className="group relative h-16 w-16 md:h-20 md:w-20 bg-white hover:bg-blue-50 text-gray-950 rounded-full flex items-center justify-center shadow-xl transition-all transform active:scale-95 hover:scale-105"
             >
               {isPlaying ? (
-                <svg className="w-8 h-8 md:w-10 md:h-10 relative z-10" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                <svg className="w-8 h-8 md:w-10 md:h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               ) : (
-                <svg className="w-8 h-8 md:w-10 md:h-10 ml-1 relative z-10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg className="w-8 h-8 md:w-10 md:h-10 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
               )}
             </button>
-          </div>
-
-          <div className="flex items-center space-x-4 w-full md:w-auto justify-center md:justify-end">
-            <div className="flex items-center bg-white/5 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 group/vol">
-              <button onClick={toggleMute} className="text-white/60 hover:text-blue-400 transition-colors mr-3">
+            
+            <div className="hidden md:flex items-center space-x-4 bg-white/5 px-6 py-3 rounded-2xl border border-white/5">
+              <button onClick={toggleMute} className="text-white/40 hover:text-blue-400 transition-colors">
                 {volume === 0 ? (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
                 ) : (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
                 )}
               </button>
-              <div className="relative w-24 md:w-32 h-1.5 bg-gray-800 rounded-full overflow-hidden border border-white/5">
+              <div className="relative w-32 h-1 bg-gray-800 rounded-full overflow-hidden">
                 <input 
                   type="range" min="0" max="1" step="0.01" value={volume}
                   onChange={(e) => setVolume(parseFloat(e.target.value))}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                 />
-                <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-400 rounded-full transition-all duration-300" style={{ width: `${volume * 100}%` }} />
+                <div className="h-full bg-blue-500 rounded-full transition-all duration-300" style={{ width: `${volume * 100}%` }} />
               </div>
             </div>
           </div>
@@ -205,9 +189,12 @@ const Player: React.FC = () => {
         </div>
       </div>
       <style>{`
-        @keyframes spin {
+        @keyframes spin-slow {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow linear infinite;
         }
       `}</style>
       <audio ref={audioRef} />
