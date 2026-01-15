@@ -43,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({ isDark, onToggleTheme }) => {
                 />
               ) : (
                 <div className="bg-blue-600 w-full h-full flex items-center justify-center rounded-xl">
-                  <span className="text-white font-black text-lg">F</span>
+                  <span className="text-white font-black text-[10px] md:text-xs tracking-tighter">WRF</span>
                 </div>
               )}
             </div>

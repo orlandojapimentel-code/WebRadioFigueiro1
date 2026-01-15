@@ -123,7 +123,7 @@ const Player: React.FC = () => {
                   {!imgError ? (
                     <img src={logoPath} alt="WRF" className="w-full h-full object-contain" onError={() => setImgError(true)} />
                   ) : (
-                    <span className="text-blue-600 dark:text-blue-500 font-black text-2xl italic">F</span>
+                    <span className="text-blue-600 dark:text-blue-500 font-black text-lg md:text-xl italic tracking-tighter">WRF</span>
                   )}
                   {/* Orifício central do "disco" */}
                   <div className="absolute inset-0 flex items-center justify-center">
