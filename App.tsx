@@ -12,6 +12,7 @@ import News from './components/News';
 import VisitorCounter from './components/VisitorCounter';
 import PhotoGallery from './components/PhotoGallery';
 import WeatherWidget from './components/WeatherWidget';
+import MediaCenter from './components/MediaCenter';
 
 const App: React.FC = () => {
   const [isDark, setIsDark] = useState(() => {
@@ -97,6 +98,8 @@ const App: React.FC = () => {
               <Schedule />
             </section>
             
+            <MediaCenter />
+
             <section id="galeria">
               <PhotoGallery />
             </section>
