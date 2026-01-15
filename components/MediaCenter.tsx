@@ -41,7 +41,8 @@ const MediaCenter: React.FC = () => {
       id: '2', 
       title: "Prazeres Interrompidos - Promo", 
       date: "Podcast", 
-      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" 
+      audioUrl: "https://www.dropbox.com/scl/fi/tz8ccze2co79c16pwq1jp/PROMO-Web-R-dio-Figueir.mp3?rlkey=88lpwhzqnl845jn86g4b4b7ai&st=try9kss2&raw=1",
+      externalUrl: "https://www.dropbox.com/scl/fi/tz8ccze2co79c16pwq1jp/PROMO-Web-R-dio-Figueir.mp3?rlkey=88lpwhzqnl845jn86g4b4b7ai&st=try9kss2&dl=0"
     },
   ];
 
@@ -112,7 +113,7 @@ const MediaCenter: React.FC = () => {
                   <div className="flex-grow text-center md:text-left">
                     <p className="text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest mb-1">{audio.date}</p>
                     <h4 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight mb-2">{audio.title}</h4>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">Pressione o play abaixo para ouvir a entrevista instantaneamente.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">Pressione o play abaixo para ouvir o conteúdo instantaneamente.</p>
                   </div>
                 </div>
 
@@ -157,7 +158,7 @@ const MediaCenter: React.FC = () => {
             
             <div className="bg-blue-600/5 rounded-3xl p-6 text-center border border-blue-500/10">
               <p className="text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest leading-relaxed">
-                Dica: O link do Dropbox permite a reprodução direta e estável. <br className="hidden md:block"/> Se encontrar dificuldades, utilize o botão "Baixar MP3".
+                Dica: Os links do Dropbox permitem a reprodução direta e estável. <br className="hidden md:block"/> Se encontrar dificuldades, utilize o botão "Baixar MP3".
               </p>
             </div>
           </div>
