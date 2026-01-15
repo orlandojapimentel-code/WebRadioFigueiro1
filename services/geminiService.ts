@@ -43,41 +43,50 @@ export const getRadioAssistantStream = async (
 };
 
 /**
- * Pesquisa eventos reais em Amarante usando Google Search.
+ * Pesquisa eventos reais em Amarante usando Google Search Grounding.
  */
 export const fetchCulturalEvents = async () => {
   const apiKey = process.env.API_KEY;
-  if (!apiKey || apiKey === "undefined" || apiKey === "") return null;
+  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    throw new Error("MISSING_KEY");
+  }
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const prompt = `PESQUISA ATUALIZADA: Próximos eventos culturais, concertos e exposições em Amarante, Portugal (mês atual e próximo).
+    // Prompt mais forte e direto para garantir resultados
+    const prompt = `PESQUISA OBRIGATÓRIA: Encontra no Google Search os próximos 6 eventos (concertos, festas, exposições) em Amarante, Portugal para os próximos meses.
     
-    FORMATO OBRIGATÓRIO DE RESPOSTA (SEM MARKDOWN):
+    Responde estritamente neste formato para cada evento, sem qualquer texto adicional ou markdown:
     
     EVENTO_START
-    TITULO: [Nome]
-    DATA: [Ex: 15 de Fevereiro]
-    LOCAL: [Local exato]
+    TITULO: [Nome do Evento]
+    DATA: [Ex: 20 de Março]
+    LOCAL: [Local em Amarante]
     TIPO: [CONCERTO, EXPOSIÇÃO, TEATRO ou FESTA]
-    IMAGEM: [URL real da imagem do evento]
-    LINK: [URL do evento]
-    EVENTO_END
-    
-    (Gera 6 blocos destes)`;
+    IMAGEM: [URL de imagem válida do evento]
+    LINK: [URL oficial do evento ou ViralAgenda]
+    EVENTO_END`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.2,
+        temperature: 0.1,
       },
     });
 
-    return { text: response.text || "" };
-  } catch (error) {
+    const text = response.text;
+    if (!text || !text.includes("EVENTO_START")) {
+       return null;
+    }
+
+    return { text };
+  } catch (error: any) {
     console.error("Erro na busca de eventos:", error);
-    return null;
+    if (error.message?.includes("404") || error.message?.includes("not found")) {
+      throw new Error("MODEL_NOT_FOUND");
+    }
+    throw error;
   }
 };
