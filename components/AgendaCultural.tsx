@@ -16,8 +16,8 @@ interface Event {
 const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Galeria de imagens profissionais caso o cartaz real não seja encontrado
   const fallbackImages: Record<string, string> = {
     "CONCERTO": "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800",
     "EXPOSIÇÃO": "https://images.unsplash.com/photo-1531265726475-52ad60219627?q=80&w=800",
@@ -30,52 +30,68 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   useEffect(() => {
     const loadEvents = async () => {
       setLoading(true);
-      const result = await fetchCulturalEvents();
+      setError(null);
       
-      if (result && result.text) {
-        const eventBlocks = result.text.split('EVENTO_START');
+      try {
+        const result = await fetchCulturalEvents();
         
-        const parsedEvents: Event[] = eventBlocks
-          .filter(b => b.includes('EVENTO_END'))
-          .map((block) => {
-            const getValue = (key: string) => {
-              const regex = new RegExp(`${key}:\\s*(.*)`, 'i');
-              const match = block.match(regex);
-              return match ? match[1].trim() : "";
-            };
+        if (!result || !result.text) {
+          setError("Não foi possível carregar os eventos de Amarante neste momento.");
+          setLoading(false);
+          return;
+        }
 
-            const title = getValue('TITULO');
-            const dateStr = getValue('DATA');
-            const local = getValue('LOCAL');
-            const type = getValue('TIPO').toUpperCase() || "GERAL";
-            const img = getValue('IMAGEM');
-            const link = getValue('LINK');
+        // Parser resiliente: procura por blocos entre START e END independentemente de markdown
+        const eventBlocks = result.text.match(/EVENTO_START[\s\S]*?EVENTO_END/g);
+        
+        if (!eventBlocks || eventBlocks.length === 0) {
+          setError("A agenda está a ser atualizada. Por favor, tente daqui a instantes.");
+          setLoading(false);
+          return;
+        }
 
-            const dayMatch = dateStr.match(/\d+/);
-            const day = dayMatch ? dayMatch[0] : "??";
-            const month = dateStr.replace(day, "").replace(/de/g, "").trim().substring(0, 3).toUpperCase();
+        const parsedEvents: Event[] = eventBlocks.map((block) => {
+          const extract = (key: string) => {
+            const regex = new RegExp(`${key}:\\s*(.*)`, 'i');
+            const match = block.match(regex);
+            return match ? match[1].trim().replace(/[*`]/g, '') : "";
+          };
 
-            // Lógica de imagem: Real -> Categoria -> Geral
-            const finalImage = (img && img.startsWith('http')) 
-              ? img 
-              : (fallbackImages[type] || fallbackImages["GERAL"]);
+          const title = extract('TITULO');
+          const dateStr = extract('DATA');
+          const local = extract('LOCAL');
+          const type = extract('TIPO').toUpperCase() || "GERAL";
+          const img = extract('IMAGEM');
+          const link = extract('LINK');
 
-            return {
-              title,
-              dateStr,
-              day,
-              month: month || "EVENTO",
-              location: local,
-              category: type,
-              image: finalImage,
-              sourceUrl: link || "https://www.viralagenda.com/pt/p/municipiodeamarante"
-            };
-          });
+          const dayMatch = dateStr.match(/\d+/);
+          const day = dayMatch ? dayMatch[0] : "??";
+          const month = dateStr.replace(day, "").replace(/de/g, "").trim().substring(0, 3).toUpperCase();
 
-        if (parsedEvents.length > 0) setEvents(parsedEvents);
+          const finalImage = (img && img.startsWith('http')) 
+            ? img 
+            : (fallbackImages[type] || fallbackImages["GERAL"]);
+
+          return {
+            title: title || "Evento Cultural",
+            dateStr,
+            day,
+            month: month || "AGENDA",
+            location: local || "Amarante",
+            category: type,
+            image: finalImage,
+            sourceUrl: link || "https://www.viralagenda.com/pt/p/municipiodeamarante"
+          };
+        });
+
+        setEvents(parsedEvents);
+      } catch (err) {
+        setError("Erro de ligação ao serviço de eventos.");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
+
     loadEvents();
   }, []);
 
@@ -114,9 +130,23 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
             </div>
             <div className="text-center">
-              <p className="text-indigo-900 font-black text-sm uppercase tracking-[0.3em] animate-pulse">A procurar Cartazes Reais...</p>
-              <p className="text-slate-400 text-[10px] mt-2 font-bold">FONTE: VIRAL AGENDA AMARANTE</p>
+              <p className="text-indigo-900 font-black text-sm uppercase tracking-[0.3em] animate-pulse">Consultando Viral Agenda...</p>
+              <p className="text-slate-400 text-[10px] mt-2 font-bold uppercase tracking-widest">A aguardar resposta da IA</p>
             </div>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-40 text-center space-y-6 max-w-md mx-auto">
+            <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <h3 className="text-xl font-black text-slate-900">Ops! Algo correu mal</h3>
+            <p className="text-slate-500 text-sm font-medium leading-relaxed">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-indigo-600/20"
+            >
+              Tentar Novamente
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -131,10 +161,12 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     alt={event.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                     loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = fallbackImages[event.category] || fallbackImages["GERAL"];
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   
-                  {/* Badge de Data Customizado */}
                   <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-3 text-center min-w-[70px] border border-slate-100 group-hover:bg-amber-500 group-hover:text-white transition-all duration-500">
                     <p className="text-[10px] font-black uppercase tracking-tighter opacity-60 leading-none">{event.month}</p>
                     <p className="text-3xl font-black leading-none mt-1.5">{event.day}</p>
@@ -156,7 +188,7 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <div className="p-2 bg-slate-50 rounded-lg">
                       <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     </div>
-                    <span className="text-sm font-bold uppercase tracking-wide">{event.location}</span>
+                    <span className="text-sm font-bold uppercase tracking-wide truncate">{event.location}</span>
                   </div>
 
                   <div className="mt-auto pt-8 border-t border-slate-50 flex items-center gap-4">
@@ -168,9 +200,6 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     >
                       Ver Detalhes
                     </a>
-                    <button className="p-4 bg-slate-50 text-slate-300 hover:text-amber-500 rounded-2xl transition-all">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-                    </button>
                   </div>
                 </div>
               </div>

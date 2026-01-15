@@ -44,25 +44,30 @@ export const getRadioAssistantStream = async (
 
 /**
  * Procura os eventos mais recentes em Amarante via Google Search
- * Focado em obter URLs de imagens reais.
+ * Focado em obter URLs de imagens reais e estrutura limpa.
  */
 export const fetchCulturalEvents = async () => {
   const apiKey = process.env.API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey || apiKey === "undefined") return null;
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const prompt = `Acede ao site https://www.viralagenda.com/pt/p/municipiodeamarante e identifica os próximos 6 eventos.
-    É EXTREMAMENTE IMPORTANTE que tentes encontrar o URL direto da imagem do cartaz (Poster) para cada evento.
+    const prompt = `PESQUISA OBRIGATÓRIA: Próximos eventos no site https://www.viralagenda.com/pt/p/municipiodeamarante.
+    Extrai os 6 eventos mais recentes. 
     
-    Para cada evento responde APENAS com esta estrutura:
+    REGRAS DE RESPOSTA:
+    1. NÃO USES código Markdown (não uses \`\`\`).
+    2. Começa a resposta diretamente com EVENTO_START.
+    3. Para cada evento, tenta encontrar o URL direto da imagem (.jpg/.png).
+
+    ESTRUTURA POR EVENTO:
     EVENTO_START
     TITULO: [Nome]
-    DATA: [Data Formatada]
-    LOCAL: [Local em Amarante]
-    TIPO: [Concerto, Exposição, Teatro, Festa ou Cinema]
-    IMAGEM: [URL completo do ficheiro .jpg ou .png da imagem do cartaz]
-    LINK: [URL da página do evento]
+    DATA: [Ex: 25 Janeiro]
+    LOCAL: [Local]
+    TIPO: [Concerto, Teatro, Exposição ou Festa]
+    IMAGEM: [URL da imagem ou 'null']
+    LINK: [URL do evento]
     EVENTO_END`;
 
     const response = await ai.models.generateContent({
@@ -74,10 +79,9 @@ export const fetchCulturalEvents = async () => {
       },
     });
 
-    const text = response.text || "";
-    return { text };
+    return { text: response.text || "" };
   } catch (error) {
-    console.error("Erro ao procurar eventos:", error);
+    console.error("Erro na busca de eventos:", error);
     return null;
   }
 };
