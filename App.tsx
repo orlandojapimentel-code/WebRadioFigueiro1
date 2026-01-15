@@ -20,6 +20,11 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
+    // Garante que a página comece sempre no topo ao carregar
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('wrf_theme', 'dark');
@@ -40,7 +45,6 @@ const App: React.FC = () => {
         
         {/* SECÇÃO DE SERVIÇOS AMARANTE */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* AGENDA CULTURAL - AGORA COMO LINK EXTERNO (MESMO PADRÃO DAS FARMÁCIAS) */}
           <a 
             href="https://www.viralagenda.com/pt/porto/amarante" 
             target="_blank" 
@@ -127,10 +131,6 @@ const App: React.FC = () => {
               </button>
             </p>
             <p>Telefone: +351 910270085</p>
-          </div>
-          <div className="mt-6 flex justify-center space-x-4 opacity-50 grayscale hover:grayscale-0 transition-all">
-             <div className="w-8 h-8 rounded-full bg-blue-600"></div>
-             <div className="w-8 h-8 rounded-full bg-indigo-600"></div>
           </div>
         </div>
       </footer>

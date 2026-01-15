@@ -18,14 +18,18 @@ const GeminiAssistant: React.FC = () => {
   const [connectionStatus, setConnectionStatus] = useState<'online' | 'tuning' | 'error'>('online');
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     sessionStorage.setItem('wrf_chat_v2.4', JSON.stringify(messages));
   }, [messages]);
 
+  // Scroll apenas dentro do contentor do chat, sem afetar o window/página
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
   }, [messages, streamingText, isTyping, connectionStatus]);
 
   const handleSintonizar = async () => {
@@ -113,7 +117,10 @@ const GeminiAssistant: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-grow overflow-y-auto p-2.5 space-y-2.5 scrollbar-hide bg-black/5 relative">
+      <div 
+        ref={scrollContainerRef}
+        className="flex-grow overflow-y-auto p-2.5 space-y-2.5 scrollbar-hide bg-black/5 relative"
+      >
         {messages.map((m, i) => (
           <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-1 duration-200`}>
             <div className={`max-w-[92%] px-3 py-2 rounded-xl text-[10.5px] leading-snug shadow-sm ${
@@ -135,7 +142,7 @@ const GeminiAssistant: React.FC = () => {
         )}
 
         {connectionStatus === 'tuning' && (
-          <div className="absolute inset-x-0 bottom-1 px-2.5 z-20">
+          <div className="sticky bottom-1 px-2.5 z-20 pb-2">
             <div className="bg-indigo-950/95 backdrop-blur-2xl border border-indigo-400/50 p-3 rounded-xl shadow-2xl text-center">
               <p className="text-white font-black text-[9px] mb-2 uppercase tracking-wider">Sinal Baixo</p>
               <button 
@@ -159,8 +166,6 @@ const GeminiAssistant: React.FC = () => {
             </button>
           </div>
         )}
-
-        <div ref={scrollRef} />
       </div>
 
       <div className="p-2 bg-gray-900/95 border-t border-white/5">
