@@ -12,7 +12,7 @@ interface AudioItem {
   title: string;
   date: string;
   audioUrl: string;
-  driveId: string;
+  externalUrl?: string;
 }
 
 const MediaCenter: React.FC = () => {
@@ -33,21 +33,17 @@ const MediaCenter: React.FC = () => {
       id: '1', 
       title: "Entrevista Especial: Ás da Concertina e Vasquinho da Concertina", 
       date: "Destaque Popular", 
-      driveId: "16FYy1TR8z1qI1UOpkeqSPYs2-RsEv0Gl",
-      audioUrl: "https://docs.google.com/uc?id=16FYy1TR8z1qI1UOpkeqSPYs2-RsEv0Gl" 
+      // Link do Dropbox modificado com raw=1 para streaming direto no browser
+      audioUrl: "https://www.dropbox.com/scl/fi/u3r7msk0h6blqpjt8mrba/Entrevista-s-da-concertina-e-Vasquinho-24-01-2025.mp3?rlkey=2sb2suromeylsn0yiwoyc67mn&st=qhx3c6fq&raw=1",
+      externalUrl: "https://www.dropbox.com/scl/fi/u3r7msk0h6blqpjt8mrba/Entrevista-s-da-concertina-e-Vasquinho-24-01-2025.mp3?rlkey=2sb2suromeylsn0yiwoyc67mn&st=qhx3c6fq&dl=0"
     },
     { 
       id: '2', 
       title: "Prazeres Interrompidos - Promo", 
       date: "Podcast", 
-      driveId: "",
       audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" 
     },
   ];
-
-  const openInNewTab = (id: string) => {
-    window.open(`https://drive.google.com/file/d/${id}/view`, '_blank');
-  };
 
   return (
     <section id="multimedia" className="space-y-8 scroll-mt-24">
@@ -116,49 +112,52 @@ const MediaCenter: React.FC = () => {
                   <div className="flex-grow text-center md:text-left">
                     <p className="text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest mb-1">{audio.date}</p>
                     <h4 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight mb-2">{audio.title}</h4>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">Clique no play para ouvir ou use as opções de backup em caso de erro.</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">Pressione o play abaixo para ouvir a entrevista instantaneamente.</p>
                   </div>
                 </div>
 
                 <div className="w-full space-y-4">
                   <div className="bg-slate-100 dark:bg-black/40 p-4 rounded-2xl border border-gray-200 dark:border-white/5">
                     <audio 
+                      key={audio.audioUrl}
                       controls 
                       className="w-full h-10 accent-blue-600"
-                      preload="metadata"
+                      preload="auto"
                     >
                       <source src={audio.audioUrl} type="audio/mpeg" />
-                      Browser incompatível.
+                      O seu browser não suporta o leitor de áudio.
                     </audio>
                   </div>
 
-                  {audio.driveId && (
-                    <div className="flex flex-wrap justify-center gap-3">
-                      <button 
-                        onClick={() => openInNewTab(audio.driveId)}
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {audio.externalUrl && (
+                      <a 
+                        href={audio.externalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center space-x-2 px-6 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all active:scale-95"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6l6 6-6 6"/></svg>
-                        <span>Ouvir no Google Drive</span>
-                      </button>
-                      
-                      <a 
-                        href={`https://docs.google.com/uc?export=download&id=${audio.driveId}`}
-                        download
-                        className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        <span>Descarregar MP3</span>
+                        <span>Ouvir no Dropbox</span>
                       </a>
-                    </div>
-                  )}
+                    )}
+                    
+                    <a 
+                      href={audio.audioUrl}
+                      download
+                      className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                      <span>Baixar MP3</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             ))}
             
             <div className="bg-blue-600/5 rounded-3xl p-6 text-center border border-blue-500/10">
               <p className="text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest leading-relaxed">
-                Nota: Se o áudio não iniciar, certifique-se que o seu browser permite reprodução de media <br className="hidden md:block"/> ou utilize o botão "Ouvir no Google Drive".
+                Dica: O link do Dropbox permite a reprodução direta e estável. <br className="hidden md:block"/> Se encontrar dificuldades, utilize o botão "Baixar MP3".
               </p>
             </div>
           </div>
