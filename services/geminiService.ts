@@ -43,31 +43,26 @@ export const getRadioAssistantStream = async (
 };
 
 /**
- * Procura os eventos mais recentes em Amarante via Google Search
- * Focado em obter URLs de imagens reais e estrutura limpa.
+ * Procura os eventos mais recentes em Amarante.
+ * Se falhar, o componente frontend lidará com dados de fallback.
  */
 export const fetchCulturalEvents = async () => {
   const apiKey = process.env.API_KEY;
-  if (!apiKey || apiKey === "undefined") return null;
+  // Se não houver chave, retorna null imediatamente para o fallback atuar
+  if (!apiKey || apiKey === "undefined" || apiKey === "") return null;
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const prompt = `PESQUISA OBRIGATÓRIA: Próximos eventos no site https://www.viralagenda.com/pt/p/municipiodeamarante.
-    Extrai os 6 eventos mais recentes. 
+    const prompt = `Age como um crawler de eventos. Pesquisa os próximos 6 eventos em Amarante no site viralagenda.com.
+    Responde APENAS no formato abaixo, sem markdown, sem explicações:
     
-    REGRAS DE RESPOSTA:
-    1. NÃO USES código Markdown (não uses \`\`\`).
-    2. Começa a resposta diretamente com EVENTO_START.
-    3. Para cada evento, tenta encontrar o URL direto da imagem (.jpg/.png).
-
-    ESTRUTURA POR EVENTO:
     EVENTO_START
-    TITULO: [Nome]
-    DATA: [Ex: 25 Janeiro]
-    LOCAL: [Local]
-    TIPO: [Concerto, Teatro, Exposição ou Festa]
-    IMAGEM: [URL da imagem ou 'null']
-    LINK: [URL do evento]
+    TITULO: Nome do Evento
+    DATA: Dia de Mês
+    LOCAL: Localização
+    TIPO: Concerto/Teatro/Festa/Exposição
+    IMAGEM: URL da imagem ou null
+    LINK: URL do Viral Agenda
     EVENTO_END`;
 
     const response = await ai.models.generateContent({
@@ -81,7 +76,7 @@ export const fetchCulturalEvents = async () => {
 
     return { text: response.text || "" };
   } catch (error) {
-    console.error("Erro na busca de eventos:", error);
+    console.error("Gemini API Error:", error);
     return null;
   }
 };
