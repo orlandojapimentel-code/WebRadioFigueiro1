@@ -43,40 +43,41 @@ export const getRadioAssistantStream = async (
 };
 
 /**
- * Procura os eventos mais recentes em Amarante.
- * Se falhar, o componente frontend lidará com dados de fallback.
+ * Pesquisa eventos reais em Amarante usando Google Search.
  */
 export const fetchCulturalEvents = async () => {
   const apiKey = process.env.API_KEY;
-  // Se não houver chave, retorna null imediatamente para o fallback atuar
   if (!apiKey || apiKey === "undefined" || apiKey === "") return null;
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const prompt = `Age como um crawler de eventos. Pesquisa os próximos 6 eventos em Amarante no site viralagenda.com.
-    Responde APENAS no formato abaixo, sem markdown, sem explicações:
+    const prompt = `PESQUISA ATUALIZADA: Próximos eventos culturais, concertos e exposições em Amarante, Portugal (mês atual e próximo).
+    
+    FORMATO OBRIGATÓRIO DE RESPOSTA (SEM MARKDOWN):
     
     EVENTO_START
-    TITULO: Nome do Evento
-    DATA: Dia de Mês
-    LOCAL: Localização
-    TIPO: Concerto/Teatro/Festa/Exposição
-    IMAGEM: URL da imagem ou null
-    LINK: URL do Viral Agenda
-    EVENTO_END`;
+    TITULO: [Nome]
+    DATA: [Ex: 15 de Fevereiro]
+    LOCAL: [Local exato]
+    TIPO: [CONCERTO, EXPOSIÇÃO, TEATRO ou FESTA]
+    IMAGEM: [URL real da imagem do evento]
+    LINK: [URL do evento]
+    EVENTO_END
+    
+    (Gera 6 blocos destes)`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.1,
+        temperature: 0.2,
       },
     });
 
     return { text: response.text || "" };
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Erro na busca de eventos:", error);
     return null;
   }
 };
