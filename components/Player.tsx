@@ -95,59 +95,72 @@ const Player: React.FC = () => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  const bars = Array.from({ length: 24 }, (_, i) => ({
+  // Visualizer bars
+  const bars = Array.from({ length: 32 }, (_, i) => ({
     id: i,
-    delay: `${i * 0.04}s`,
-    duration: `${0.4 + Math.random() * 0.8}s`
+    delay: `${i * 0.03}s`,
+    duration: `${0.5 + Math.random() * 0.7}s`
   }));
 
   return (
-    <div className="fixed bottom-6 left-4 right-4 md:left-8 md:right-8 z-[70] transition-all duration-700 pointer-events-none">
-      <div className={`absolute -inset-10 bg-blue-600/10 blur-[120px] rounded-full transition-opacity duration-1000 pointer-events-none ${isPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`} />
-
-      <div className="relative bg-gray-950/90 border border-white/5 backdrop-blur-3xl rounded-[2.5rem] p-3 md:p-5 shadow-[0_32px_120px_rgba(0,0,0,0.8)] overflow-hidden pointer-events-auto">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 pointer-events-none">
+      <div className="container mx-auto max-w-6xl relative">
         
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Glow de Fundo quando está a tocar */}
+        <div className={`absolute -inset-10 bg-blue-600/20 blur-[100px] rounded-full transition-all duration-1000 pointer-events-none ${isPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`} />
+
+        {/* Corpo do Player */}
+        <div className={`relative bg-gray-950/90 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] p-3 md:p-4 shadow-[0_20px_80px_rgba(0,0,0,0.6)] flex flex-col md:flex-row items-center gap-4 transition-all duration-500 pointer-events-auto ${isPlaying ? 'ring-2 ring-blue-500/20' : ''}`}>
           
-          <div className="flex items-center space-x-6 w-full md:w-auto">
-            {/* LOGO DO PLAYER COM BRANDING */}
-            <div className="relative flex-shrink-0">
-              <div className={`absolute -inset-2 bg-blue-600/30 rounded-full blur-md transition-opacity duration-1000 ${isPlaying ? 'opacity-100 animate-pulse' : 'opacity-0'}`} />
-              <div className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden bg-white flex items-center justify-center shadow-2xl border-2 border-white/5 ${isPlaying ? 'animate-spin-slow' : ''}`}
-                   style={{ animationDuration: '12s' }}>
-                {!imgError ? (
-                  <img src={logoPath} alt="WRF" className="h-[75%] w-[75%] object-contain" onError={() => setImgError(true)} />
-                ) : (
-                  <span className="text-blue-600 font-black text-xl italic leading-none">F</span>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
+          {/* SECÇÃO ESQUERDA: LOGO E INFO */}
+          <div className="flex items-center space-x-5 w-full md:w-auto flex-grow min-w-0">
+            
+            {/* Logo Giratório (Estilo Disco) */}
+            <div className="relative flex-shrink-0 group">
+              <div className={`absolute -inset-1 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full blur transition-opacity duration-1000 ${isPlaying ? 'opacity-100 animate-pulse' : 'opacity-0'}`} />
+              <div className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full bg-white dark:bg-gray-800 p-1.5 shadow-2xl border border-white/10 transition-transform duration-700 ${isPlaying ? 'animate-spin-slow' : 'scale-95'}`}>
+                <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-900 relative">
+                  {!imgError ? (
+                    <img src={logoPath} alt="WRF" className="w-full h-full object-contain" onError={() => setImgError(true)} />
+                  ) : (
+                    <span className="text-blue-600 dark:text-blue-500 font-black text-2xl italic">F</span>
+                  )}
+                  {/* Orifício central do "disco" */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-gray-950 rounded-full border border-white/20 shadow-inner"></div>
+                  </div>
+                </div>
               </div>
             </div>
-            
-            <div className="min-w-0 flex-grow">
-              <div className="flex items-center space-x-2 mb-1">
-                <span className="flex h-1.5 w-1.5 relative">
-                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isPlaying ? 'bg-red-500' : 'bg-gray-500'} opacity-75`}></span>
-                  <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${isPlaying ? 'bg-red-600' : 'bg-gray-600'}`}></span>
-                </span>
-                <span className="text-[9px] text-gray-400 font-black uppercase tracking-[0.3em]">Em Direto</span>
+
+            {/* Metadados e Visualizador */}
+            <div className="flex flex-col min-w-0 flex-grow">
+              <div className="flex items-center space-x-2 mb-1.5">
+                <div className="flex items-center space-x-1.5 bg-red-600/10 px-2 py-0.5 rounded-md border border-red-500/20">
+                  <span className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></span>
+                  <span className="text-[8px] font-black uppercase tracking-[0.2em] text-red-500">ON AIR</span>
+                </div>
+                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest hidden sm:inline">Emissão Digital HD</span>
               </div>
               
-              <p className="text-white text-sm md:text-lg font-brand font-bold truncate tracking-tight mb-2">
-                {metadata}
-              </p>
-              
-              <div className="flex items-end space-x-[2px] h-4">
+              <div className="overflow-hidden mb-2">
+                <h3 className="text-white text-sm md:text-lg font-brand font-black tracking-tighter truncate">
+                  {metadata}
+                </h3>
+              </div>
+
+              {/* Espectro de Áudio */}
+              <div className="flex items-end space-x-[2px] h-5 opacity-80">
                 {bars.map((bar) => (
                   <div
                     key={bar.id}
-                    className="w-1 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full visualizer-bar origin-bottom"
+                    className="flex-grow max-w-[4px] bg-gradient-to-t from-blue-600 via-blue-400 to-indigo-400 rounded-full visualizer-bar origin-bottom"
                     style={{ 
                       animationDelay: bar.delay, 
                       animationDuration: bar.duration,
                       animationPlayState: isPlaying ? 'running' : 'paused',
-                      opacity: isPlaying ? 0.8 : 0.1,
-                      transform: isPlaying ? 'none' : 'scaleY(0.2)'
+                      height: isPlaying ? '100%' : '15%',
+                      transition: 'height 0.3s ease'
                     }}
                   />
                 ))}
@@ -155,27 +168,32 @@ const Player: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-8">
+          {/* SECÇÃO CENTRAL: CONTROLOS DE PLAY */}
+          <div className="flex items-center space-x-6">
             <button 
               onClick={togglePlay}
-              className="group relative h-16 w-16 md:h-20 md:w-20 bg-white hover:bg-blue-50 text-gray-950 rounded-full flex items-center justify-center shadow-xl transition-all transform active:scale-95 hover:scale-105"
+              className={`group relative h-16 w-16 md:h-20 md:w-20 rounded-full flex items-center justify-center transition-all duration-500 active:scale-90 ${isPlaying ? 'bg-white text-gray-950 shadow-blue-500/20' : 'bg-blue-600 text-white shadow-blue-600/40'} shadow-2xl hover:scale-105`}
             >
+              <div className={`absolute inset-0 rounded-full border-2 border-current opacity-20 group-hover:scale-110 transition-transform ${isPlaying ? 'animate-ping' : ''}`} />
               {isPlaying ? (
                 <svg className="w-8 h-8 md:w-10 md:h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               ) : (
-                <svg className="w-8 h-8 md:w-10 md:h-10 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg className="w-8 h-8 md:w-10 md:h-10 ml-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
               )}
             </button>
-            
-            <div className="hidden md:flex items-center space-x-4 bg-white/5 px-6 py-3 rounded-2xl border border-white/5">
-              <button onClick={toggleMute} className="text-white/40 hover:text-blue-400 transition-colors">
+          </div>
+
+          {/* SECÇÃO DIREITA: VOLUME E OPÇÕES */}
+          <div className="hidden lg:flex items-center space-x-6 min-w-[200px]">
+            <div className="flex items-center space-x-3 bg-white/5 p-3 rounded-2xl border border-white/5 flex-grow">
+              <button onClick={toggleMute} className="text-gray-400 hover:text-white transition-colors">
                 {volume === 0 ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
                 ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
                 )}
               </button>
-              <div className="relative w-32 h-1 bg-gray-800 rounded-full overflow-hidden">
+              <div className="relative flex-grow h-1.5 bg-gray-800 rounded-full overflow-hidden group/vol">
                 <input 
                   type="range" min="0" max="1" step="0.01" value={volume}
                   onChange={(e) => setVolume(parseFloat(e.target.value))}
@@ -184,20 +202,33 @@ const Player: React.FC = () => {
                 <div className="h-full bg-blue-500 rounded-full transition-all duration-300" style={{ width: `${volume * 100}%` }} />
               </div>
             </div>
+            
+            <button className="p-3 text-gray-500 hover:text-white transition-colors" title="Definições de Som">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+            </button>
           </div>
 
         </div>
       </div>
+
+      <audio ref={audioRef} preload="none" />
+
       <style>{`
         @keyframes spin-slow {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
         .animate-spin-slow {
-          animation: spin-slow linear infinite;
+          animation: spin-slow 15s linear infinite;
+        }
+        @keyframes wave {
+          0%, 100% { height: 15%; opacity: 0.5; }
+          50% { height: 100%; opacity: 1; }
+        }
+        .visualizer-bar {
+          animation: wave 1s ease-in-out infinite;
         }
       `}</style>
-      <audio ref={audioRef} />
     </div>
   );
 };
