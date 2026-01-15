@@ -10,12 +10,10 @@ import Partnerships from './components/Partnerships';
 import Socials from './components/Socials';
 import News from './components/News';
 import VisitorCounter from './components/VisitorCounter';
-import AgendaCultural from './components/AgendaCultural';
 import PhotoGallery from './components/PhotoGallery';
 import WeatherWidget from './components/WeatherWidget';
 
 const App: React.FC = () => {
-  const [isAgendaOpen, setIsAgendaOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('wrf_theme');
     return saved ? saved === 'dark' : true;
@@ -40,10 +38,13 @@ const App: React.FC = () => {
       <main className="flex-grow container mx-auto px-4 space-y-16 py-8">
         <Hero />
         
-        {/* SECÇÃO DE SERVIÇOS AMARANTE (NOVA LOCALIZAÇÃO) */}
+        {/* SECÇÃO DE SERVIÇOS AMARANTE */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <button 
-            onClick={() => setIsAgendaOpen(true)}
+          {/* AGENDA CULTURAL - AGORA COMO LINK EXTERNO (MESMO PADRÃO DAS FARMÁCIAS) */}
+          <a 
+            href="https://www.viralagenda.com/pt/porto/amarante" 
+            target="_blank" 
+            rel="noopener noreferrer"
             className="group relative flex items-center p-8 bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-[2.5rem] shadow-xl transition-all hover:-translate-y-1 hover:shadow-indigo-500/20 active:scale-[0.98] overflow-hidden"
           >
             <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-10 transition-opacity"></div>
@@ -56,8 +57,12 @@ const App: React.FC = () => {
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400/80 mb-1">Eventos Locais</p>
               <h4 className="text-2xl font-black tracking-tight">Agenda Cultural</h4>
             </div>
-            <div className="ml-auto bg-amber-500 text-indigo-950 text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg">AMARANTE</div>
-          </button>
+            <div className="ml-auto text-amber-400 group-hover:translate-x-1 transition-transform">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+              </svg>
+            </div>
+          </a>
 
           <a 
             href="https://www.farmaciasdeservico.net/mapa/3719" 
@@ -131,8 +136,6 @@ const App: React.FC = () => {
       </footer>
 
       <Player />
-      
-      {isAgendaOpen && <AgendaCultural onClose={() => setIsAgendaOpen(false)} />}
     </div>
   );
 };
