@@ -24,8 +24,8 @@ const MediaCenter: React.FC = () => {
   }, []);
 
   const videos: VideoItem[] = [
-    { id: '1', title: "Ás da Concertina em Direto", youtubeId: "dQw4w9WgXcQ" }, 
-    { id: '2', title: "Grande Gala Web Rádio Figueiró", youtubeId: "dQw4w9WgXcQ" },
+    { id: '1', title: "Web Rádio Figueiró - Emissão Especial", youtubeId: "r5GzTRSWXgc" }, 
+    { id: '2', title: "Destaque Musical WRF", youtubeId: "kjRBK718BtM" },
   ];
 
   const audios: AudioItem[] = [
