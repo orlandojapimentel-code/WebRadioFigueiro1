@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface Photo {
   id: number;
@@ -26,21 +26,13 @@ const PhotoCard: React.FC<{ photo: Photo; onClick: (p: Photo) => void }> = ({ ph
   return (
     <div 
       onClick={() => isLoaded && onClick(photo)}
-      className="group relative h-80 rounded-[2.5rem] overflow-hidden cursor-pointer border border-white/5 bg-gray-800 shadow-xl transition-all duration-500 hover:-translate-y-2"
+      className="group relative h-64 md:h-80 rounded-[2rem] overflow-hidden cursor-pointer border border-white/5 bg-gray-800 shadow-xl transition-all duration-500 hover:-translate-y-2"
     >
-      {/* Skeleton / Shimmer Effect */}
       {!isLoaded && !hasError && (
         <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
           <div className="w-full h-full bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 bg-[length:200%_100%] animate-[shimmer_1.5s_infinite] opacity-50" />
-          <div className="absolute flex flex-col items-center">
-             <svg className="w-8 h-8 text-gray-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-             </svg>
-          </div>
         </div>
       )}
-
-      {/* A Imagem Real */}
       <img 
         src={photo.url} 
         alt={photo.title}
@@ -49,27 +41,18 @@ const PhotoCard: React.FC<{ photo: Photo; onClick: (p: Photo) => void }> = ({ ph
         className={`w-full h-full object-cover transition-all duration-1000 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'} group-hover:scale-110`}
         loading="lazy"
       />
-
-      {/* Overlay de Informação (Só aparece se a imagem estiver carregada) */}
-      <div className={`absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent flex flex-col justify-end p-8 transition-opacity duration-500 ${isLoaded ? 'opacity-0 group-hover:opacity-100' : 'opacity-0'}`}>
-        <span className="inline-block w-fit px-3 py-1 rounded-lg bg-blue-600 text-[9px] font-black uppercase tracking-widest text-white mb-3">
+      <div className={`absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/20 to-transparent flex flex-col justify-end p-6 transition-opacity duration-500 ${isLoaded ? 'opacity-0 group-hover:opacity-100' : 'opacity-0'}`}>
+        <span className="inline-block w-fit px-2 py-0.5 rounded-md bg-blue-600 text-[8px] font-black uppercase tracking-widest text-white mb-2">
           {photo.category}
         </span>
-        <h4 className="text-white font-black text-2xl tracking-tighter mb-2">{photo.title}</h4>
-        <p className="text-gray-300 text-sm leading-relaxed line-clamp-2">{photo.description}</p>
+        <h4 className="text-white font-black text-lg tracking-tighter leading-tight">{photo.title}</h4>
       </div>
-
-      <style>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-      `}</style>
     </div>
   );
 };
 
 const PhotoGallery: React.FC = () => {
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [filter, setFilter] = useState<'todos' | 'eventos' | 'lugares' | 'estudio'>('todos');
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
@@ -100,85 +83,157 @@ const PhotoGallery: React.FC = () => {
   const allPhotos: Photo[] = [...FOTOS_ESTUDIO, ...FOTOS_EVENTOS, ...FOTOS_LUGARES];
   const filteredPhotos = filter === 'todos' ? allPhotos : allPhotos.filter(p => p.category === filter);
 
+  // Bloquear scroll do body quando o overlay está aberto
+  useEffect(() => {
+    if (isOverlayOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOverlayOpen]);
+
   return (
-    <div className="space-y-8">
-      {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-800 pb-8">
-        <div className="flex items-center space-x-5">
-          <div className="p-4 bg-blue-600 rounded-[1.5rem] shadow-lg shadow-blue-500/20">
-            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="w-full">
+      {/* CARD DE ENTRADA NA PÁGINA PRINCIPAL */}
+      <div 
+        onClick={() => setIsOverlayOpen(true)}
+        className="group relative w-full h-64 md:h-80 rounded-[2.5rem] overflow-hidden cursor-pointer shadow-2xl transition-all duration-700 hover:scale-[1.02] border border-blue-500/20"
+      >
+        <div className="absolute inset-0 bg-blue-900/40 group-hover:bg-blue-900/20 transition-colors z-10" />
+        <img 
+          src={FOTOS_ESTUDIO[0].url} 
+          alt="Explorar Galeria" 
+          className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+        />
+        
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 text-center bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent">
+          <div className="mb-4 p-4 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 group-hover:scale-110 transition-transform duration-500">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
           </div>
-          <div>
-            <h3 className="text-3xl font-black text-white tracking-tight">A Nossa Galeria</h3>
-            <p className="text-xs text-blue-400 font-bold uppercase tracking-[0.2em] mt-1">Imagens Reais da Web Rádio Figueiró</p>
+          <h3 className="text-3xl md:text-4xl font-black text-white tracking-tighter mb-2">A Nossa Galeria</h3>
+          <p className="text-blue-300 font-bold uppercase tracking-[0.2em] text-[10px] mb-6">Explore o estúdio e os nossos eventos</p>
+          
+          <div className="flex items-center space-x-4">
+            <span className="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/40">
+              Ver {allPhotos.length} Fotos
+            </span>
           </div>
         </div>
-
-        {/* Filtros */}
-        <div className="flex flex-wrap gap-2 bg-gray-950/50 p-1.5 rounded-2xl border border-white/5">
-          {[
-            { id: 'todos', label: 'Ver Todas' },
-            { id: 'estudio', label: 'Estúdio' },
-            { id: 'eventos', label: 'Eventos' },
-            { id: 'lugares', label: 'Lugares' }
-          ].map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setFilter(cat.id as any)}
-              className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                filter === cat.id 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* Grid de Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredPhotos.map((photo) => (
-          <PhotoCard key={photo.id} photo={photo} onClick={setSelectedPhoto} />
-        ))}
-      </div>
-
-      {/* Lightbox */}
-      {selectedPhoto && (
-        <div 
-          className="fixed inset-0 z-[110] bg-gray-950/98 backdrop-blur-2xl flex items-center justify-center p-6"
-          onClick={() => setSelectedPhoto(null)}
-        >
-          <div className="max-w-5xl w-full flex flex-col items-center animate-in fade-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
-            <div className="relative group w-full bg-gray-900 rounded-[2.5rem] overflow-hidden">
-              <img 
-                src={selectedPhoto.url} 
-                alt={selectedPhoto.title}
-                className="rounded-[2.5rem] shadow-2xl max-h-[75vh] w-full object-contain border border-white/10"
-              />
+      {/* OVERLAY DA GALERIA COMPLETA */}
+      {isOverlayOpen && (
+        <div className="fixed inset-0 z-[120] bg-gray-950 flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-500">
+          
+          {/* Header do Overlay */}
+          <div className="sticky top-0 z-20 bg-gray-900/95 backdrop-blur-xl border-b border-white/5">
+            <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-blue-600 rounded-xl">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+                <h2 className="text-xl font-black text-white tracking-tight">Galeria Web Rádio Figueiró</h2>
+              </div>
               <button 
-                onClick={() => setSelectedPhoto(null)}
-                className="absolute top-6 right-6 p-4 bg-black/50 hover:bg-black/80 text-white rounded-full backdrop-blur-md transition-all"
+                onClick={() => setIsOverlayOpen(false)}
+                className="p-3 bg-white/5 hover:bg-white/10 rounded-full text-white transition-all"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
               </button>
             </div>
-            <div className="mt-8 text-center max-w-2xl">
-              <span className="text-blue-500 font-black uppercase tracking-[0.3em] text-[10px] mb-2 block">
-                {selectedPhoto.category}
-              </span>
-              <h2 className="text-4xl font-black text-white tracking-tighter">{selectedPhoto.title}</h2>
-              <p className="text-gray-400 mt-3 text-lg leading-relaxed">{selectedPhoto.description}</p>
+
+            {/* Filtros de Categoria */}
+            <div className="container mx-auto px-4 pb-4">
+              <div className="flex flex-wrap gap-2 overflow-x-auto scrollbar-hide py-2">
+                {[
+                  { id: 'todos', label: 'Todas' },
+                  { id: 'estudio', label: 'Estúdio' },
+                  { id: 'eventos', label: 'Eventos' },
+                  { id: 'lugares', label: 'Lugares' }
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setFilter(cat.id as any)}
+                    className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+                      filter === cat.id 
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 scale-105' 
+                        : 'bg-white/5 text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Conteúdo da Grelha */}
+          <div className="flex-grow overflow-y-auto p-4 md:p-8 bg-gray-950">
+            <div className="container mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredPhotos.map((photo) => (
+                  <PhotoCard key={photo.id} photo={photo} onClick={setSelectedPhoto} />
+                ))}
+              </div>
+              
+              <div className="mt-12 mb-20 text-center py-12 border-t border-white/5">
+                <p className="text-gray-500 font-bold text-[10px] uppercase tracking-[0.3em]">
+                  Web Rádio Figueiró - A Sua Melhor Companhia
+                </p>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Lightbox para Foto Individual */}
+      {selectedPhoto && (
+        <div 
+          className="fixed inset-0 z-[130] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div className="max-w-5xl w-full flex flex-col items-center animate-in fade-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
+            <div className="relative group w-full bg-gray-900 rounded-[2rem] overflow-hidden shadow-2xl border border-white/10">
+              <img 
+                src={selectedPhoto.url} 
+                alt={selectedPhoto.title}
+                className="max-h-[70vh] md:max-h-[80vh] w-full object-contain"
+              />
+              <button 
+                onClick={() => setSelectedPhoto(null)}
+                className="absolute top-4 right-4 p-3 bg-black/50 hover:bg-red-600 text-white rounded-full transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div className="mt-6 text-center">
+              <span className="text-blue-500 font-black uppercase tracking-[0.3em] text-[9px] mb-2 block">
+                {selectedPhoto.category}
+              </span>
+              <h2 className="text-2xl md:text-3xl font-black text-white tracking-tighter">{selectedPhoto.title}</h2>
+              <p className="text-gray-400 mt-2 text-sm md:text-base max-w-xl mx-auto">{selectedPhoto.description}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 };
 
-// Fixing missing default export
 export default PhotoGallery;
