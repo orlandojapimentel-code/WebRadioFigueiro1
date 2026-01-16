@@ -47,9 +47,21 @@ const Player: React.FC = () => {
         <div className={`relative bg-gray-950/90 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] p-3 md:p-4 shadow-2xl flex flex-col md:flex-row items-center gap-4 transition-all pointer-events-auto ${isPlaying ? 'ring-2 ring-blue-500/20' : ''}`}>
           
           <div className="flex items-center space-x-5 w-full md:w-auto flex-grow min-w-0">
-            <div className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full bg-white dark:bg-gray-800 p-1.5 shadow-2xl transition-transform duration-700 ${isPlaying ? 'animate-spin-slow' : 'scale-95'}`}>
-              <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-gray-900">
-                <img src="./logo.png" alt="WRF" className="w-full h-full object-contain" />
+            {/* Contentor da Capa do Disco / Logo */}
+            <div className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full bg-white dark:bg-gray-800 p-1 shadow-2xl transition-transform duration-700 ${isPlaying ? 'animate-spin-slow' : 'scale-95'}`}>
+              <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-gray-900 relative">
+                {/* Widget de Capa do Disco Centova Cast */}
+                <img 
+                  className="cc_streaminfo absolute inset-0 w-full h-full object-cover" 
+                  data-type="cover" 
+                  data-username="orlando" 
+                  alt="Capa do Disco"
+                  onError={(e) => {
+                    e.currentTarget.src = "./logo.png"; // Fallback para o logo se não houver capa
+                  }}
+                />
+                {/* Overlay central decorativo para parecer um disco real */}
+                <div className="absolute w-3 h-3 bg-gray-950 rounded-full border border-white/20 z-10"></div>
               </div>
             </div>
 
@@ -63,7 +75,7 @@ const Player: React.FC = () => {
               
               <div className="overflow-hidden mb-2">
                 <h3 className="text-white text-sm md:text-lg font-brand font-black tracking-tighter truncate">
-                  <span className="cc_streaminfo" data-type="song" data-username="orlando">Web Rádio Figueiró</span>
+                  <span className="cc_streaminfo" data-type="song" data-username="orlando">Sintonizando...</span>
                 </h3>
               </div>
 
