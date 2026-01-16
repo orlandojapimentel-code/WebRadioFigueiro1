@@ -5,9 +5,59 @@ const Player: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [previousVolume, setPreviousVolume] = useState(0.8);
+  const [coverUrl, setCoverUrl] = useState("./logo.png");
+  const [currentSong, setCurrentSong] = useState("Sintonizando...");
+  
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const songTitleRef = useRef<HTMLSpanElement | null>(null);
 
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
+
+  // Função para procurar a capa no iTunes quando a música muda
+  const fetchAlbumArt = async (songName: string) => {
+    if (!songName || songName.includes("Sintonizando") || songName.includes("Web Rádio")) return;
+    
+    try {
+      const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(songName)}&media=music&limit=1`);
+      const data = await response.json();
+      if (data.results && data.results.length > 0) {
+        // Pega a imagem e aumenta a resolução para 400x400
+        const highResCover = data.results[0].artworkUrl100.replace('100x100', '400x400');
+        setCoverUrl(highResCover);
+      } else {
+        setCoverUrl("./logo.png");
+      }
+    } catch (error) {
+      console.error("Erro ao procurar capa:", error);
+      setCoverUrl("./logo.png");
+    }
+  };
+
+  // Observador para detetar quando o script da Centova muda o título da música
+  useEffect(() => {
+    const target = document.getElementById('cc_strinfo_song_orlando');
+    if (!target) return;
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        const newSong = (mutation.target as HTMLElement).innerText;
+        if (newSong && newSong !== currentSong) {
+          setCurrentSong(newSong);
+          fetchAlbumArt(newSong);
+        }
+      });
+    });
+
+    observer.observe(target, { childList: true, characterData: true, subtree: true });
+    
+    // Verificação inicial
+    if (target.innerText && target.innerText !== "Sintonizando...") {
+      setCurrentSong(target.innerText);
+      fetchAlbumArt(target.innerText);
+    }
+
+    return () => observer.disconnect();
+  }, [currentSong]);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -47,21 +97,22 @@ const Player: React.FC = () => {
         <div className={`relative bg-gray-950/90 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] p-3 md:p-4 shadow-2xl flex flex-col md:flex-row items-center gap-4 transition-all pointer-events-auto ${isPlaying ? 'ring-2 ring-blue-500/20' : ''}`}>
           
           <div className="flex items-center space-x-5 w-full md:w-auto flex-grow min-w-0">
-            {/* Contentor da Capa do Disco / Logo */}
-            <div className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full bg-white dark:bg-gray-800 p-1 shadow-2xl transition-transform duration-700 ${isPlaying ? 'animate-spin-slow' : 'scale-95'}`}>
-              <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-gray-900 relative">
-                {/* Widget de Capa do Disco Centova Cast */}
+            {/* DISCO / CAPA QUE RODA */}
+            <div className={`relative h-16 w-16 md:h-20 md:w-20 shrink-0 transition-all duration-700 ${isPlaying ? 'scale-100' : 'scale-90 opacity-80'}`}>
+              {/* Anel de brilho exterior */}
+              <div className={`absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur opacity-20 ${isPlaying ? 'animate-pulse' : 'hidden'}`}></div>
+              
+              <div className={`relative w-full h-full rounded-full border-2 border-white/10 overflow-hidden bg-gray-900 shadow-2xl ${isPlaying ? 'animate-spin-slow' : ''}`}>
                 <img 
-                  className="cc_streaminfo absolute inset-0 w-full h-full object-cover" 
-                  data-type="cover" 
-                  data-username="orlando" 
-                  alt="Capa do Disco"
-                  onError={(e) => {
-                    e.currentTarget.src = "./logo.png"; // Fallback para o logo se não houver capa
-                  }}
+                  src={coverUrl} 
+                  alt="Capa do Disco" 
+                  className="w-full h-full object-cover"
+                  onError={() => setCoverUrl("./logo.png")}
                 />
-                {/* Overlay central decorativo para parecer um disco real */}
-                <div className="absolute w-3 h-3 bg-gray-950 rounded-full border border-white/20 z-10"></div>
+                {/* Centro do disco (furo) */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-gray-950 rounded-full border border-white/20 shadow-inner z-10 flex items-center justify-center">
+                  <div className="w-1 h-1 bg-gray-800 rounded-full"></div>
+                </div>
               </div>
             </div>
 
@@ -75,10 +126,12 @@ const Player: React.FC = () => {
               
               <div className="overflow-hidden mb-2">
                 <h3 className="text-white text-sm md:text-lg font-brand font-black tracking-tighter truncate">
-                  <span className="cc_streaminfo" data-type="song" data-username="orlando">Sintonizando...</span>
+                  {/* Este span é preenchido pelo script da Centova Cast */}
+                  <span id="cc_strinfo_song_orlando" className="cc_streaminfo" data-type="song" data-username="orlando">Sintonizando...</span>
                 </h3>
               </div>
 
+              {/* Visualizer bars */}
               <div className="flex items-end space-x-[2px] h-5 opacity-80">
                 {bars.map((bar) => (
                   <div
@@ -99,7 +152,7 @@ const Player: React.FC = () => {
           <div className="flex items-center space-x-6">
             <button 
               onClick={togglePlay}
-              className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-white text-gray-950 shadow-blue-500/20' : 'bg-blue-600 text-white shadow-blue-600/40'} shadow-2xl hover:scale-105 active:scale-90`}
+              className={`relative h-16 w-16 md:h-20 md:w-20 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-white text-gray-950' : 'bg-blue-600 text-white shadow-lg shadow-blue-600/40'} hover:scale-105 active:scale-90`}
             >
               {isPlaying ? (
                 <svg className="w-8 h-8 md:w-10 md:h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
@@ -133,7 +186,7 @@ const Player: React.FC = () => {
       <audio ref={audioRef} preload="none" />
       <style>{`
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .animate-spin-slow { animation: spin-slow 15s linear infinite; }
+        .animate-spin-slow { animation: spin-slow 12s linear infinite; }
       `}</style>
     </div>
   );
