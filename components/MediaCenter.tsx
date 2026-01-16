@@ -33,7 +33,6 @@ const MediaCenter: React.FC = () => {
       id: '1', 
       title: "Entrevista Especial: Ás da Concertina e Vasquinho da Concertina", 
       date: "Destaque Popular", 
-      // Link do Dropbox modificado com raw=1 para streaming direto no browser
       audioUrl: "https://www.dropbox.com/scl/fi/u3r7msk0h6blqpjt8mrba/Entrevista-s-da-concertina-e-Vasquinho-24-01-2025.mp3?rlkey=2sb2suromeylsn0yiwoyc67mn&st=qhx3c6fq&raw=1",
       externalUrl: "https://www.dropbox.com/scl/fi/u3r7msk0h6blqpjt8mrba/Entrevista-s-da-concertina-e-Vasquinho-24-01-2025.mp3?rlkey=2sb2suromeylsn0yiwoyc67mn&st=qhx3c6fq&dl=0"
     },
@@ -117,8 +116,8 @@ const MediaCenter: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="w-full space-y-4">
-                  <div className="bg-slate-100 dark:bg-black/40 p-4 rounded-2xl border border-gray-200 dark:border-white/5">
+                <div className="w-full">
+                  <div className="bg-slate-100 dark:bg-black/40 p-4 rounded-2xl border border-gray-200 dark:border-white/5 shadow-inner">
                     <audio 
                       key={audio.audioUrl}
                       controls 
@@ -129,36 +128,13 @@ const MediaCenter: React.FC = () => {
                       O seu browser não suporta o leitor de áudio.
                     </audio>
                   </div>
-
-                  <div className="flex flex-wrap justify-center gap-3">
-                    {audio.externalUrl && (
-                      <a 
-                        href={audio.externalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 px-6 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all active:scale-95"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6l6 6-6 6"/></svg>
-                        <span>Ouvir no Dropbox</span>
-                      </a>
-                    )}
-                    
-                    <a 
-                      href={audio.audioUrl}
-                      download
-                      className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                      <span>Baixar MP3</span>
-                    </a>
-                  </div>
                 </div>
               </div>
             ))}
             
             <div className="bg-blue-600/5 rounded-3xl p-6 text-center border border-blue-500/10">
               <p className="text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest leading-relaxed">
-                Dica: Os links do Dropbox permitem a reprodução direta e estável. <br className="hidden md:block"/> Se encontrar dificuldades, utilize o botão "Baixar MP3".
+                Nota: Os conteúdos são otimizados para reprodução direta no site através do Centro Multimédia.
               </p>
             </div>
           </div>
