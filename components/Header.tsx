@@ -59,6 +59,17 @@ const Header: React.FC<HeaderProps> = ({ isDark, onToggleTheme }) => {
           </div>
         </div>
 
+        {/* INFO NOW PLAYING NO HEADER (DESKTOP) */}
+        <div className="hidden xl:flex flex-col items-center bg-blue-600/5 px-6 py-2 rounded-2xl border border-blue-500/10 max-w-sm">
+          <div className="flex items-center space-x-2 mb-0.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+            <p className="text-[8px] font-black uppercase tracking-widest text-blue-600/60">No Ar</p>
+          </div>
+          <div className="text-[10px] font-bold text-slate-600 dark:text-gray-300 truncate w-full text-center">
+            <span className="cc_streaminfo" data-type="song" data-username="orlando">Sintonizando...</span>
+          </div>
+        </div>
+
         {/* NAVEGAÇÃO E AÇÕES */}
         <div className="flex items-center space-x-6">
           <nav className="hidden lg:flex items-center space-x-8">

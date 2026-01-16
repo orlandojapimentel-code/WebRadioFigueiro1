@@ -12,7 +12,6 @@ interface AudioItem {
   title: string;
   date: string;
   audioUrl: string;
-  externalUrl?: string;
 }
 
 const MediaCenter: React.FC = () => {
@@ -31,17 +30,15 @@ const MediaCenter: React.FC = () => {
   const audios: AudioItem[] = [
     { 
       id: '1', 
-      title: "Entrevista Especial: Ás da Concertina e Vasquinho da Concertina", 
+      title: "Entrevista: Ás da Concertina e Vasquinho da Concertina", 
       date: "Destaque Popular", 
-      audioUrl: "https://www.dropbox.com/scl/fi/u3r7msk0h6blqpjt8mrba/Entrevista-s-da-concertina-e-Vasquinho-24-01-2025.mp3?rlkey=2sb2suromeylsn0yiwoyc67mn&st=qhx3c6fq&raw=1",
-      externalUrl: "https://www.dropbox.com/scl/fi/u3r7msk0h6blqpjt8mrba/Entrevista-s-da-concertina-e-Vasquinho-24-01-2025.mp3?rlkey=2sb2suromeylsn0yiwoyc67mn&st=qhx3c6fq&dl=0"
+      audioUrl: "https://www.dropbox.com/scl/fi/u3r7msk0h6blqpjt8mrba/Entrevista-s-da-concertina-e-Vasquinho-24-01-2025.mp3?rlkey=2sb2suromeylsn0yiwoyc67mn&st=qhx3c6fq&raw=1"
     },
     { 
       id: '2', 
       title: "Prazeres Interrompidos - Promo", 
       date: "Podcast", 
-      audioUrl: "https://www.dropbox.com/scl/fi/tz8ccze2co79c16pwq1jp/PROMO-Web-R-dio-Figueir.mp3?rlkey=88lpwhzqnl845jn86g4b4b7ai&st=try9kss2&raw=1",
-      externalUrl: "https://www.dropbox.com/scl/fi/tz8ccze2co79c16pwq1jp/PROMO-Web-R-dio-Figueir.mp3?rlkey=88lpwhzqnl845jn86g4b4b7ai&st=try9kss2&dl=0"
+      audioUrl: "https://www.dropbox.com/scl/fi/tz8ccze2co79c16pwq1jp/PROMO-Web-R-dio-Figueir.mp3?rlkey=88lpwhzqnl845jn86g4b4b7ai&st=try9kss2&raw=1"
     },
   ];
 
@@ -89,7 +86,6 @@ const MediaCenter: React.FC = () => {
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
-                    referrerPolicy="strict-origin-when-cross-origin"
                   ></iframe>
                 </div>
                 <div className="p-6 bg-gradient-to-t from-gray-950 to-transparent">
@@ -131,12 +127,6 @@ const MediaCenter: React.FC = () => {
                 </div>
               </div>
             ))}
-            
-            <div className="bg-blue-600/5 rounded-3xl p-6 text-center border border-blue-500/10">
-              <p className="text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest leading-relaxed">
-                Nota: Os conteúdos são otimizados para reprodução direta no site através do Centro Multimédia.
-              </p>
-            </div>
           </div>
         )}
       </div>
