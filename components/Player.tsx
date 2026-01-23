@@ -5,35 +5,59 @@ const Player: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [previousVolume, setPreviousVolume] = useState(0.8);
-  const [coverUrl, setCoverUrl] = useState("./logo.png");
+  
+  // Imagens padrão para situações específicas
+  const DEFAULT_RADIO_IMAGE = "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop"; // Microfone/Estúdio
+  const LIVE_EMISSION_IMAGE = "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800&auto=format&fit=crop"; // Mesa de som
+  
+  const [coverUrl, setCoverUrl] = useState(DEFAULT_RADIO_IMAGE);
   const [currentSong, setCurrentSong] = useState("Sintonizando...");
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const songTitleRef = useRef<HTMLSpanElement | null>(null);
-
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
 
-  // Função para procurar a capa no iTunes quando a música muda
+  // Função para determinar a imagem de fallback baseada no texto da emissão
+  const getFallbackImage = (songName: string): string => {
+    const text = songName.toLowerCase();
+    
+    // Se detetar o nome do apresentador Orlando Pimentel
+    if (text.includes("orlando pimentel")) {
+      return "./logo.png"; // Aqui pode colocar o caminho para a foto do Orlando se tiver: "images/equipa/orlando.jpg"
+    }
+    
+    // Se for emissão em direto genérica
+    if (text.includes("direto") || text.includes("live") || text.includes("emissao")) {
+      return LIVE_EMISSION_IMAGE;
+    }
+
+    // Padrão para quando não encontra nada
+    return DEFAULT_RADIO_IMAGE;
+  };
+
   const fetchAlbumArt = async (songName: string) => {
-    if (!songName || songName.includes("Sintonizando") || songName.includes("Web Rádio")) return;
+    // Se estiver a sintonizar, usa a imagem padrão de estúdio
+    if (!songName || songName.includes("Sintonizando") || songName.includes("Web Rádio")) {
+      setCoverUrl(DEFAULT_RADIO_IMAGE);
+      return;
+    }
     
     try {
       const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(songName)}&media=music&limit=1`);
       const data = await response.json();
+      
       if (data.results && data.results.length > 0) {
-        // Pega a imagem e aumenta a resolução para 400x400
-        const highResCover = data.results[0].artworkUrl100.replace('100x100', '400x400');
+        const highResCover = data.results[0].artworkUrl100.replace('100x100', '600x600');
         setCoverUrl(highResCover);
       } else {
-        setCoverUrl("./logo.png");
+        // Se não houver capa no iTunes, aplica a lógica de fallback inteligente
+        setCoverUrl(getFallbackImage(songName));
       }
     } catch (error) {
       console.error("Erro ao procurar capa:", error);
-      setCoverUrl("./logo.png");
+      setCoverUrl(getFallbackImage(songName));
     }
   };
 
-  // Observador para detetar quando o script da Centova muda o título da música
   useEffect(() => {
     const target = document.getElementById('cc_strinfo_song_orlando');
     if (!target) return;
@@ -50,7 +74,6 @@ const Player: React.FC = () => {
 
     observer.observe(target, { childList: true, characterData: true, subtree: true });
     
-    // Verificação inicial
     if (target.innerText && target.innerText !== "Sintonizando...") {
       setCurrentSong(target.innerText);
       fetchAlbumArt(target.innerText);
@@ -98,18 +121,16 @@ const Player: React.FC = () => {
           
           <div className="flex items-center space-x-5 w-full md:w-auto flex-grow min-w-0">
             {/* DISCO / CAPA QUE RODA */}
-            <div className={`relative h-16 w-16 md:h-20 md:w-20 shrink-0 transition-all duration-700 ${isPlaying ? 'scale-100' : 'scale-90 opacity-80'}`}>
-              {/* Anel de brilho exterior */}
+            <div className={`relative h-16 w-16 md:h-20 md:w-20 shrink-0 transition-all duration-700 ${isPlaying ? 'scale-100' : 'scale-95 opacity-90'}`}>
               <div className={`absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur opacity-20 ${isPlaying ? 'animate-pulse' : 'hidden'}`}></div>
               
               <div className={`relative w-full h-full rounded-full border-2 border-white/10 overflow-hidden bg-gray-900 shadow-2xl ${isPlaying ? 'animate-spin-slow' : ''}`}>
                 <img 
                   src={coverUrl} 
-                  alt="Capa do Disco" 
+                  alt="Emissão" 
                   className="w-full h-full object-cover"
-                  onError={() => setCoverUrl("./logo.png")}
+                  onError={() => setCoverUrl(DEFAULT_RADIO_IMAGE)}
                 />
-                {/* Centro do disco (furo) */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-gray-950 rounded-full border border-white/20 shadow-inner z-10 flex items-center justify-center">
                   <div className="w-1 h-1 bg-gray-800 rounded-full"></div>
                 </div>
@@ -126,12 +147,10 @@ const Player: React.FC = () => {
               
               <div className="overflow-hidden mb-2">
                 <h3 className="text-white text-sm md:text-lg font-brand font-black tracking-tighter truncate">
-                  {/* Este span é preenchido pelo script da Centova Cast */}
                   <span id="cc_strinfo_song_orlando" className="cc_streaminfo" data-type="song" data-username="orlando">Sintonizando...</span>
                 </h3>
               </div>
 
-              {/* Visualizer bars */}
               <div className="flex items-end space-x-[2px] h-5 opacity-80">
                 {bars.map((bar) => (
                   <div
