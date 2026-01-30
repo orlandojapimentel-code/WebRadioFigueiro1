@@ -3,12 +3,12 @@ import { GoogleGenAI } from "@google/genai";
 
 /**
  * Inicialização do SDK Gemini.
- * A variável process.env.API_KEY é injetada automaticamente pelo ambiente.
+ * A chave de API deve estar configurada no ambiente como process.env.API_KEY.
  */
 const getAIInstance = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.warn("WRF Service: API_KEY não detetada.");
+    console.warn("WRF Service: API_KEY não configurada ou inválida.");
     throw new Error("MISSING_KEY");
   }
   return new GoogleGenAI({ apiKey });
@@ -16,20 +16,20 @@ const getAIInstance = () => {
 
 /**
  * Busca notícias de Amarante usando Google Search.
- * Utilizamos o modelo Flash para máxima velocidade, essencial para o rodapé.
+ * Otimizado para o modelo Gemini 3 Flash para maior velocidade.
  */
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    // Prompt minimalista para acelerar a resposta
-    const prompt = "Lista 5 títulos de notícias de hoje em Amarante, Portugal. Apenas títulos, um por linha. Sem introdução.";
+    // Prompt extremamente direto para reduzir latência de processamento
+    const prompt = "Pesquisa e lista 5 notícias de hoje em Amarante, Portugal. Apenas os títulos, sem introdução.";
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview', // Flash é muito mais rápido que Pro
+      model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0, // Determinístico
+        temperature: 0.1, // Quase determinístico para ser mais rápido
       },
     });
 
@@ -38,8 +38,9 @@ export const fetchLatestNews = async () => {
       text, 
       grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] 
     };
-  } catch (error) {
-    console.error("Erro na busca de notícias WRF:", error);
+  } catch (error: any) {
+    // Log para ajudar a identificar se o erro é de quota, chave ou rede
+    console.error("WRF News Service Error:", error.message || error);
     throw error;
   }
 };
