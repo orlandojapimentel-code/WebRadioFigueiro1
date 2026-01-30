@@ -25,21 +25,21 @@ export const getRadioAssistantResponse = async (message: string) => {
   }
 };
 
-// Função para buscar notícias reais com busca Google - Focada no Ticker
+// Função para buscar notícias reais com busca Google - Focada no Ticker e Widget
 export const fetchLatestNews = async () => {
   if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
 
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    // Prompt ajustado para captar notícias recentes (não apenas de hoje) para garantir volume de dados
-    const prompt = "Procura as notícias e eventos mais recentes de Amarante, Portugal (últimos dias). Lista apenas os títulos, um por linha. Não uses introduções, nem asteriscos, nem números. Escreve títulos curtos e impactantes para um rodapé de rádio.";
+    // Prompt ultra-específico para garantir par Título | URL
+    const prompt = "Pesquisa as 5 notícias mais recentes e relevantes sobre Amarante, Portugal. Fontes: Tâmega TV, Jornal A Verdade, ou JN. Retorna APENAS uma lista no formato: Título da Notícia | URL da Notícia. Não uses números, nem asteriscos, nem introduções.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.2,
+        temperature: 0.1,
       },
     });
 

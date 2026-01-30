@@ -12,18 +12,18 @@ interface NewsItem {
 
 const FALLBACK_NEWS: NewsItem[] = [
   {
-    title: "Amarante: Investimento no Turismo Sustentável cresce na região do Tâmega",
-    source: "Portal Amarante",
+    title: "Amarante: Fique a par de toda a atualidade no portal oficial do município",
+    source: "Município Amarante",
     type: "LOCAL",
-    summary: "Acompanhe as novidades da região em direto.",
-    url: "https://www.amarante.pt"
+    summary: "As principais notícias do concelho em destaque.",
+    url: "https://www.cm-amarante.pt/noticias/"
   },
   {
-    title: "Cultura: Museu Amadeo de Souza-Cardoso com novos destaques",
-    source: "Cultura Amarante",
+    title: "Cultura e Lazer: Eventos em destaque na região do Tâmega e Sousa",
+    source: "Tâmega.tv",
     type: "LOCAL",
-    summary: "As principais exposições do mês na nossa cidade.",
-    url: "https://www.amarante.pt"
+    summary: "Agenda cultural atualizada da nossa região.",
+    url: "https://tamega.tv/"
   }
 ];
 
@@ -38,28 +38,42 @@ const News: React.FC = () => {
       const lines = result.text.split('\n');
       
       const items: NewsItem[] = [];
-      let currentTitle = "";
-
+      
+      // Tenta processar o formato estruturado "Título | URL"
       lines.forEach(line => {
-        const cleanLine = line.replace(/[*#`\d.]/g, '').trim();
-        
-        // Se a linha contém um link, assume que o título anterior pertence a este link
-        if (line.toLowerCase().includes('http')) {
-          const urlMatch = line.match(/https?:\/\/[^\s]+/);
-          if (urlMatch && currentTitle) {
+        if (line.includes('|')) {
+          const [title, url] = line.split('|');
+          const cleanTitle = title.replace(/[*#`\d.\-]/g, '').trim();
+          const cleanUrl = url.trim();
+          
+          if (cleanTitle.length > 10 && cleanUrl.startsWith('http')) {
             items.push({
-              title: currentTitle,
-              url: urlMatch[0],
+              title: cleanTitle,
+              url: cleanUrl,
               source: "Sinal WRF",
               type: "LOCAL",
-              summary: "Destaque informativo de Amarante."
+              summary: "Informação atualizada de Amarante."
             });
-            currentTitle = ""; // Limpa para o próximo
           }
-        } else if (cleanLine.length > 20) {
-          currentTitle = cleanLine;
         }
       });
+
+      // Se o parser estruturado falhar mas houver grounding metadata (Busca do Google)
+      if (items.length === 0 && result.grounding && result.grounding.length > 0) {
+        // Tenta associar as linhas de texto aos links de grounding
+        lines.forEach((line, index) => {
+          const cleanTitle = line.replace(/[*#`\d.\-]/g, '').trim();
+          if (cleanTitle.length > 20 && result.grounding[index]?.web?.uri) {
+            items.push({
+              title: cleanTitle,
+              url: result.grounding[index].web.uri,
+              source: result.grounding[index].web.title || "Portal Local",
+              type: "LOCAL",
+              summary: "Destaque informativo captado em tempo real."
+            });
+          }
+        });
+      }
       
       if (items.length > 0) {
         setNews(items.slice(0, 5));
@@ -109,7 +123,7 @@ const News: React.FC = () => {
           <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" className="block group">
             <div className="flex items-center space-x-2 mb-1">
               <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500`}>LOCAL</span>
-              <span className="text-[8px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[100px]">{item.source}</span>
+              <span className="text-[8px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[120px]">{item.source}</span>
             </div>
             <h5 className="text-xs font-bold text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors line-clamp-2">{item.title}</h5>
             <div className="h-[1px] bg-gray-100 dark:bg-white/5 mt-4 group-last:hidden"></div>

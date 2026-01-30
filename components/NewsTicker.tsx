@@ -4,6 +4,7 @@ import { fetchLatestNews } from '../services/geminiService';
 
 const NewsTicker: React.FC = () => {
   const [newsText, setNewsText] = useState<string[]>([]);
+  const [isSyncing, setIsSyncing] = useState(true);
 
   const loadTickerData = async () => {
     try {
@@ -11,13 +12,18 @@ const NewsTicker: React.FC = () => {
       
       const rawLines = result.text.split('\n');
       const items = rawLines
-        .map(line => line.replace(/[*#`\d.\-]/g, '').trim())
-        // Filtro ligeiramente mais relaxado para não perder notícias curtas de Amarante
-        .filter(line => line.length > 10 && !line.toLowerCase().includes('http') && !line.toLowerCase().includes('clique') && !line.toLowerCase().includes('aqui estão'));
+        .map(line => {
+          // Separa o título do link (caso a IA tenha enviado Título | URL)
+          const parts = line.split('|');
+          return parts[0].replace(/[*#`\d.\-]/g, '').trim();
+        })
+        .filter(title => title.length > 15 && !title.toLowerCase().includes('http'));
       
       if (items.length > 0) {
         setNewsText(items);
+        setIsSyncing(false);
       } else {
+        // Fallback institucional se a busca falhar
         setNewsText([
           "Web Rádio Figueiró: Sintonize a melhor informação de Amarante e Região",
           "Música 24 Horas: A sua melhor companhia está aqui na WRF Digital",
@@ -25,25 +31,25 @@ const NewsTicker: React.FC = () => {
           "Cultura: Fique a par dos eventos mais importantes da nossa região na WRF",
           "Web Rádio Figueiró: Elevando a voz de Amarante para o mundo inteiro"
         ]);
+        setIsSyncing(false);
       }
     } catch (error) {
       console.error("Erro no ticker:", error);
-      setNewsText([
-        "Web Rádio Figueiró: A Sintonizar a Melhor Informação de Amarante...",
-        "Música, Informação e Cultura: Tudo na sua rádio favorita"
-      ]);
+      setIsSyncing(false);
     }
   };
 
   useEffect(() => {
     loadTickerData();
-    const interval = setInterval(loadTickerData, 900000); // 15 min
+    const interval = setInterval(loadTickerData, 600000); // 10 min
     return () => clearInterval(interval);
   }, []);
 
   const displayItems = newsText.length > 0 
     ? [...newsText, ...newsText, ...newsText]
-    : ["A sintonizar as notícias de Amarante...", "Web Rádio Figueiró: A Sua Melhor Companhia...", "A sintonizar as notícias de Amarante..."];
+    : isSyncing 
+      ? ["Sintonizando as notícias de Amarante...", "Aguarde um momento enquanto carregamos a informação...", "WRF Digital: A sua fonte de notícias em direto..."]
+      : ["Web Rádio Figueiró: A Sintonizar a Melhor Informação de Amarante..."];
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
