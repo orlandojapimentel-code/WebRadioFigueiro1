@@ -24,6 +24,13 @@ const FALLBACK_NEWS: NewsItem[] = [
     type: "LOCAL",
     summary: "Agenda cultural atualizada da nossa região.",
     url: "https://tamega.tv/"
+  },
+  {
+    title: "Jornal A Verdade: Notícias de Amarante e do Marco de Canaveses",
+    source: "A Verdade",
+    type: "LOCAL",
+    summary: "Informação regional sempre atualizada.",
+    url: "https://averdade.com/"
   }
 ];
 
@@ -35,41 +42,27 @@ const News: React.FC = () => {
     setLoading(true);
     try {
       const result = await fetchLatestNews();
-      const lines = result.text.split('\n');
+      const lines = result.text.split('\n')
+        .map(l => l.replace(/[*#`\d.\-]/g, '').trim())
+        .filter(l => l.length > 20 && !l.toLowerCase().includes('aqui estão'));
       
       const items: NewsItem[] = [];
       
-      // Tenta processar o formato estruturado "Título | URL"
-      lines.forEach(line => {
-        if (line.includes('|')) {
-          const [title, url] = line.split('|');
-          const cleanTitle = title.replace(/[*#`\d.\-]/g, '').trim();
-          const cleanUrl = url.trim();
+      // Associamos os títulos às URLs de Grounding encontradas pelo Google
+      // O Google retorna as URLs na ordem em que foram usadas para gerar a resposta
+      if (result.grounding && result.grounding.length > 0) {
+        lines.forEach((title, index) => {
+          // Tentamos encontrar o link correspondente no metadado
+          // Se não houver link para este índice exato, usamos o último disponível ou o fallback do Google
+          const linkData = result.grounding[index] || result.grounding[0];
           
-          if (cleanTitle.length > 10 && cleanUrl.startsWith('http')) {
+          if (linkData?.web?.uri) {
             items.push({
-              title: cleanTitle,
-              url: cleanUrl,
-              source: "Sinal WRF",
+              title,
+              url: linkData.web.uri,
+              source: linkData.web.title?.split(' - ')[0] || "Portal Regional",
               type: "LOCAL",
-              summary: "Informação atualizada de Amarante."
-            });
-          }
-        }
-      });
-
-      // Se o parser estruturado falhar mas houver grounding metadata (Busca do Google)
-      if (items.length === 0 && result.grounding && result.grounding.length > 0) {
-        // Tenta associar as linhas de texto aos links de grounding
-        lines.forEach((line, index) => {
-          const cleanTitle = line.replace(/[*#`\d.\-]/g, '').trim();
-          if (cleanTitle.length > 20 && result.grounding[index]?.web?.uri) {
-            items.push({
-              title: cleanTitle,
-              url: result.grounding[index].web.uri,
-              source: result.grounding[index].web.title || "Portal Local",
-              type: "LOCAL",
-              summary: "Destaque informativo captado em tempo real."
+              summary: "Notícia de última hora captada em Amarante."
             });
           }
         });
@@ -90,7 +83,7 @@ const News: React.FC = () => {
 
   useEffect(() => {
     loadNews();
-    const interval = setInterval(loadNews, 3600000); 
+    const interval = setInterval(loadNews, 1800000); // 30 min
     return () => clearInterval(interval);
   }, []);
 

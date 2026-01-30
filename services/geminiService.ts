@@ -25,14 +25,14 @@ export const getRadioAssistantResponse = async (message: string) => {
   }
 };
 
-// Função para buscar notícias reais com busca Google - Focada no Ticker e Widget
+// Função para buscar notícias reais com busca Google
 export const fetchLatestNews = async () => {
   if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
 
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    // Prompt ultra-específico para garantir par Título | URL
-    const prompt = "Pesquisa as 5 notícias mais recentes e relevantes sobre Amarante, Portugal. Fontes: Tâmega TV, Jornal A Verdade, ou JN. Retorna APENAS uma lista no formato: Título da Notícia | URL da Notícia. Não uses números, nem asteriscos, nem introduções.";
+    // Pedimos apenas os títulos para evitar que a IA invente URLs ou use links institucionais errados
+    const prompt = "Quais são as 5 notícias mais recentes e relevantes de Amarante, Portugal, publicadas nos últimos 3 dias? Escreve apenas os títulos, um por linha. Não uses números, nem asteriscos, nem links no texto.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -45,6 +45,7 @@ export const fetchLatestNews = async () => {
 
     return { 
       text: response.text || "",
+      // Retornamos os chunks de grounding que contêm as URLs REAIS encontradas pelo Google
       grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
     };
   } catch (error) {

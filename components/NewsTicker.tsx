@@ -6,50 +6,48 @@ const NewsTicker: React.FC = () => {
   const [newsText, setNewsText] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(true);
 
+  const FALLBACK_TICKER = [
+    "Web Rádio Figueiró: Sintonize a melhor informação de Amarante e Região",
+    "Música 24 Horas: A sua melhor companhia está aqui na WRF Digital",
+    "Destaque: Peça a sua música favorita através do nosso painel de pedidos",
+    "Cultura: Acompanhe a nossa programação para estar sempre informado",
+    "Web Rádio Figueiró: Elevando a voz de Amarante para o mundo inteiro"
+  ];
+
   const loadTickerData = async () => {
     try {
       const result = await fetchLatestNews();
       
       const rawLines = result.text.split('\n');
       const items = rawLines
-        .map(line => {
-          // Separa o título do link (caso a IA tenha enviado Título | URL)
-          const parts = line.split('|');
-          return parts[0].replace(/[*#`\d.\-]/g, '').trim();
-        })
-        .filter(title => title.length > 15 && !title.toLowerCase().includes('http'));
+        .map(line => line.replace(/[*#`\d.\-]/g, '').trim())
+        .filter(title => title.length > 15 && !title.toLowerCase().includes('http') && !title.toLowerCase().includes('aqui estão'));
       
       if (items.length > 0) {
         setNewsText(items);
-        setIsSyncing(false);
       } else {
-        // Fallback institucional se a busca falhar
-        setNewsText([
-          "Web Rádio Figueiró: Sintonize a melhor informação de Amarante e Região",
-          "Música 24 Horas: A sua melhor companhia está aqui na WRF Digital",
-          "Destaque: Peça a sua música favorita através do nosso novo painel de pedidos",
-          "Cultura: Fique a par dos eventos mais importantes da nossa região na WRF",
-          "Web Rádio Figueiró: Elevando a voz de Amarante para o mundo inteiro"
-        ]);
-        setIsSyncing(false);
+        setNewsText(FALLBACK_TICKER);
       }
+      setIsSyncing(false);
     } catch (error) {
       console.error("Erro no ticker:", error);
+      setNewsText(FALLBACK_TICKER);
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
     loadTickerData();
-    const interval = setInterval(loadTickerData, 600000); // 10 min
+    const interval = setInterval(loadTickerData, 900000); // 15 min
     return () => clearInterval(interval);
   }, []);
 
+  // Multiplicamos para garantir um loop contínuo e suave
   const displayItems = newsText.length > 0 
     ? [...newsText, ...newsText, ...newsText]
     : isSyncing 
-      ? ["Sintonizando as notícias de Amarante...", "Aguarde um momento enquanto carregamos a informação...", "WRF Digital: A sua fonte de notícias em direto..."]
-      : ["Web Rádio Figueiró: A Sintonizar a Melhor Informação de Amarante..."];
+      ? ["Sintonizando informação de Amarante...", "Aguarde um momento...", "Sintonizando informação de Amarante..."]
+      : [...FALLBACK_TICKER, ...FALLBACK_TICKER];
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
@@ -80,7 +78,7 @@ const NewsTicker: React.FC = () => {
         }
         .animate-ticker-smooth {
           display: inline-flex;
-          animation: ticker-scroll-smooth 40s linear infinite;
+          animation: ticker-scroll-smooth 60s linear infinite;
         }
         .animate-ticker-smooth:hover {
           animation-play-state: paused;
