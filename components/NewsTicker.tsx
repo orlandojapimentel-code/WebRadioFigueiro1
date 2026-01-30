@@ -6,7 +6,6 @@ const NewsTicker: React.FC = () => {
   const [newsText, setNewsText] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(true);
 
-  // Notícias de reserva caso a API falhe ou a chave não funcione no Vercel
   const FALLBACK_TICKER = [
     "Bem-vindo à Web Rádio Figueiró: A sua melhor companhia em Amarante e no Mundo",
     "Sintonize a excelência sonora com a WRF Digital - Emissão 24 horas por dia",
@@ -18,9 +17,8 @@ const NewsTicker: React.FC = () => {
   const loadTickerData = async () => {
     setIsSyncing(true);
     
-    // TIMEOUT: Se em 5 segundos a API não responder, usamos o fallback
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Timeout")), 5000)
+      setTimeout(() => reject(new Error("Timeout")), 7000)
     );
 
     try {
@@ -32,7 +30,7 @@ const NewsTicker: React.FC = () => {
       if (result && result.text) {
         const items = result.text.split('\n')
           .map((line: string) => line.replace(/[*#`\d.\-]/g, '').trim())
-          .filter((title: string) => title.length > 10);
+          .filter((title: string) => title.length > 15 && !title.toLowerCase().includes('aqui estão'));
         
         if (items.length > 0) {
           setNewsText(items);
@@ -43,7 +41,6 @@ const NewsTicker: React.FC = () => {
         setNewsText(FALLBACK_TICKER);
       }
     } catch (error) {
-      // Se houver erro de chave ou rede, garantimos que o ticker tem conteúdo
       setNewsText(FALLBACK_TICKER);
     } finally {
       setIsSyncing(false);
@@ -52,12 +49,11 @@ const NewsTicker: React.FC = () => {
 
   useEffect(() => {
     loadTickerData();
-    const interval = setInterval(loadTickerData, 900000); // Atualiza a cada 15 min
+    const interval = setInterval(loadTickerData, 600000); // 10 min
     return () => clearInterval(interval);
   }, []);
 
   const currentNews = newsText.length > 0 ? newsText : FALLBACK_TICKER;
-  // Triplicamos os itens para garantir que o scroll infinito não tenha falhas visuais
   const displayItems = [...currentNews, ...currentNews, ...currentNews];
 
   return (
@@ -91,7 +87,7 @@ const NewsTicker: React.FC = () => {
         }
         .animate-ticker-smooth {
           display: inline-flex;
-          animation: ticker-scroll-smooth 80s linear infinite;
+          animation: ticker-scroll-smooth 70s linear infinite;
         }
         .animate-ticker-smooth:hover {
           animation-play-state: paused;
