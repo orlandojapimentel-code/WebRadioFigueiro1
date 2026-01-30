@@ -31,15 +31,15 @@ export const fetchLatestNews = async () => {
 
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    // Prompt optimizado para o ticker: removemos qualquer possibilidade de formatação markdown
-    const prompt = "Lista as 5 notícias mais importantes de hoje sobre Amarante (Portugal). Escreve apenas os títulos, um por linha. Não uses asteriscos, nem números, nem links.";
+    // Prompt ultra-específico para Amarante para forçar o Google Search Grounding a encontrar resultados locais
+    const prompt = "Procura as notícias mais recentes de hoje sobre o concelho de Amarante, Portugal. Escreve apenas 5 títulos curtos e factuais, um por linha. Não uses introduções, nem números, nem asteriscos, nem links. Foca-te em eventos, política local ou cultura em Amarante.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.1,
+        temperature: 0.1, // Baixa temperatura para manter a precisão dos títulos
       },
     });
 
