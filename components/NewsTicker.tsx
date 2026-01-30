@@ -8,22 +8,19 @@ const NewsTicker: React.FC = () => {
   const loadTickerData = async () => {
     try {
       const result = await fetchLatestNews();
-      // Extração resiliente de títulos
-      const lines = result.text.split('\n');
-      const titles = lines
-        .filter(l => l.toLowerCase().includes('tit') || l.toLowerCase().includes('title'))
-        .map(l => l.split(':')[1]?.trim().replace(/[*`#]/g, ''))
-        .filter(t => t && t.length > 10);
+      // Extração resiliente: divide por linhas e limpa marcas de markdown
+      const items = result.text.split('\n')
+        .map(line => line.replace(/[*#`]/g, '').trim())
+        .filter(line => line.length > 20 && !line.toLowerCase().includes('http'));
       
-      if (titles.length > 0) {
-        setNewsText(titles);
+      if (items.length > 0) {
+        setNewsText(items);
       } else {
-        // Fallback de títulos para o ticker
         setNewsText([
-          "Web Rádio Figueiró: Sintonize a melhor música de Amarante para o Mundo",
-          "Destaque: Investimentos no Turismo de Amarante crescem em 2024",
-          "Cultura: Museu Amadeo de Souza-Cardoso com novos horários de visita",
-          "WRF Digital: A sua companhia constante em qualquer lugar do globo"
+          "Web Rádio Figueiró: A sua melhor companhia em Amarante e no Mundo",
+          "Música, Informação e Cultura: Tudo na palma da sua mão com a WRF",
+          "Sintonize a excelência sonora da rádio que não para de crescer",
+          "Web Rádio Figueiró: O som que une Amarante ao resto do globo"
         ]);
       }
     } catch (error) {
@@ -37,10 +34,9 @@ const NewsTicker: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Cria um set de itens maior para um scroll infinito sem buracos
   const displayItems = newsText.length > 0 
-    ? [...newsText, ...newsText, ...newsText, ...newsText]
-    : ["A sintonizar as principais notícias de Amarante...", "Web Rádio Figueiró: A Sua Melhor Companhia...", "A sintonizar as principais notícias de Amarante...", "Web Rádio Figueiró: A Sua Melhor Companhia..."];
+    ? [...newsText, ...newsText, ...newsText]
+    : ["A sintonizar as principais notícias de Amarante...", "Web Rádio Figueiró: A Sua Melhor Companhia...", "A sintonizar as principais notícias de Amarante..."];
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
@@ -71,7 +67,6 @@ const NewsTicker: React.FC = () => {
         }
         .animate-ticker-fast {
           display: inline-flex;
-          /* Velocidade agora em 25s - Dinâmico e Profissional */
           animation: ticker-scroll-fast 25s linear infinite;
         }
         .animate-ticker-fast:hover {

@@ -13,23 +13,16 @@ interface NewsItem {
 const FALLBACK_NEWS: NewsItem[] = [
   {
     title: "Amarante: Investimento no Turismo Sustentável cresce na região do Tâmega",
-    source: "Voz do Tâmega",
+    source: "Sinal WRF",
     type: "LOCAL",
     summary: "A região tem registado um aumento significativo de visitantes interessados em turismo de natureza.",
     url: "https://www.amarante.pt"
   },
   {
     title: "Cultura: Museu Amadeo de Souza-Cardoso prepara novas exposições",
-    source: "Jornal de Amarante",
+    source: "Sinal WRF",
     type: "LOCAL",
     summary: "O museu icónico da cidade continua a ser o centro das atenções culturais no norte do país.",
-    url: "https://www.amarante.pt"
-  },
-  {
-    title: "Gastronomia: Doces Conventuais de Amarante ganham destaque internacional",
-    source: "Turismo de Portugal",
-    type: "NACIONAL",
-    summary: "A doçaria tradicional amarantina continua a conquistar paladares além-fronteiras.",
     url: "https://www.amarante.pt"
   }
 ];
@@ -42,25 +35,31 @@ const News: React.FC = () => {
     setLoading(true);
     try {
       const result = await fetchLatestNews();
-      // Parser mais robusto que aceita vários formatos
-      const items = result.text.split(/ITEM|START|NEWS|---/i)
-        .filter(b => b.length > 30)
-        .map(block => {
-          const lines = block.split('\n');
-          const titleLine = lines.find(l => l.toLowerCase().includes('tit') || l.toLowerCase().includes('title'));
-          const urlLine = lines.find(l => l.toLowerCase().includes('http'));
-          
-          if (titleLine && urlLine) {
-            return {
-              title: titleLine.split(':')[1]?.trim().replace(/[*`#]/g, '') || "Notícia Amarante",
-              source: "Sinal WRF",
-              type: "LOCAL",
-              summary: "Acompanhe a atualidade na sua rádio.",
-              url: urlLine.match(/https?:\/\/[^\s]+/)?. [0] || "https://www.google.pt"
-            };
-          }
-          return null;
-        }).filter(Boolean) as NewsItem[];
+      const lines = result.text.split('\n');
+      
+      const items: NewsItem[] = [];
+      let currentItem: Partial<NewsItem> = {};
+
+      lines.forEach(line => {
+        const cleanLine = line.replace(/[*#`]/g, '').trim();
+        if (cleanLine.toLowerCase().includes('http')) {
+          const urlMatch = cleanLine.match(/https?:\/\/[^\s]+/);
+          if (urlMatch) currentItem.url = urlMatch[0];
+        } else if (cleanLine.length > 20) {
+          currentItem.title = cleanLine;
+        }
+
+        if (currentItem.title && currentItem.url) {
+          items.push({
+            title: currentItem.title,
+            url: currentItem.url,
+            source: "Sinal WRF",
+            type: "LOCAL",
+            summary: "Acompanhe a atualidade na sua rádio."
+          });
+          currentItem = {};
+        }
+      });
       
       if (items.length > 0) {
         setNews(items.slice(0, 5));
@@ -86,20 +85,14 @@ const News: React.FC = () => {
       <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
         <div className="flex items-center space-x-3">
           <div className="p-2.5 bg-blue-600/10 rounded-xl text-blue-600 dark:text-blue-400">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-            </svg>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
           </div>
           <div>
             <h4 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white leading-none">Notícias</h4>
             <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tighter mt-1">Sintonizado no Mundo</p>
           </div>
         </div>
-        <button 
-          onClick={loadNews} 
-          disabled={loading}
-          className={`text-gray-400 hover:text-blue-500 transition-colors ${loading ? 'animate-spin' : ''}`}
-        >
+        <button onClick={loadNews} disabled={loading} className={`text-gray-400 hover:text-blue-500 transition-colors ${loading ? 'animate-spin' : ''}`}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         </button>
       </div>
@@ -113,37 +106,18 @@ const News: React.FC = () => {
             </div>
           ))
         ) : news.map((item, i) => (
-          <a 
-            key={i} 
-            href={item.url} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="block group"
-          >
+          <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" className="block group">
             <div className="flex items-center space-x-2 mb-1">
-              <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${item.type === 'LOCAL' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'}`}>
-                {item.type}
-              </span>
-              <span className="text-[8px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[100px]">
-                {item.source}
-              </span>
+              <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500`}>LOCAL</span>
+              <span className="text-[8px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[100px]">{item.source}</span>
             </div>
-            <h5 className="text-xs font-bold text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors line-clamp-2">
-              {item.title}
-            </h5>
+            <h5 className="text-xs font-bold text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors line-clamp-2">{item.title}</h5>
             <div className="h-[1px] bg-gray-100 dark:bg-white/5 mt-4 group-last:hidden"></div>
           </a>
         ))}
       </div>
 
-      <a 
-        href="https://news.google.com/search?q=Amarante+Portugal" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="block w-full py-3 bg-slate-50 dark:bg-black/20 border border-gray-200 dark:border-white/5 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] text-center text-slate-500 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-600/10 hover:text-blue-600 transition-all"
-      >
-        Mais Notícias no Google
-      </a>
+      <a href="https://news.google.com/search?q=Amarante+Portugal" target="_blank" rel="noopener noreferrer" className="block w-full py-3 bg-slate-50 dark:bg-black/20 border border-gray-200 dark:border-white/5 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] text-center text-slate-500 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-600/10 hover:text-blue-600 transition-all">Mais Notícias no Google</a>
     </div>
   );
 };
