@@ -73,9 +73,9 @@ const PhotoGallery: React.FC = () => {
   ];
 
   const FOTOS_LUGARES: Photo[] = [
-    { id: 11, url: "https://i.ibb.co/RJvXjGz/lugar-2.png", title: "Paisagens de Figueiró", category: "lugares", description: "A beleza natural que nos rodeia e inspira." },
+    { id: 11, url: "https://i.ibb.co/7JkwB7cB/Foto-Igreja-Figueiro.png", title: "Paisagens de Figueiró", category: "lugares", description: "A beleza natural que nos rodeia e inspira." },
     { id: 12, url: "https://i.ibb.co/Q4Wcgtn/lugar-4.png", title: "Património e História", category: "lugares", description: "Orgulho nas nossas raízes e na nossa história." },
-    { id: 13, url: "https://i.ibb.co/k2MdNkgW/lugar-5.png", title: "Recantos da Nossa Terra", category: "lugares", description: "Figueiró em todo o seu esplendor." },
+    { id: 13, url: "https://i.ibb.co/S7Wmhp4G/Foto-Junta-Figueiro.png", title: "Recantos da Nossa Terra", category: "lugares", description: "Figueiró em todo o seu esplendor." },
     { id: 14, url: "https://i.ibb.co/HTByF1mN/lugar-6.png", title: "Vistas Panorâmicas", category: "lugares", description: "O horizonte que abraça a Web Rádio Figueiró." },
     { id: 15, url: "https://i.ibb.co/cXxgm9jb/lugar-7.png", title: "Tradição Local", category: "lugares", description: "Onde o passado e o presente se encontram." }
   ];
