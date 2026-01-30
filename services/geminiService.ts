@@ -8,7 +8,6 @@ import { GoogleGenAI } from "@google/genai";
 const getAIInstance = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    // Log útil para diagnóstico no console do browser (F12)
     console.warn("WRF Service: API_KEY não detetada. Verifique as configurações no Vercel.");
     throw new Error("MISSING_KEY");
   }
@@ -21,19 +20,21 @@ const getAIInstance = () => {
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Diz 5 notícias curtas de Amarante, Portugal. Escreve apenas os títulos, um por linha. Não uses símbolos, números ou introduções.";
+    // Prompt mais assertivo para evitar introduções desnecessárias
+    const prompt = "Dá-me 5 notícias recentes e curtas de Amarante (Portugal). Escreve apenas os títulos, um por linha. Não uses números, nem introduções, nem formatação markdown.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.1,
+        temperature: 0.2, // Menor temperatura para respostas mais factuais
       },
     });
 
+    const text = response.text || "";
     return { 
-      text: response.text || "", 
+      text, 
       grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] 
     };
   } catch (error) {
