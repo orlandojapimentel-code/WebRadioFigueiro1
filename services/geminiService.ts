@@ -2,50 +2,28 @@
 import { GoogleGenAI } from "@google/genai";
 
 /**
- * Helper para instanciar o SDK com segurança e diagnóstico claro.
- * Em produção (Vercel), a API_KEY deve ser configurada nas Environment Variables.
+ * Helper para instanciar o SDK com segurança.
+ * No Vercel, tentamos aceder a process.env de forma segura.
  */
 const getAIInstance = () => {
-  const apiKey = process.env.API_KEY;
+  // Acesso seguro para evitar ReferenceError em browsers que não definem 'process'
+  const env = (typeof process !== 'undefined' && process.env) ? process.env : (window as any).process?.env;
+  const apiKey = env?.API_KEY;
   
-  if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.error(
-      "❌ ERRO DE CONFIGURAÇÃO: A variável API_KEY não foi encontrada.\n" +
-      "Se estás no Vercel, vai a Settings > Environment Variables e adiciona a tua chave com o nome API_KEY."
-    );
+  if (!apiKey || apiKey === "undefined") {
+    console.warn("WRF Service: API_KEY não detetada. O sistema entrará em modo de fallback.");
     throw new Error("MISSING_KEY");
   }
   
   return new GoogleGenAI({ apiKey });
 };
 
-// Função para obter resposta da assistente (Simplificada)
-export const getRadioAssistantResponse = async (message: string) => {
-  try {
-    const ai = getAIInstance();
-    const systemPrompt = "És a 'Figueiró AI', assistente oficial da Web Rádio Figueiró em Amarante. Responde sempre em Português de Portugal, de forma curta e alegre.";
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: message,
-      config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.8,
-      },
-    });
-    
-    return response.text || "Olá! Como posso ajudar hoje? 🎙️";
-  } catch (error) {
-    console.error("Erro no Chat IA:", error);
-    throw error;
-  }
-};
-
-// Função para buscar notícias reais com busca Google - Otimizada para Ticker
+// Busca de notícias otimizada para o Ticker e Widget lateral
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Quais são as notícias e eventos mais recentes de Amarante, Portugal (última semana)? Escreve apenas os títulos, um por linha. Não uses números, listas, asteriscos ou introduções.";
+    // Prompt ultra-direto para evitar lixo na resposta
+    const prompt = "Diz 5 notícias curtas de Amarante e região (últimos dias). Escreve apenas os títulos, um por linha, sem números ou símbolos.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -66,26 +44,35 @@ export const fetchLatestNews = async () => {
   }
 };
 
-/**
- * Procura os eventos culturais em Amarante
- */
+export const getRadioAssistantResponse = async (message: string) => {
+  try {
+    const ai = getAIInstance();
+    const systemPrompt = "És a 'Figueiró AI', assistente da Web Rádio Figueiró. Responde sempre em Português de Portugal, de forma curta e alegre.";
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: message,
+      config: {
+        systemInstruction: systemPrompt,
+        temperature: 0.8,
+      },
+    });
+    return response.text || "Olá! Como posso ajudar? 🎙️";
+  } catch (error) {
+    return "Olá! De momento estou a sintonizar as minhas ideias. Tenta de novo em breve! 🎙️";
+  }
+};
+
 export const fetchCulturalEvents = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Lista eventos culturais próximos em Amarante, Portugal. Formato: Título, Data, Local.";
-
+    const prompt = "Lista eventos culturais em Amarante. Formato: Título, Data, Local.";
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
-      config: {
-        tools: [{ googleSearch: {} }],
-        temperature: 0.3,
-      },
+      config: { tools: [{ googleSearch: {} }], temperature: 0.3 },
     });
-
     return { text: response.text || "" };
   } catch (error) {
-    console.error("Erro na busca de eventos culturais:", error);
     throw error;
   }
 };

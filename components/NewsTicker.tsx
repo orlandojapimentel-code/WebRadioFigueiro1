@@ -6,41 +6,44 @@ const NewsTicker: React.FC = () => {
   const [newsText, setNewsText] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(true);
 
+  // Notícias de reserva caso a API falhe ou a chave não funcione no Vercel
   const FALLBACK_TICKER = [
-    "Web Rádio Figueiró: Sintonize a melhor informação de Amarante e Região",
-    "Música 24 Horas: A sua melhor companhia está aqui na WRF Digital",
-    "Destaque: Peça a sua música favorita através do nosso novo painel de pedidos",
-    "Cultura: Acompanhe a nossa programação para estar sempre informado",
-    "Web Rádio Figueiró: Elevando a voz de Amarante para o mundo inteiro"
+    "Bem-vindo à Web Rádio Figueiró: A sua melhor companhia em Amarante e no Mundo",
+    "Sintonize a excelência sonora com a WRF Digital - Emissão 24 horas por dia",
+    "Peça a sua música favorita e envie a sua dedicatória através do nosso painel de pedidos",
+    "WRF: Elevando a voz de Amarante para todos os corações através da música",
+    "Cultura e Informação: Acompanhe as novidades da nossa região aqui na Figueiró"
   ];
 
   const loadTickerData = async () => {
     setIsSyncing(true);
     
-    // Criamos uma promessa que resolve após 6 segundos como segurança
+    // TIMEOUT: Se em 5 segundos a API não responder, usamos o fallback
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Timeout")), 6000)
+      setTimeout(() => reject(new Error("Timeout")), 5000)
     );
 
     try {
-      // Corrida entre a busca real e o cronómetro de 6 segundos
       const result: any = await Promise.race([
         fetchLatestNews(),
         timeoutPromise
       ]);
       
-      const rawLines = result.text.split('\n');
-      const items = rawLines
-        .map((line: string) => line.replace(/[*#`\d.\-]/g, '').trim())
-        .filter((title: string) => title.length > 10 && !title.toLowerCase().includes('http') && !title.toLowerCase().includes('aqui estão'));
-      
-      if (items.length > 0) {
-        setNewsText(items);
+      if (result && result.text) {
+        const items = result.text.split('\n')
+          .map((line: string) => line.replace(/[*#`\d.\-]/g, '').trim())
+          .filter((title: string) => title.length > 10);
+        
+        if (items.length > 0) {
+          setNewsText(items);
+        } else {
+          setNewsText(FALLBACK_TICKER);
+        }
       } else {
         setNewsText(FALLBACK_TICKER);
       }
     } catch (error) {
-      console.warn("Ticker: Usando notícias de reserva (Motivo: API indisponível ou lenta)");
+      // Se houver erro de chave ou rede, garantimos que o ticker tem conteúdo
       setNewsText(FALLBACK_TICKER);
     } finally {
       setIsSyncing(false);
@@ -49,11 +52,12 @@ const NewsTicker: React.FC = () => {
 
   useEffect(() => {
     loadTickerData();
-    const interval = setInterval(loadTickerData, 600000); // 10 min
+    const interval = setInterval(loadTickerData, 900000); // Atualiza a cada 15 min
     return () => clearInterval(interval);
   }, []);
 
   const currentNews = newsText.length > 0 ? newsText : FALLBACK_TICKER;
+  // Triplicamos os itens para garantir que o scroll infinito não tenha falhas visuais
   const displayItems = [...currentNews, ...currentNews, ...currentNews];
 
   return (
@@ -87,7 +91,7 @@ const NewsTicker: React.FC = () => {
         }
         .animate-ticker-smooth {
           display: inline-flex;
-          animation: ticker-scroll-smooth 60s linear infinite;
+          animation: ticker-scroll-smooth 80s linear infinite;
         }
         .animate-ticker-smooth:hover {
           animation-play-state: paused;
