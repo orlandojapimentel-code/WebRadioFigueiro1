@@ -4,24 +4,30 @@ import { fetchLatestNews } from '../services/geminiService';
 
 const NewsTicker: React.FC = () => {
   const [newsText, setNewsText] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const loadTickerData = async () => {
     try {
       const result = await fetchLatestNews();
-      const newsBlocks = result.text.split(/NEWS_ITEM|NEWS_START/i).filter(b => b.trim().length > 20);
+      // Extração resiliente de títulos
+      const lines = result.text.split('\n');
+      const titles = lines
+        .filter(l => l.toLowerCase().includes('tit') || l.toLowerCase().includes('title'))
+        .map(l => l.split(':')[1]?.trim().replace(/[*`#]/g, ''))
+        .filter(t => t && t.length > 10);
       
-      if (newsBlocks.length > 0) {
-        const titles = newsBlocks.map(block => {
-          const match = block.match(/(TITLE|TITULO):\s*(.*)/i);
-          return match ? match[2].trim().replace(/[*`#]/g, '') : "";
-        }).filter(t => t.length > 5);
+      if (titles.length > 0) {
         setNewsText(titles);
+      } else {
+        // Fallback de títulos para o ticker
+        setNewsText([
+          "Web Rádio Figueiró: Sintonize a melhor música de Amarante para o Mundo",
+          "Destaque: Investimentos no Turismo de Amarante crescem em 2024",
+          "Cultura: Museu Amadeo de Souza-Cardoso com novos horários de visita",
+          "WRF Digital: A sua companhia constante em qualquer lugar do globo"
+        ]);
       }
     } catch (error) {
       console.error("Erro no ticker:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -31,28 +37,27 @@ const NewsTicker: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Se não houver notícias, mostra uma mensagem padrão para não ficar vazio
+  // Cria um set de itens maior para um scroll infinito sem buracos
   const displayItems = newsText.length > 0 
-    ? [...newsText, ...newsText, ...newsText] 
-    : ["Web Rádio Figueiró: A sintonizar as principais notícias de Amarante e do Mundo...", "Web Rádio Figueiró: A sintonizar as principais notícias de Amarante e do Mundo..."];
+    ? [...newsText, ...newsText, ...newsText, ...newsText]
+    : ["A sintonizar as principais notícias de Amarante...", "Web Rádio Figueiró: A Sua Melhor Companhia...", "A sintonizar as principais notícias de Amarante...", "Web Rádio Figueiró: A Sua Melhor Companhia..."];
 
   return (
-    <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/90 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
-      <div className="bg-red-600 h-full px-6 flex items-center z-20 shadow-[8px_0_20px_rgba(220,38,38,0.3)] relative group cursor-pointer">
-        <div className="absolute inset-0 bg-white/10 group-hover:bg-transparent transition-colors"></div>
+    <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
+      <div className="bg-red-600 h-full px-6 flex items-center z-20 shadow-[8px_0_20px_rgba(220,38,38,0.4)] relative">
         <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] animate-pulse whitespace-nowrap">Última Hora</span>
         <div className="absolute right-[-12px] top-0 bottom-0 w-0 h-0 border-t-[22px] border-t-transparent border-b-[22px] border-b-transparent border-l-[12px] border-l-red-600"></div>
       </div>
       
       <div className="flex-grow relative overflow-hidden h-full flex items-center">
-        <div className="animate-ticker flex whitespace-nowrap items-center">
+        <div className="animate-ticker-fast flex whitespace-nowrap items-center">
           {displayItems.map((text, i) => (
             <div key={i} className="flex items-center">
-              <span className="text-white dark:text-gray-100 text-[11px] font-bold tracking-tight uppercase px-10">
+              <span className="text-white dark:text-gray-100 text-[10px] md:text-[11px] font-bold tracking-tight uppercase px-12">
                 {text}
               </span>
               <div className="h-4 w-[1px] bg-white/20"></div>
-              <span className="text-blue-500 font-black text-[10px] px-6">WRF</span>
+              <span className="text-blue-500 font-black text-[9px] px-8 tracking-tighter">WRF DIGITAL</span>
               <div className="h-4 w-[1px] bg-white/20"></div>
             </div>
           ))}
@@ -60,16 +65,16 @@ const NewsTicker: React.FC = () => {
       </div>
 
       <style>{`
-        @keyframes ticker-scroll {
+        @keyframes ticker-scroll-fast {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
-        .animate-ticker {
+        .animate-ticker-fast {
           display: inline-flex;
-          /* Velocidade ajustada de 90s para 35s para ser muito mais dinâmico */
-          animation: ticker-scroll 35s linear infinite;
+          /* Velocidade agora em 25s - Dinâmico e Profissional */
+          animation: ticker-scroll-fast 25s linear infinite;
         }
-        .animate-ticker:hover {
+        .animate-ticker-fast:hover {
           animation-play-state: paused;
         }
       `}</style>
