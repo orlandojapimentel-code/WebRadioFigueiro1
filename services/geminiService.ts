@@ -53,7 +53,6 @@ export const fetchCulturalEvents = async () => {
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    // Prompt mais forte e direto para garantir resultados
     const prompt = `PESQUISA OBRIGATÓRIA: Encontra no Google Search os próximos 6 eventos (concertos, festas, exposições) em Amarante, Portugal para os próximos meses.
     
     Responde estritamente neste formato para cada evento, sem qualquer texto adicional ou markdown:
@@ -76,17 +75,52 @@ export const fetchCulturalEvents = async () => {
       },
     });
 
-    const text = response.text;
-    if (!text || !text.includes("EVENTO_START")) {
-       return null;
-    }
-
-    return { text };
+    return { text: response.text };
   } catch (error: any) {
     console.error("Erro na busca de eventos:", error);
-    if (error.message?.includes("404") || error.message?.includes("not found")) {
-      throw new Error("MODEL_NOT_FOUND");
-    }
+    throw error;
+  }
+};
+
+/**
+ * Pesquisa notícias reais de Amarante e Portugal hoje.
+ */
+export const fetchLatestNews = async () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    throw new Error("MISSING_KEY");
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const prompt = `PESQUISA OBRIGATÓRIA: Encontra as 5 notícias mais importantes e recentes de HOJE (ou últimas 24h) sobre Amarante e Portugal.
+    Tenta incluir pelo menos 2 notícias locais de Amarante.
+    
+    Responde estritamente neste formato para cada notícia:
+    
+    NEWS_START
+    TITULO: [Título da Notícia]
+    FONTE: [Nome do Jornal/Site]
+    TIPO: [LOCAL ou NACIONAL]
+    RESUMO: [Breve resumo de 1 frase]
+    LINK: [URL direta da notícia]
+    NEWS_END`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }],
+        temperature: 0.2,
+      },
+    });
+
+    return { 
+      text: response.text,
+      grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks 
+    };
+  } catch (error: any) {
+    console.error("Erro na busca de notícias:", error);
     throw error;
   }
 };

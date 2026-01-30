@@ -13,6 +13,7 @@ import VisitorCounter from './components/VisitorCounter';
 import PhotoGallery from './components/PhotoGallery';
 import WeatherWidget from './components/WeatherWidget';
 import MediaCenter from './components/MediaCenter';
+import NewsTicker from './components/NewsTicker';
 
 const App: React.FC = () => {
   const [isDark, setIsDark] = useState(() => {
@@ -38,10 +39,11 @@ const App: React.FC = () => {
   const toggleTheme = () => setIsDark(!isDark);
 
   return (
-    <div className="min-h-screen flex flex-col pb-32 transition-colors duration-500">
+    <div className="min-h-screen flex flex-col pb-32 transition-colors duration-500 bg-slate-50 dark:bg-[#020617]">
       <Header isDark={isDark} onToggleTheme={toggleTheme} />
+      <NewsTicker />
       
-      <main className="flex-grow container mx-auto px-4 space-y-16 py-8">
+      <main className="flex-grow container mx-auto px-4 space-y-16 py-12 pt-24">
         <Hero />
         
         {/* SECÇÃO DE SERVIÇOS AMARANTE */}
