@@ -44,16 +44,12 @@ const News: React.FC = () => {
       const result = await fetchLatestNews();
       const lines = result.text.split('\n')
         .map(l => l.replace(/[*#`\d.\-]/g, '').trim())
-        .filter(l => l.length > 20 && !l.toLowerCase().includes('aqui estão'));
+        .filter(l => l.length > 10 && !l.toLowerCase().includes('aqui estão'));
       
       const items: NewsItem[] = [];
       
-      // Associamos os títulos às URLs de Grounding encontradas pelo Google
-      // O Google retorna as URLs na ordem em que foram usadas para gerar a resposta
       if (result.grounding && result.grounding.length > 0) {
         lines.forEach((title, index) => {
-          // Tentamos encontrar o link correspondente no metadado
-          // Se não houver link para este índice exato, usamos o último disponível ou o fallback do Google
           const linkData = result.grounding[index] || result.grounding[0];
           
           if (linkData?.web?.uri) {
