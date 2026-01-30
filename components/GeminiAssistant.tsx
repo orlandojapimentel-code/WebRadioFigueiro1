@@ -30,7 +30,7 @@ const GeminiAssistant: React.FC = () => {
       <div className="p-8 space-y-6">
         <div className="text-center space-y-2 mb-2">
           <h5 className="text-slate-900 dark:text-white font-black text-sm uppercase tracking-wider">Peça a sua música favorita!</h5>
-          <p className="text-slate-500 dark:text-gray-400 text-xs">A nossa equipa está pronta para ouvir o seu pedido e enviar uma dedicatória especial.</p>
+          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium">A nossa equipa está pronta para ouvir o seu pedido e enviar uma dedicatória especial.</p>
         </div>
 
         <button 
@@ -48,6 +48,7 @@ const GeminiAssistant: React.FC = () => {
           <span className="relative px-4 bg-white dark:bg-gray-800 text-[10px] font-black text-gray-400 uppercase tracking-widest">Ou use o formulário</span>
         </div>
 
+        {/* ESTRUTURA CRÍTICA PARA O CENTOVA CAST: Form deve conter TODOS os elementos incluindo o result div */}
         <form className="cc_request_form space-y-4" data-username="orlando">
            <div className="space-y-4">
              <div className="relative group">
@@ -60,7 +61,11 @@ const GeminiAssistant: React.FC = () => {
                <input type="text" name="request[sender]" className="w-full bg-slate-50 dark:bg-black/40 border border-gray-100 dark:border-white/10 rounded-2xl px-5 py-3.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" placeholder="Seu Nome / Dedicatória" />
              </div>
            </div>
-           <button type="button" data-type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-blue-600/20 transition-all active:scale-95 mt-4">
+
+           {/* Contentor obrigatório para o feedback do script request.js */}
+           <div className="cc_request_result text-[10px] font-bold text-center py-2 empty:hidden"></div>
+
+           <button type="button" data-type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-blue-600/20 transition-all active:scale-95">
              Enviar Pedido
            </button>
         </form>

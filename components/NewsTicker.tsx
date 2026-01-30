@@ -9,38 +9,35 @@ const NewsTicker: React.FC = () => {
     try {
       const result = await fetchLatestNews();
       
-      // Nova lógica de extração ultra-resiliente
-      // Remove caracteres especiais de markdown e numerações que a IA às vezes envia
       const rawLines = result.text.split('\n');
       const items = rawLines
         .map(line => line.replace(/[*#`\d.]/g, '').trim())
-        .filter(line => line.length > 30 && !line.toLowerCase().includes('http') && !line.toLowerCase().includes('clique') && !line.toLowerCase().includes('link'));
+        // Relaxado para 20 caracteres para captar títulos mais curtos mas válidos
+        .filter(line => line.length > 20 && !line.toLowerCase().includes('http') && !line.toLowerCase().includes('clique') && !line.toLowerCase().includes('link'));
       
       if (items.length > 0) {
         setNewsText(items);
       } else {
-        // Fallbacks informativos sobre a rádio se a busca não retornar notícias limpas
         setNewsText([
-          "Web Rádio Figueiró: A Sintonizar as Melhores Notícias de Amarante e Região",
-          "Música 24 Horas por Dia: A Sua Melhor Companhia Está Aqui na WRF Digital",
+          "Web Rádio Figueiró: Sintonize a melhor informação de Amarante e Região",
+          "Música 24 Horas: A sua melhor companhia está aqui na WRF Digital",
           "Destaque: Peça a sua música favorita através do nosso novo painel de pedidos",
-          "Cultura e Informação: Siga a nossa agenda cultural e não perca nenhum evento em Amarante",
-          "Web Rádio Figueiró: Elevando a Voz de Amarante para o Mundo Inteiro"
+          "Cultura: Fique a par dos eventos mais importantes da nossa região na WRF",
+          "Web Rádio Figueiró: Elevando a voz de Amarante para o mundo inteiro"
         ]);
       }
     } catch (error) {
       console.error("Erro no ticker:", error);
-      setNewsText(["Web Rádio Figueiró: A Sintonizar as Principais Notícias de Amarante..."]);
+      setNewsText(["Web Rádio Figueiró: A Sintonizar a Melhor Informação de Amarante..."]);
     }
   };
 
   useEffect(() => {
     loadTickerData();
-    const interval = setInterval(loadTickerData, 900000); // Atualiza a cada 15 min para manter frescura
+    const interval = setInterval(loadTickerData, 900000); // 15 min
     return () => clearInterval(interval);
   }, []);
 
-  // Multiplicamos os itens para garantir um fluxo contínuo sem espaços vazios na animação
   const displayItems = newsText.length > 0 
     ? [...newsText, ...newsText, ...newsText]
     : ["A sintonizar as notícias de Amarante...", "Web Rádio Figueiró: A Sua Melhor Companhia...", "A sintonizar as notícias de Amarante..."];
@@ -74,7 +71,7 @@ const NewsTicker: React.FC = () => {
         }
         .animate-ticker-fast {
           display: inline-flex;
-          animation: ticker-scroll-fast 35s linear infinite;
+          animation: ticker-scroll-fast 40s linear infinite;
         }
         .animate-ticker-fast:hover {
           animation-play-state: paused;

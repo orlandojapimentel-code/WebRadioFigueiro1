@@ -1,12 +1,12 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// Função para obter resposta da assistente (Simplificada para apenas pedidos se necessário futuramente)
+// Função para obter resposta da assistente (Simplificada)
 export const getRadioAssistantResponse = async (message: string) => {
   if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
 
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const systemPrompt = "És a 'Figueiró AI', assistente oficial da Web Rádio Figueiró em Amarante. Responde sempre em Português de Portugal, de forma curta, alegre e em tom de rádio. Se o utilizador quiser pedir música, orienta-o para o formulário de pedidos.";
+  const systemPrompt = "És a 'Figueiró AI', assistente oficial da Web Rádio Figueiró em Amarante. Responde sempre em Português de Portugal, de forma curta e alegre.";
 
   try {
     const response = await ai.models.generateContent({
@@ -18,21 +18,21 @@ export const getRadioAssistantResponse = async (message: string) => {
       },
     });
     
-    return response.text || "Olá! Como posso ajudar com o seu pedido de música hoje? 🎙️";
+    return response.text || "Olá! Como posso ajudar hoje? 🎙️";
   } catch (error) {
     console.error("Erro no Chat IA:", error);
     throw error;
   }
 };
 
-// Função para buscar notícias reais com busca Google - Otimizada para o Ticker
+// Função para buscar notícias reais com busca Google - Focada no Ticker
 export const fetchLatestNews = async () => {
   if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
 
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    // Prompt extremamente direto para o rodapé
-    const prompt = "Diz 5 notícias curtas e importantes de hoje (Janeiro 2026) sobre Amarante, Portugal. Escreve apenas os títulos. Não uses markdown, nem links, nem listas numeradas.";
+    // Prompt optimizado para o ticker: removemos qualquer possibilidade de formatação markdown
+    const prompt = "Lista as 5 notícias mais importantes de hoje sobre Amarante (Portugal). Escreve apenas os títulos, um por linha. Não uses asteriscos, nem números, nem links.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
