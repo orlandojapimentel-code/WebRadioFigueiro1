@@ -8,7 +8,7 @@ import { GoogleGenAI } from "@google/genai";
 const getAIInstance = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.warn("WRF Service: API_KEY não detetada. Verifique as configurações no Vercel.");
+    console.warn("WRF Service: API_KEY não detetada.");
     throw new Error("MISSING_KEY");
   }
   return new GoogleGenAI({ apiKey });
@@ -16,20 +16,20 @@ const getAIInstance = () => {
 
 /**
  * Busca notícias de Amarante usando Google Search.
- * Utilizamos o modelo Pro para garantir melhor interpretação dos resultados de pesquisa.
+ * Otimizado para o NewsTicker com modelo Flash para menor latência.
  */
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    // Prompt extremamente simplificado para evitar ruído na resposta
-    const prompt = "Dá-me os títulos de 5 notícias reais e recentes de Amarante, Portugal. Escreve apenas um título por linha. Não enumeres nem uses marcadores.";
+    const prompt = "Pesquisa e lista 5 notícias de hoje ou desta semana de Amarante, Portugal. Devolve apenas os títulos, um por linha. Não escrevas introduções nem conclusões.";
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview', // Upgrade para o Pro para melhor grounding em tarefas de pesquisa
+      model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
+        systemInstruction: "És um gerador de feeds de notícias. Responde apenas com os títulos das notícias, sem numeração, sem asteriscos e sem frases de cortesia. Uma notícia por linha.",
         tools: [{ googleSearch: {} }],
-        temperature: 0.1, // Quase zero para evitar alucinações
+        temperature: 0.0, // Máxima precisão
       },
     });
 

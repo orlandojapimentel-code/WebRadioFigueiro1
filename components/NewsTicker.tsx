@@ -18,9 +18,9 @@ const NewsTicker: React.FC = () => {
   const loadTickerData = async () => {
     setIsSyncing(true);
     
-    // Timeout de 15s para garantir tempo suficiente para o Google Search
+    // Timeout estendido para 20s para garantir resposta da ferramenta de pesquisa
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Timeout")), 15000)
+      setTimeout(() => reject(new Error("Timeout")), 20000)
     );
 
     try {
@@ -30,81 +30,95 @@ const NewsTicker: React.FC = () => {
       ]);
       
       if (result && result.text) {
-        // Remove introduções chatas da IA como "Aqui estão as notícias..."
-        const cleanLines = result.text.split('\n')
-          .filter((line: string) => {
-            const l = line.toLowerCase();
-            return !l.includes('aqui estão') && !l.includes('notícias de amarante') && !l.includes('recentes de amarante');
-          });
-
-        const items = cleanLines.map((line: string) => {
-            // Remove APENAS números iniciais seguidos de ponto (ex: "1. ") ou traços/asteriscos
-            // Mas PRESERVA números dentro do texto (ex: "S. Gonçalo 2025")
-            return line.replace(/^[0-9\-\*\#\.\s]+/, '').replace(/[*#`]/g, '').trim();
+        // Limpeza de texto vindo do Gemini (várias quebras de linha e markdown)
+        const items = result.text
+          .split(/\n+/)
+          .map((line: string) => {
+            return line
+              .replace(/^[0-9\-\*\#\.\s]+/, '') // Remove "1. ", "- ", etc. no início
+              .replace(/[*#`_]/g, '')           // Remove formatação markdown residual
+              .trim();
           })
-          .filter((title: string) => title.length > 8); // Filtro ligeiramente mais permissivo
+          .filter((title: string) => 
+            title.length > 10 && 
+            !title.toLowerCase().includes('aqui estão') &&
+            !title.toLowerCase().includes('notícias de')
+          );
         
         if (items.length > 0) {
-          setNewsText(items);
+          // Adicionamos um prefixo para confirmar visualmente que são notícias live
+          const liveItems = items.map(t => `NEWS: ${t}`);
+          setNewsText(liveItems);
         }
       }
     } catch (error) {
-      console.warn("NewsTicker: Usando notícias locais (Offline ou Erro de API).");
-      // Se falhar, mantém as de fallback ou as últimas que obteve
+      console.warn("NewsTicker: Sincronização falhou, mantendo fallback.");
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    loadTickerData();
-    // Atualiza a cada 10 minutos
-    const interval = setInterval(loadTickerData, 600000);
-    return () => clearInterval(interval);
+    // Carregamento inicial com pequeno delay para não sobrecarregar o mount
+    const timer = setTimeout(loadTickerData, 2000);
+    
+    // Atualiza a cada 5 minutos (mais frequente para captar notícias)
+    const interval = setInterval(loadTickerData, 300000);
+    
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
-  // Multiplicamos os itens para garantir o loop infinito suave
-  const displayItems = [...newsText, ...newsText, ...newsText, ...newsText];
+  // Triplicamos os itens para garantir o loop infinito suave sem saltos
+  const displayItems = [...newsText, ...newsText, ...newsText];
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
       {/* Indicador Vermelho "Última Hora" */}
       <div className="bg-red-600 h-full px-6 flex items-center z-20 shadow-[10px_0_20px_rgba(220,38,38,0.3)] relative shrink-0">
         <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] whitespace-nowrap flex items-center space-x-2">
-          {isSyncing && (
-            <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
+          {isSyncing ? (
+            <span className="flex space-x-1">
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0s'}}></span>
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></span>
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></span>
+            </span>
+          ) : (
+            <span className="w-2 h-2 bg-white rounded-full animate-pulse mr-2"></span>
           )}
-          <span>{isSyncing ? 'Sintonizar' : 'Última Hora'}</span>
+          <span>{isSyncing ? 'A Sincronizar' : 'Última Hora'}</span>
         </span>
         <div className="absolute right-[-12px] top-0 bottom-0 w-0 h-0 border-t-[22px] border-t-transparent border-b-[22px] border-b-transparent border-l-[12px] border-l-red-600"></div>
       </div>
       
       {/* Área de Texto com Scroll Infinito */}
-      <div className="flex-grow relative overflow-hidden h-full flex items-center">
-        <div className="animate-ticker-continuous flex whitespace-nowrap items-center">
+      <div className="flex-grow relative h-full flex items-center">
+        <div className="animate-ticker-infinite flex whitespace-nowrap items-center">
           {displayItems.map((text, i) => (
             <div key={i} className="flex items-center shrink-0">
               <span className="text-white dark:text-gray-100 text-[10px] md:text-[11px] font-bold tracking-tight uppercase px-12">
                 {text}
               </span>
-              <div className="h-4 w-[1px] bg-white/20"></div>
+              <div className="h-4 w-[1px] bg-white/10"></div>
               <span className="text-blue-500 font-black text-[9px] px-8 tracking-tighter">WRF NEWS</span>
-              <div className="h-4 w-[1px] bg-white/20"></div>
+              <div className="h-4 w-[1px] bg-white/10"></div>
             </div>
           ))}
         </div>
       </div>
 
       <style>{`
-        @keyframes ticker-scroll {
+        @keyframes ticker-infinite {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          100% { transform: translateX(-33.333%); }
         }
-        .animate-ticker-continuous {
+        .animate-ticker-infinite {
           display: inline-flex;
-          animation: ticker-scroll 120s linear infinite;
+          animation: ticker-infinite 100s linear infinite;
         }
-        .animate-ticker-continuous:hover {
+        .animate-ticker-infinite:hover {
           animation-play-state: paused;
         }
       `}</style>
