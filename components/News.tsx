@@ -13,16 +13,16 @@ interface NewsItem {
 const FALLBACK_NEWS: NewsItem[] = [
   {
     title: "Amarante: Investimento no Turismo Sustentável cresce na região do Tâmega",
-    source: "Sinal WRF",
+    source: "Portal Amarante",
     type: "LOCAL",
-    summary: "A região tem registado um aumento significativo de visitantes interessados em turismo de natureza.",
+    summary: "Acompanhe as novidades da região em direto.",
     url: "https://www.amarante.pt"
   },
   {
-    title: "Cultura: Museu Amadeo de Souza-Cardoso prepara novas exposições",
-    source: "Sinal WRF",
+    title: "Cultura: Museu Amadeo de Souza-Cardoso com novos destaques",
+    source: "Cultura Amarante",
     type: "LOCAL",
-    summary: "O museu icónico da cidade continua a ser o centro das atenções culturais no norte do país.",
+    summary: "As principais exposições do mês na nossa cidade.",
     url: "https://www.amarante.pt"
   }
 ];
@@ -38,26 +38,26 @@ const News: React.FC = () => {
       const lines = result.text.split('\n');
       
       const items: NewsItem[] = [];
-      let currentItem: Partial<NewsItem> = {};
+      let currentTitle = "";
 
       lines.forEach(line => {
-        const cleanLine = line.replace(/[*#`]/g, '').trim();
-        if (cleanLine.toLowerCase().includes('http')) {
-          const urlMatch = cleanLine.match(/https?:\/\/[^\s]+/);
-          if (urlMatch) currentItem.url = urlMatch[0];
+        const cleanLine = line.replace(/[*#`\d.]/g, '').trim();
+        
+        // Se a linha contém um link, assume que o título anterior pertence a este link
+        if (line.toLowerCase().includes('http')) {
+          const urlMatch = line.match(/https?:\/\/[^\s]+/);
+          if (urlMatch && currentTitle) {
+            items.push({
+              title: currentTitle,
+              url: urlMatch[0],
+              source: "Sinal WRF",
+              type: "LOCAL",
+              summary: "Destaque informativo de Amarante."
+            });
+            currentTitle = ""; // Limpa para o próximo
+          }
         } else if (cleanLine.length > 20) {
-          currentItem.title = cleanLine;
-        }
-
-        if (currentItem.title && currentItem.url) {
-          items.push({
-            title: currentItem.title,
-            url: currentItem.url,
-            source: "Sinal WRF",
-            type: "LOCAL",
-            summary: "Acompanhe a atualidade na sua rádio."
-          });
-          currentItem = {};
+          currentTitle = cleanLine;
         }
       });
       

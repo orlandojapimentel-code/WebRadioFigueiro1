@@ -8,35 +8,41 @@ const NewsTicker: React.FC = () => {
   const loadTickerData = async () => {
     try {
       const result = await fetchLatestNews();
-      // Extração resiliente: divide por linhas e limpa marcas de markdown
+      
+      // Nova lógica de extração ultra-resiliente
+      // 1. Tenta extrair linhas que não sejam links e tenham tamanho razoável
       const items = result.text.split('\n')
-        .map(line => line.replace(/[*#`]/g, '').trim())
-        .filter(line => line.length > 20 && !line.toLowerCase().includes('http'));
+        .map(line => line.replace(/[*#`\d.]/g, '').trim())
+        .filter(line => line.length > 25 && !line.toLowerCase().includes('http') && !line.toLowerCase().includes('clique'));
       
       if (items.length > 0) {
         setNewsText(items);
       } else {
+        // Fallbacks de qualidade se a extração falhar
         setNewsText([
-          "Web Rádio Figueiró: A sua melhor companhia em Amarante e no Mundo",
-          "Música, Informação e Cultura: Tudo na palma da sua mão com a WRF",
-          "Sintonize a excelência sonora da rádio que não para de crescer",
-          "Web Rádio Figueiró: O som que une Amarante ao resto do globo"
+          "Web Rádio Figueiró: Sintonize as melhores notícias de Amarante e do Mundo",
+          "Destaque: Acompanhe a nossa programação especial em direto 24h por dia",
+          "Cultura: Fique a par dos eventos mais importantes da nossa região aqui na WRF",
+          "WRF Digital: A sua rádio de confiança agora com assistente inteligente"
         ]);
       }
     } catch (error) {
       console.error("Erro no ticker:", error);
+      // Fallback em caso de erro total da API
+      setNewsText(["Web Rádio Figueiró: A Sintonizar a Melhor Informação de Amarante..."]);
     }
   };
 
   useEffect(() => {
     loadTickerData();
-    const interval = setInterval(loadTickerData, 1800000); 
+    const interval = setInterval(loadTickerData, 1800000); // 30 min
     return () => clearInterval(interval);
   }, []);
 
+  // Multiplicamos os itens para garantir um fluxo contínuo sem espaços vazios
   const displayItems = newsText.length > 0 
     ? [...newsText, ...newsText, ...newsText]
-    : ["A sintonizar as principais notícias de Amarante...", "Web Rádio Figueiró: A Sua Melhor Companhia...", "A sintonizar as principais notícias de Amarante..."];
+    : ["A carregar as últimas notícias de Amarante..."];
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">

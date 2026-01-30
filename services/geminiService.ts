@@ -3,12 +3,11 @@ import { GoogleGenAI } from "@google/genai";
 
 // Função para obter resposta da assistente (Chat)
 export const getRadioAssistantResponse = async (message: string) => {
-  // Use process.env.API_KEY directly and check for its presence
   if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
 
-  // Create a new instance right before the call to ensure the latest key is used
+  // Instância única por pedido para garantir frescura da chave
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const systemPrompt = "És a 'Figueiró AI', assistente da Web Rádio Figueiró (Amarante). Responde de forma curta, alegre e em Português de Portugal. Usa emojis 🎙️.";
+  const systemPrompt = "És a 'Figueiró AI', assistente oficial da Web Rádio Figueiró em Amarante. Responde sempre em Português de Portugal, de forma curta (máx 2 frases), alegre e usa emojis. Se te pedirem notícias, diz que as podem ver no painel ao lado ou no rodapé.";
 
   try {
     const response = await ai.models.generateContent({
@@ -16,37 +15,39 @@ export const getRadioAssistantResponse = async (message: string) => {
       contents: message,
       config: {
         systemInstruction: systemPrompt,
-        temperature: 0.7,
+        temperature: 0.8,
+        topP: 0.95,
       },
     });
-    return response.text;
+    
+    return response.text || "Estou aqui para ajudar! O que gostarias de ouvir hoje? 🎙️";
   } catch (error) {
     console.error("Erro no Chat IA:", error);
     throw error;
   }
 };
 
-// Função para buscar notícias reais
+// Função para buscar notícias reais com busca Google
 export const fetchLatestNews = async () => {
   if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
 
   try {
-    // Create a new instance right before the call
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = "Lista as 5 notícias mais recentes e importantes de hoje sobre Amarante (Portugal) e arredores. Para cada notícia, indica o TÍTULO e o LINK (URL) completo. Não uses tabelas nem markdown complexo.";
+    // Prompt mais direto para evitar respostas divagantes
+    const prompt = "Lista as 5 notícias mais importantes e recentes de hoje em Amarante, Portugal. Escreve apenas o título de cada notícia seguido do link. Não uses explicações.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.2,
+        temperature: 0.1, // Menor temperatura para resultados mais factuais
       },
     });
 
     return { 
-      text: response.text,
-      grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks 
+      text: response.text || "",
+      grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
     };
   } catch (error) {
     console.error("Erro na busca de notícias:", error);
@@ -55,36 +56,25 @@ export const fetchLatestNews = async () => {
 };
 
 /**
- * Procura os eventos culturais em Amarante, Portugal usando Google Search grounding.
- * Formata a resposta para ser processada pelo componente AgendaCultural.
+ * Procura os eventos culturais em Amarante
  */
 export const fetchCulturalEvents = async () => {
   if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
 
   try {
-    // Create a new instance right before the call
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = `Procura os eventos culturais mais recentes e futuros em Amarante, Portugal (concertos, exposições, teatro, festas). 
-    Lista os próximos 6 eventos. Para cada evento, usa obrigatoriamente este formato exato:
-    EVENTO_START
-    TITULO: [Nome do evento]
-    DATA: [Data do evento, ex: 25 de Março]
-    LOCAL: [Local do evento em Amarante]
-    TIPO: [CONCERTO, EXPOSIÇÃO, TEATRO, FESTA ou GERAL]
-    IMAGEM: [URL de uma imagem representativa se disponível]
-    LINK: [URL para mais detalhes]
-    EVENTO_END`;
+    const prompt = "Procura eventos culturais próximos em Amarante, Portugal (concertos, festas, exposições). Lista 5 eventos com TITULO, DATA e LOCAL.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.2,
+        temperature: 0.3,
       },
     });
 
-    return { text: response.text };
+    return { text: response.text || "" };
   } catch (error) {
     console.error("Erro na busca de eventos culturais:", error);
     throw error;
@@ -92,6 +82,5 @@ export const fetchCulturalEvents = async () => {
 };
 
 export const getRadioAssistantStream = async (message: string, onChunk: (text: string) => void) => {
-  // Mantemos para compatibilidade, mas o Chat agora usará a versão síncrona se esta falhar
   return getRadioAssistantResponse(message).then(text => onChunk(text || ""));
 };
