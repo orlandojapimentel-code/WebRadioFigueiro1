@@ -1,13 +1,12 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// Função para obter resposta da assistente (Chat)
+// Função para obter resposta da assistente (Simplificada para apenas pedidos se necessário futuramente)
 export const getRadioAssistantResponse = async (message: string) => {
   if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
 
-  // Instância única por pedido para garantir frescura da chave
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const systemPrompt = "És a 'Figueiró AI', assistente oficial da Web Rádio Figueiró em Amarante. Responde sempre em Português de Portugal, de forma curta (máx 2 frases), alegre e usa emojis. Se te pedirem notícias, diz que as podem ver no painel ao lado ou no rodapé.";
+  const systemPrompt = "És a 'Figueiró AI', assistente oficial da Web Rádio Figueiró em Amarante. Responde sempre em Português de Portugal, de forma curta, alegre e em tom de rádio. Se o utilizador quiser pedir música, orienta-o para o formulário de pedidos.";
 
   try {
     const response = await ai.models.generateContent({
@@ -16,32 +15,31 @@ export const getRadioAssistantResponse = async (message: string) => {
       config: {
         systemInstruction: systemPrompt,
         temperature: 0.8,
-        topP: 0.95,
       },
     });
     
-    return response.text || "Estou aqui para ajudar! O que gostarias de ouvir hoje? 🎙️";
+    return response.text || "Olá! Como posso ajudar com o seu pedido de música hoje? 🎙️";
   } catch (error) {
     console.error("Erro no Chat IA:", error);
     throw error;
   }
 };
 
-// Função para buscar notícias reais com busca Google
+// Função para buscar notícias reais com busca Google - Otimizada para o Ticker
 export const fetchLatestNews = async () => {
   if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
 
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    // Prompt mais direto para evitar respostas divagantes
-    const prompt = "Lista as 5 notícias mais importantes e recentes de hoje em Amarante, Portugal. Escreve apenas o título de cada notícia seguido do link. Não uses explicações.";
+    // Prompt extremamente direto para o rodapé
+    const prompt = "Diz 5 notícias curtas e importantes de hoje (Janeiro 2026) sobre Amarante, Portugal. Escreve apenas os títulos. Não uses markdown, nem links, nem listas numeradas.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.1, // Menor temperatura para resultados mais factuais
+        temperature: 0.1,
       },
     });
 
@@ -63,7 +61,7 @@ export const fetchCulturalEvents = async () => {
 
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = "Procura eventos culturais próximos em Amarante, Portugal (concertos, festas, exposições). Lista 5 eventos com TITULO, DATA e LOCAL.";
+    const prompt = "Lista eventos culturais próximos em Amarante, Portugal. Formato: Título, Data, Local.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
