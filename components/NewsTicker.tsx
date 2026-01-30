@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchLatestNews } from '../services/geminiService';
 
 const NewsTicker: React.FC = () => {
-  // Notícias de reserva de alta qualidade (sempre visíveis até a IA responder)
+  // Notícias de reserva de alta qualidade (conteúdo institucional)
   const FALLBACK_TICKER = [
     "Web Rádio Figueiró: A sua melhor companhia em Amarante e no Mundo",
     "Sintonize a excelência sonora com a WRF Digital - Emissão 24 horas por dia",
@@ -18,9 +18,9 @@ const NewsTicker: React.FC = () => {
   const loadTickerData = async () => {
     setIsSyncing(true);
     
-    // Timeout de 10s para não prender o estado "Sintonizar" caso a API demore
+    // Timeout de 15s para garantir tempo suficiente para o Google Search
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Timeout")), 10000)
+      setTimeout(() => reject(new Error("Timeout")), 15000)
     );
 
     try {
@@ -30,36 +30,41 @@ const NewsTicker: React.FC = () => {
       ]);
       
       if (result && result.text) {
-        const items = result.text.split('\n')
-          .map((line: string) => {
-            // Limpeza profunda de caracteres de listas (1., -, *, #)
+        // Remove introduções chatas da IA como "Aqui estão as notícias..."
+        const cleanLines = result.text.split('\n')
+          .filter((line: string) => {
+            const l = line.toLowerCase();
+            return !l.includes('aqui estão') && !l.includes('notícias de amarante') && !l.includes('recentes de amarante');
+          });
+
+        const items = cleanLines.map((line: string) => {
+            // Remove APENAS números iniciais seguidos de ponto (ex: "1. ") ou traços/asteriscos
+            // Mas PRESERVA números dentro do texto (ex: "S. Gonçalo 2025")
             return line.replace(/^[0-9\-\*\#\.\s]+/, '').replace(/[*#`]/g, '').trim();
           })
-          .filter((title: string) => title.length > 10);
+          .filter((title: string) => title.length > 8); // Filtro ligeiramente mais permissivo
         
         if (items.length > 0) {
           setNewsText(items);
         }
       }
     } catch (error) {
-      console.warn("NewsTicker: Usando notícias locais da rádio (Offline/API Busy).");
-      // Mantém o estado anterior ou FALLBACK_TICKER
+      console.warn("NewsTicker: Usando notícias locais (Offline ou Erro de API).");
+      // Se falhar, mantém as de fallback ou as últimas que obteve
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    // Tenta carregar notícias reais logo ao início
     loadTickerData();
-    
-    // Atualiza a cada 15 minutos
-    const interval = setInterval(loadTickerData, 900000);
+    // Atualiza a cada 10 minutos
+    const interval = setInterval(loadTickerData, 600000);
     return () => clearInterval(interval);
   }, []);
 
-  // Triplicamos os itens para garantir que o scroll infinito não tenha falhas visuais
-  const displayItems = [...newsText, ...newsText, ...newsText];
+  // Multiplicamos os itens para garantir o loop infinito suave
+  const displayItems = [...newsText, ...newsText, ...newsText, ...newsText];
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
@@ -83,7 +88,7 @@ const NewsTicker: React.FC = () => {
                 {text}
               </span>
               <div className="h-4 w-[1px] bg-white/20"></div>
-              <span className="text-blue-500 font-black text-[9px] px-8 tracking-tighter">WRF DIGITAL</span>
+              <span className="text-blue-500 font-black text-[9px] px-8 tracking-tighter">WRF NEWS</span>
               <div className="h-4 w-[1px] bg-white/20"></div>
             </div>
           ))}
@@ -93,11 +98,11 @@ const NewsTicker: React.FC = () => {
       <style>{`
         @keyframes ticker-scroll {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-33.333%); }
+          100% { transform: translateX(-50%); }
         }
         .animate-ticker-continuous {
           display: inline-flex;
-          animation: ticker-scroll 80s linear infinite;
+          animation: ticker-scroll 120s linear infinite;
         }
         .animate-ticker-continuous:hover {
           animation-play-state: paused;

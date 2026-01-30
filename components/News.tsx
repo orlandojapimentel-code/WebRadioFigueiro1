@@ -42,7 +42,7 @@ const News: React.FC = () => {
     setLoading(true);
     
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Timeout")), 6000)
+      setTimeout(() => reject(new Error("Timeout")), 10000)
     );
 
     try {
@@ -51,8 +51,9 @@ const News: React.FC = () => {
         timeoutPromise
       ]);
 
+      // Regex corrigido: Remove apenas marcadores e números de lista no INÍCIO, preservando números no meio
       const lines = result.text.split('\n')
-        .map((l: string) => l.replace(/[*#`\d.\-]/g, '').trim())
+        .map((l: string) => l.replace(/^[0-9\-\*\#\.\s]+/, '').replace(/[*#`]/g, '').trim())
         .filter((l: string) => l.length > 10 && !l.toLowerCase().includes('aqui estão'));
       
       const items: NewsItem[] = [];
