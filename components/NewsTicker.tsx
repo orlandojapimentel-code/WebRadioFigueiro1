@@ -16,14 +16,23 @@ const NewsTicker: React.FC = () => {
 
   const loadTickerData = async () => {
     setIsSyncing(true);
+    
+    // Criamos uma promessa que resolve após 6 segundos como segurança
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Timeout")), 6000)
+    );
+
     try {
-      const result = await fetchLatestNews();
+      // Corrida entre a busca real e o cronómetro de 6 segundos
+      const result: any = await Promise.race([
+        fetchLatestNews(),
+        timeoutPromise
+      ]);
       
       const rawLines = result.text.split('\n');
       const items = rawLines
-        .map(line => line.replace(/[*#`\d.\-]/g, '').trim())
-        // Filtro mais relaxado (10 caracteres mínimo) para captar títulos curtos
-        .filter(title => title.length > 10 && !title.toLowerCase().includes('http') && !title.toLowerCase().includes('aqui estão'));
+        .map((line: string) => line.replace(/[*#`\d.\-]/g, '').trim())
+        .filter((title: string) => title.length > 10 && !title.toLowerCase().includes('http') && !title.toLowerCase().includes('aqui estão'));
       
       if (items.length > 0) {
         setNewsText(items);
@@ -31,7 +40,7 @@ const NewsTicker: React.FC = () => {
         setNewsText(FALLBACK_TICKER);
       }
     } catch (error) {
-      console.error("Erro no ticker:", error);
+      console.warn("Ticker: Usando notícias de reserva (Motivo: API indisponível ou lenta)");
       setNewsText(FALLBACK_TICKER);
     } finally {
       setIsSyncing(false);
@@ -40,15 +49,11 @@ const NewsTicker: React.FC = () => {
 
   useEffect(() => {
     loadTickerData();
-    // Refresh a cada 10 minutos
-    const interval = setInterval(loadTickerData, 600000);
+    const interval = setInterval(loadTickerData, 600000); // 10 min
     return () => clearInterval(interval);
   }, []);
 
-  // Garantir que displayItems nunca é vazio para a animação não quebrar
   const currentNews = newsText.length > 0 ? newsText : FALLBACK_TICKER;
-  
-  // Triplicamos a lista para criar o efeito de scroll infinito sem saltos
   const displayItems = [...currentNews, ...currentNews, ...currentNews];
 
   return (
@@ -82,7 +87,7 @@ const NewsTicker: React.FC = () => {
         }
         .animate-ticker-smooth {
           display: inline-flex;
-          animation: ticker-scroll-smooth 50s linear infinite;
+          animation: ticker-scroll-smooth 60s linear infinite;
         }
         .animate-ticker-smooth:hover {
           animation-play-state: paused;

@@ -40,37 +40,40 @@ const News: React.FC = () => {
 
   const loadNews = async () => {
     setLoading(true);
+    
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Timeout")), 6000)
+    );
+
     try {
-      const result = await fetchLatestNews();
+      const result: any = await Promise.race([
+        fetchLatestNews(),
+        timeoutPromise
+      ]);
+
       const lines = result.text.split('\n')
-        .map(l => l.replace(/[*#`\d.\-]/g, '').trim())
-        .filter(l => l.length > 10 && !l.toLowerCase().includes('aqui estão'));
+        .map((l: string) => l.replace(/[*#`\d.\-]/g, '').trim())
+        .filter((l: string) => l.length > 10 && !l.toLowerCase().includes('aqui estão'));
       
       const items: NewsItem[] = [];
       
       if (result.grounding && result.grounding.length > 0) {
-        lines.forEach((title, index) => {
+        lines.forEach((title: string, index: number) => {
           const linkData = result.grounding[index] || result.grounding[0];
-          
           if (linkData?.web?.uri) {
             items.push({
               title,
               url: linkData.web.uri,
               source: linkData.web.title?.split(' - ')[0] || "Portal Regional",
               type: "LOCAL",
-              summary: "Notícia de última hora captada em Amarante."
+              summary: "Notícia de última hora."
             });
           }
         });
       }
       
-      if (items.length > 0) {
-        setNews(items.slice(0, 5));
-      } else {
-        setNews(FALLBACK_NEWS);
-      }
+      setNews(items.length > 0 ? items.slice(0, 5) : FALLBACK_NEWS);
     } catch (error) {
-      console.error("Erro ao carregar notícias:", error);
       setNews(FALLBACK_NEWS);
     } finally {
       setLoading(false);

@@ -1,14 +1,30 @@
 
 import { GoogleGenAI } from "@google/genai";
 
+/**
+ * Helper para instanciar o SDK com segurança e diagnóstico claro.
+ * Em produção (Vercel), a API_KEY deve ser configurada nas Environment Variables.
+ */
+const getAIInstance = () => {
+  const apiKey = process.env.API_KEY;
+  
+  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    console.error(
+      "❌ ERRO DE CONFIGURAÇÃO: A variável API_KEY não foi encontrada.\n" +
+      "Se estás no Vercel, vai a Settings > Environment Variables e adiciona a tua chave com o nome API_KEY."
+    );
+    throw new Error("MISSING_KEY");
+  }
+  
+  return new GoogleGenAI({ apiKey });
+};
+
 // Função para obter resposta da assistente (Simplificada)
 export const getRadioAssistantResponse = async (message: string) => {
-  if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
-
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const systemPrompt = "És a 'Figueiró AI', assistente oficial da Web Rádio Figueiró em Amarante. Responde sempre em Português de Portugal, de forma curta e alegre.";
-
   try {
+    const ai = getAIInstance();
+    const systemPrompt = "És a 'Figueiró AI', assistente oficial da Web Rádio Figueiró em Amarante. Responde sempre em Português de Portugal, de forma curta e alegre.";
+
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: message,
@@ -27,11 +43,8 @@ export const getRadioAssistantResponse = async (message: string) => {
 
 // Função para buscar notícias reais com busca Google - Otimizada para Ticker
 export const fetchLatestNews = async () => {
-  if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
-
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    // Prompt relaxado para garantir que sempre haja resultados
+    const ai = getAIInstance();
     const prompt = "Quais são as notícias e eventos mais recentes de Amarante, Portugal (última semana)? Escreve apenas os títulos, um por linha. Não uses números, listas, asteriscos ou introduções.";
 
     const response = await ai.models.generateContent({
@@ -57,10 +70,8 @@ export const fetchLatestNews = async () => {
  * Procura os eventos culturais em Amarante
  */
 export const fetchCulturalEvents = async () => {
-  if (!process.env.API_KEY || process.env.API_KEY === "undefined") throw new Error("MISSING_KEY");
-
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = getAIInstance();
     const prompt = "Lista eventos culturais próximos em Amarante, Portugal. Formato: Título, Data, Local.";
 
     const response = await ai.models.generateContent({
