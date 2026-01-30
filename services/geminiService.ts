@@ -16,20 +16,20 @@ const getAIInstance = () => {
 
 /**
  * Busca notícias de Amarante usando Google Search.
- * Utilizamos o modelo Pro para máxima eficácia com a ferramenta de pesquisa.
+ * Utilizamos o modelo Flash para máxima velocidade, essencial para o rodapé.
  */
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    // Prompt otimizado para extrair notícias recentes via busca
-    const prompt = "Pesquisa as 5 notícias mais recentes e importantes de hoje da cidade de Amarante, Portugal. Devolve apenas uma lista com os títulos das notícias, um por linha. Não escrevas introduções, números ou asteriscos.";
+    // Prompt minimalista para acelerar a resposta
+    const prompt = "Lista 5 títulos de notícias de hoje em Amarante, Portugal. Apenas títulos, um por linha. Sem introdução.";
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview', 
+      model: 'gemini-3-flash-preview', // Flash é muito mais rápido que Pro
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.1,
+        temperature: 0, // Determinístico
       },
     });
 
