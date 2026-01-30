@@ -2,29 +2,26 @@
 import { GoogleGenAI } from "@google/genai";
 
 /**
- * Helper para instanciar o SDK com máxima compatibilidade.
+ * Inicialização do SDK Gemini.
+ * A variável process.env.API_KEY é injetada automaticamente pelo ambiente.
  */
 const getAIInstance = () => {
-  // Tenta obter a chave de várias fontes possíveis em ambientes de build (Vercel/Vite)
-  // @ts-ignore
-  const apiKey = process.env.API_KEY || 
-                 process.env.VITE_API_KEY || 
-                 (window as any).process?.env?.API_KEY ||
-                 (import.meta as any).env?.VITE_API_KEY;
-  
+  const apiKey = process.env.API_KEY;
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.warn("WRF Debug: API_KEY não encontrada no ambiente. Usando modo de segurança.");
+    // Log útil para diagnóstico no console do browser (F12)
+    console.warn("WRF Service: API_KEY não detetada. Verifique as configurações no Vercel.");
     throw new Error("MISSING_KEY");
   }
-  
   return new GoogleGenAI({ apiKey });
 };
 
-// Busca de notícias com tratamento de erros robusto
+/**
+ * Busca notícias de Amarante usando Google Search.
+ */
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Diz 5 notícias curtas de Amarante e região. Apenas títulos, um por linha, sem símbolos.";
+    const prompt = "Diz 5 notícias curtas de Amarante, Portugal. Escreve apenas os títulos, um por linha. Não uses símbolos, números ou introduções.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -35,12 +32,12 @@ export const fetchLatestNews = async () => {
       },
     });
 
-    const text = response.text || "";
-    const grounding = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-
-    return { text, grounding };
+    return { 
+      text: response.text || "", 
+      grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] 
+    };
   } catch (error) {
-    console.error("Erro fetchLatestNews:", error);
+    console.error("Erro na busca de notícias:", error);
     throw error;
   }
 };
@@ -48,25 +45,25 @@ export const fetchLatestNews = async () => {
 export const getRadioAssistantResponse = async (message: string) => {
   try {
     const ai = getAIInstance();
-    const systemPrompt = "És a 'Figueiró AI', assistente da Web Rádio Figueiró. Responde sempre em Português de Portugal, de forma curta.";
+    const systemInstruction = "És a 'Figueiró AI', assistente oficial da Web Rádio Figueiró. Responde sempre em Português de Portugal, de forma curta e amigável.";
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: message,
       config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.8,
+        systemInstruction,
+        temperature: 0.7,
       },
     });
-    return response.text || "Olá! Como posso ajudar? 🎙️";
+    return response.text || "Olá! Como posso ajudar hoje? 🎙️";
   } catch (error) {
-    return "Olá! De momento estou em manutenção técnica. Tenta de novo em breve! 🎙️";
+    return "Olá! De momento estou a afinar a minha antena. Tenta de novo em breve! 🎙️";
   }
 };
 
 export const fetchCulturalEvents = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Eventos culturais em Amarante, Portugal.";
+    const prompt = "Lista eventos culturais próximos em Amarante, Portugal.";
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
