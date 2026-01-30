@@ -48,25 +48,31 @@ const GeminiAssistant: React.FC = () => {
           <span className="relative px-4 bg-white dark:bg-gray-800 text-[10px] font-black text-gray-400 uppercase tracking-widest">Ou use o formulário</span>
         </div>
 
-        {/* ESTRUTURA CRÍTICA PARA O CENTOVA CAST: Form deve conter TODOS os elementos incluindo o result div */}
+        {/* ESTRUTURA EXATA EXIGIDA PELO CENTOVA CAST */}
         <form className="cc_request_form space-y-4" data-username="orlando">
-           <div className="space-y-4">
-             <div className="relative group">
-               <input type="text" name="request[artist]" className="w-full bg-slate-50 dark:bg-black/40 border border-gray-100 dark:border-white/10 rounded-2xl px-5 py-3.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" placeholder="Nome do Artista" />
+           <div className="space-y-3">
+             <div className="relative">
+               <input type="text" name="request[artist]" className="w-full bg-slate-50 dark:bg-black/40 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3 text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" placeholder="Artista" />
              </div>
-             <div className="relative group">
-               <input type="text" name="request[title]" className="w-full bg-slate-50 dark:bg-black/40 border border-gray-100 dark:border-white/10 rounded-2xl px-5 py-3.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" placeholder="Título da Música" />
+             <div className="relative">
+               <input type="text" name="request[title]" className="w-full bg-slate-50 dark:bg-black/40 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3 text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" placeholder="Música" />
              </div>
-             <div className="relative group">
-               <input type="text" name="request[sender]" className="w-full bg-slate-50 dark:bg-black/40 border border-gray-100 dark:border-white/10 rounded-2xl px-5 py-3.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" placeholder="Seu Nome / Dedicatória" />
+             <div className="relative">
+               <input type="text" name="request[dedication]" className="w-full bg-slate-50 dark:bg-black/40 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3 text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" placeholder="Dedicatória para..." />
+             </div>
+             <div className="relative">
+               <input type="text" name="request[sender]" className="w-full bg-slate-50 dark:bg-black/40 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3 text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" placeholder="Seu Nome" />
+             </div>
+             <div className="relative">
+               <input type="email" name="request[email]" className="w-full bg-slate-50 dark:bg-black/40 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3 text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" placeholder="Seu E-Mail" />
              </div>
            </div>
 
-           {/* Contentor obrigatório para o feedback do script request.js */}
-           <div className="cc_request_result text-[10px] font-bold text-center py-2 empty:hidden"></div>
+           {/* Contentor de resultado OBRIGATÓRIO (data-type="result") */}
+           <div data-type="result" className="text-[10px] font-bold text-center py-2 text-blue-600 dark:text-blue-400 empty:hidden"></div>
 
            <button type="button" data-type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-blue-600/20 transition-all active:scale-95">
-             Enviar Pedido
+             Submeter Pedido
            </button>
         </form>
       </div>
