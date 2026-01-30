@@ -18,24 +18,27 @@ const News: React.FC = () => {
     setLoading(true);
     try {
       const result = await fetchLatestNews();
-      const newsBlocks = result.text.match(/NEWS_START[\s\S]*?NEWS_END/g);
+      // Regex mais flexível para capturar blocos mesmo com lixo em volta
+      const newsBlocks = result.text.split(/NEWS_ITEM|NEWS_START/i).filter(b => b.trim().length > 20);
       
-      if (newsBlocks) {
+      if (newsBlocks.length > 0) {
         const parsed = newsBlocks.map(block => {
           const extract = (key: string) => {
             const regex = new RegExp(`${key}:\\s*(.*)`, 'i');
             const match = block.match(regex);
-            return match ? match[1].trim().replace(/[*`]/g, '') : "";
+            return match ? match[1].trim().replace(/[*`#]/g, '') : "";
           };
+          
           return {
-            title: extract('TITULO'),
-            source: extract('FONTE'),
-            type: extract('TIPO'),
-            summary: extract('RESUMO'),
-            url: extract('LINK')
+            title: extract('TITLE') || extract('TITULO'),
+            source: extract('SOURCE') || extract('FONTE'),
+            type: extract('TYPE') || extract('TIPO') || 'NACIONAL',
+            summary: extract('SUMMARY') || extract('RESUMO'),
+            url: extract('URL') || extract('LINK')
           };
         }).filter(item => item.title && item.url);
-        setNews(parsed);
+        
+        setNews(parsed.slice(0, 5));
       }
     } catch (error) {
       console.error("Erro ao carregar notícias:", error);
@@ -46,7 +49,7 @@ const News: React.FC = () => {
 
   useEffect(() => {
     loadNews();
-    const interval = setInterval(loadNews, 3600000); // Atualiza de hora em hora
+    const interval = setInterval(loadNews, 3600000); 
     return () => clearInterval(interval);
   }, []);
 
@@ -64,11 +67,13 @@ const News: React.FC = () => {
             <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tighter mt-1">Sintonizado no Mundo</p>
           </div>
         </div>
-        {!loading && (
-          <button onClick={loadNews} className="text-gray-400 hover:text-blue-500 transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          </button>
-        )}
+        <button 
+          onClick={loadNews} 
+          disabled={loading}
+          className={`text-gray-400 hover:text-blue-500 transition-colors ${loading ? 'animate-spin' : ''}`}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </button>
       </div>
 
       <div className="space-y-4">
@@ -77,7 +82,6 @@ const News: React.FC = () => {
             <div key={i} className="animate-pulse space-y-2">
               <div className="h-2 bg-gray-200 dark:bg-white/5 rounded-full w-24"></div>
               <div className="h-4 bg-gray-200 dark:bg-white/10 rounded-full w-full"></div>
-              <div className="h-3 bg-gray-200 dark:bg-white/5 rounded-full w-3/4"></div>
             </div>
           ))
         ) : news.length > 0 ? (
@@ -90,7 +94,7 @@ const News: React.FC = () => {
               className="block group"
             >
               <div className="flex items-center space-x-2 mb-1">
-                <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${item.type === 'LOCAL' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'}`}>
+                <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${item.type.includes('LOCAL') ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'}`}>
                   {item.type}
                 </span>
                 <span className="text-[8px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[100px]">
@@ -100,14 +104,14 @@ const News: React.FC = () => {
               <h5 className="text-xs font-bold text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors line-clamp-2">
                 {item.title}
               </h5>
-              <p className="text-[10px] text-slate-500 dark:text-gray-400 mt-1 line-clamp-1 italic">
-                {item.summary}
-              </p>
               <div className="h-[1px] bg-gray-100 dark:bg-white/5 mt-4 group-last:hidden"></div>
             </a>
           ))
         ) : (
-          <p className="text-center text-[10px] text-gray-500 py-4 uppercase font-bold tracking-widest">A aguardar sinal informativo...</p>
+          <div className="text-center py-6">
+            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">A aguardar sinal informativo...</p>
+            <button onClick={loadNews} className="mt-2 text-[9px] text-blue-500 font-bold underline">Tentar novamente</button>
+          </div>
         )}
       </div>
 
