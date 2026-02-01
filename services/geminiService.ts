@@ -15,17 +15,18 @@ const getAIInstance = () => {
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    const now = new Date().toLocaleDateString('pt-PT');
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('pt-PT');
+    const timeStr = now.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
     
-    // Prompt focado em obter texto simples para evitar falhas de processamento
-    const prompt = `Notícias de Amarante, Portugal hoje (${now}). Pesquisa na web e escreve 5 títulos curtos. 
-    REGRAS CRÍTICAS: 
-    1. Escreve APENAS os títulos, um por linha.
-    2. NÃO uses números (1., 2.), nem pontos, nem traços, nem asteriscos.
-    3. NÃO escrevas introduções nem conclusões.
-    Exemplo de formato esperado:
-    Título da primeira notícia aqui
-    Título da segunda notícia aqui`;
+    // Prompt positivo e direto para facilitar a extração
+    const prompt = `PESQUISA ATUALIZADA: Quais são as notícias mais importantes de Amarante, Portugal, hoje ${dateStr} às ${timeStr}?
+    
+    REGRAS DE RESPOSTA:
+    - Escreve apenas os títulos das notícias.
+    - Usa uma linha para cada título.
+    - Fornece entre 3 a 5 notícias recentes.
+    - Não uses formatação markdown (sem negritos ou asteriscos).`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview', 
@@ -33,14 +34,14 @@ export const fetchLatestNews = async () => {
       config: {
         tools: [{ googleSearch: {} }],
         temperature: 0,
-        systemInstruction: "És um servidor de dados. Deves responder apenas com os títulos das notícias encontradas na pesquisa web sobre Amarante, sem qualquer formatação ou conversa."
+        systemInstruction: "És um ticker de notícias em tempo real. A tua única tarefa é fornecer títulos curtos e factuais baseados em pesquisa web atual."
       },
     });
 
     const text = response.text || "";
     
-    if (text.length < 10) {
-      throw new Error("Resposta insuficiente.");
+    if (text.length < 15) {
+      throw new Error("Conteúdo da resposta insuficiente.");
     }
 
     return { 
@@ -73,7 +74,7 @@ export const getRadioAssistantResponse = async (message: string) => {
 export const fetchCulturalEvents = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Lista eventos culturais em Amarante, Portugal usando pesquisa web.";
+    const prompt = "Pesquisa e lista eventos culturais futuros em Amarante, Portugal.";
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
