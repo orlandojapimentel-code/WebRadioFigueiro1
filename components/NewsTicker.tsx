@@ -25,6 +25,7 @@ const NewsTicker: React.FC = () => {
       const result: any = await fetchLatestNews();
       
       if (result && result.text) {
+        // Divide o texto por linhas ou pontos
         const rawItems = result.text.split(/[\n|•]/);
         
         const items = rawItems
@@ -34,22 +35,22 @@ const NewsTicker: React.FC = () => {
               .replace(/[*#`_]/g, '')           
               .trim();
           })
-          .filter((title: string) => title.length > 15);
+          .filter((title: string) => title.length > 8); // Filtro mais leve para aceitar títulos curtos
         
         if (items.length >= 1) {
-          setNewsText(items.slice(0, 8));
+          setNewsText(items.slice(0, 10));
           setDataSource(result.source || 'LOCAL');
         }
       }
     } catch (error: any) {
-      console.error("Ticker Sync Failed, keeping current data");
+      console.warn("Ticker Sync falhou, mantendo dados atuais.");
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    const initialTimer = setTimeout(loadTickerData, 1000);
+    const initialTimer = setTimeout(loadTickerData, 2000);
     const interval = setInterval(loadTickerData, 900000); // 15 min
     
     return () => {
