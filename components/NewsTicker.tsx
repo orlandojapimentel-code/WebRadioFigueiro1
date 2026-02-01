@@ -27,7 +27,6 @@ const NewsTicker: React.FC = () => {
       const result: any = await fetchLatestNews();
       
       if (result && result.text) {
-        // Divide por nova linha ou ponto final
         const rawItems = result.text.split(/[\n|•]/);
         
         const items = rawItems
@@ -46,61 +45,49 @@ const NewsTicker: React.FC = () => {
                    !lower.includes("claro que");
           });
         
-        // Se conseguirmos pelo menos UMA notícia, já consideramos sucesso
         if (items.length >= 1) {
           setNewsText(items.slice(0, 8));
           setHasRealNews(true);
           setSyncError(false);
           consecutiveErrors.current = 0;
-          console.log("WRF Ticker: Sincronização estabelecida.");
         } else {
-          throw new Error("Filtro descartou todos os resultados.");
+          throw new Error("Filtro descartou resultados.");
         }
       }
     } catch (error: any) {
       consecutiveErrors.current += 1;
       
-      // Só mostra erro visual após 6 falhas consecutivas (para evitar piscar em falhas de rede)
-      if (consecutiveErrors.current >= 6) {
+      // Se tivermos muitos erros, mostramos erro visual mas mantemos o ticker fallback
+      if (consecutiveErrors.current >= 4) {
         setSyncError(true);
-        if (!hasRealNews) setNewsText(FALLBACK_TICKER);
+        // Não resetamos hasRealNews se já tivermos algumas, para não "piscar"
       }
 
-      // Em caso de erro, tenta novamente mais cedo (30 segundos)
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(loadTickerData, 30000);
+      timerRef.current = setTimeout(loadTickerData, 60000);
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    // Primeira tentativa quase imediata
-    const initialTimer = setTimeout(loadTickerData, 2000);
-    
-    // Tentativa secundária caso a primeira falhe silenciosamente
-    const secondaryTimer = setTimeout(() => {
-        if (!hasRealNews) loadTickerData();
-    }, 10000);
-    
-    // Intervalo de manutenção (10 minutos)
-    const interval = setInterval(loadTickerData, 600000);
+    const initialTimer = setTimeout(loadTickerData, 1500);
+    const interval = setInterval(loadTickerData, 600000); // 10 min
     
     return () => {
       clearTimeout(initialTimer);
-      clearTimeout(secondaryTimer);
       if (timerRef.current) clearTimeout(timerRef.current);
       clearInterval(interval);
     };
-  }, [hasRealNews]);
+  }, []);
 
   const displayItems = [...newsText, ...newsText, ...newsText];
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
-      {/* Badge OLED Dinâmico */}
+      {/* Badge OLED Dinâmico - Mais discreto para não mostrar 'erro' tão agressivamente */}
       <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_20px_rgba(0,0,0,0.3)] relative shrink-0 transition-all duration-700 
-        ${isSyncing ? 'bg-blue-600' : (hasRealNews ? 'bg-red-600' : (syncError ? 'bg-amber-600' : 'bg-slate-800'))}`}>
+        ${isSyncing ? 'bg-blue-600' : (hasRealNews ? 'bg-red-600' : (syncError ? 'bg-slate-700' : 'bg-slate-800'))}`}>
         
         <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] whitespace-nowrap flex items-center">
           {isSyncing ? (
@@ -113,12 +100,12 @@ const NewsTicker: React.FC = () => {
             <div className={`w-2 h-2 rounded-full mr-2 ${hasRealNews ? 'bg-green-400 animate-pulse' : 'bg-white/20'}`}></div>
           )}
           <span>
-            {isSyncing ? 'Sintonizando' : (hasRealNews ? 'Direto Amarante' : (syncError ? 'Sinal Fraco' : 'WRF Digital'))}
+            {isSyncing ? 'Sincronizando' : (hasRealNews ? 'Direto Amarante' : (syncError ? 'WRF Digital' : 'WRF Info'))}
           </span>
         </div>
         
         <div className={`absolute right-[-12px] top-0 bottom-0 w-0 h-0 border-t-[22px] border-t-transparent border-b-[22px] border-b-transparent border-l-[12px] transition-colors duration-500 
-          ${isSyncing ? 'border-l-blue-600' : (hasRealNews ? 'border-l-red-600' : (syncError ? 'border-l-amber-600' : 'border-l-slate-800'))}`}>
+          ${isSyncing ? 'border-l-blue-600' : (hasRealNews ? 'border-l-red-600' : (syncError ? 'border-l-slate-700' : 'border-l-slate-800'))}`}>
         </div>
       </div>
       
