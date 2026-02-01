@@ -16,74 +16,78 @@ const NewsTicker: React.FC = () => {
   const [hasRealNews, setHasRealNews] = useState(false);
   const [syncError, setSyncError] = useState(false);
   
-  const retryCount = useRef(0);
+  const consecutiveErrors = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadTickerData = async () => {
     if (isSyncing) return;
-    
     setIsSyncing(true);
     
     try {
       const result: any = await fetchLatestNews();
       
       if (result && result.text) {
-        const items = result.text
-          .split('\n')
+        // Tentamos split por | ou por nova linha
+        const rawItems = result.text.includes('|') 
+          ? result.text.split('|') 
+          : result.text.split('\n');
+
+        const items = rawItems
           .map((line: string) => {
             return line
-              .replace(/^[0-9\-\*\#\.\s•]+/, '') // Remove 1., *, -, etc.
-              .replace(/[*#`_]/g, '')           // Limpa markdown residual
+              .replace(/^[0-9\-\*\#\.\s•]+/, '') // Limpa prefixos
+              .replace(/[*#`_]/g, '')           // Limpa markdown
               .trim();
           })
           .filter((title: string) => {
             const lower = title.toLowerCase();
-            // Filtro mais permissivo (10 chars) e limpeza de conversas da IA
-            return title.length > 10 && 
+            return title.length > 8 && 
                    !lower.includes("aqui estão") && 
-                   !lower.includes("títulos") &&
-                   !lower.includes("claro");
+                   !lower.includes("notícias encontradas") &&
+                   !lower.includes("sinto muito");
           });
         
         if (items.length >= 1) {
-          // Injeta itens de fallback para garantir volume se a IA devolver pouco
-          const finalItems = items.length < 3 
-            ? [...items, ...FALLBACK_TICKER.slice(0, 2)]
-            : items;
-            
-          setNewsText(finalItems);
+          // Sucesso total
+          setNewsText(items);
           setHasRealNews(true);
           setSyncError(false);
-          retryCount.current = 0;
-          console.log("NewsTicker: Sincronizado.");
+          consecutiveErrors.current = 0;
+          console.log("NewsTicker: Sincronização OK");
         } else {
-          throw new Error("Dados vazios após filtro");
+          throw new Error("Filtro resultou em lista vazia");
         }
       }
     } catch (error: any) {
-      retryCount.current += 1;
-      console.warn(`NewsTicker: Falha na tentativa ${retryCount.current}`);
+      consecutiveErrors.current += 1;
+      console.warn(`NewsTicker: Falha na sincronização (Erro #${consecutiveErrors.current})`);
       
-      // Ativa estado de erro após a primeira falha real
-      setSyncError(true);
-      setHasRealNews(false);
+      // Só mostramos o estado laranja "Sinal Fraco" após 3 falhas consecutivas
+      if (consecutiveErrors.current >= 3) {
+        setSyncError(true);
+        setHasRealNews(false);
+        // Se falhou e não temos notícias reais, voltamos ao fallback institucional
+        if (newsText[0] !== FALLBACK_TICKER[0] && !hasRealNews) {
+          setNewsText(FALLBACK_TICKER);
+        }
+      }
 
-      // Agenda nova tentativa em 60 segundos enquanto estiver em erro
+      // Se em erro, tenta novamente mais rápido (30s)
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(loadTickerData, 60000);
+      timerRef.current = setTimeout(loadTickerData, 30000);
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    // Sincronização inicial
-    const initialTimer = setTimeout(loadTickerData, 3000);
+    // Sincronização inicial após 2 segundos
+    const initialTimer = setTimeout(loadTickerData, 2000);
     
-    // Intervalo de atualização normal (10 minutos)
+    // Ciclo de atualização normal de 15 minutos
     const interval = setInterval(() => {
-      if (retryCount.current === 0) loadTickerData();
-    }, 600000);
+      if (consecutiveErrors.current === 0) loadTickerData();
+    }, 900000);
     
     return () => {
       clearTimeout(initialTimer);
@@ -92,11 +96,12 @@ const NewsTicker: React.FC = () => {
     };
   }, []);
 
-  const displayItems = [...newsText, ...newsText, ...newsText];
+  // Multiplicamos os itens para garantir o loop infinito suave
+  const displayItems = newsText.length > 0 ? [...newsText, ...newsText, ...newsText] : [];
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
-      {/* Badge Dinâmico */}
+      {/* Badge OLED Style */}
       <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_20px_rgba(0,0,0,0.3)] relative shrink-0 transition-all duration-700 
         ${isSyncing ? 'bg-blue-600' : (hasRealNews ? 'bg-red-600' : (syncError ? 'bg-amber-600' : 'bg-slate-800'))}`}>
         
@@ -115,12 +120,13 @@ const NewsTicker: React.FC = () => {
           </span>
         </div>
         
+        {/* Corte decorativo do badge */}
         <div className={`absolute right-[-12px] top-0 bottom-0 w-0 h-0 border-t-[22px] border-t-transparent border-b-[22px] border-b-transparent border-l-[12px] transition-colors duration-500 
           ${isSyncing ? 'border-l-blue-600' : (hasRealNews ? 'border-l-red-600' : (syncError ? 'border-l-amber-600' : 'border-l-slate-800'))}`}>
         </div>
       </div>
       
-      {/* Scroll de Notícias */}
+      {/* Zona de Scroll */}
       <div className="flex-grow relative h-full flex items-center">
         <div className="animate-ticker-infinite flex whitespace-nowrap items-center">
           {displayItems.map((text, i) => (

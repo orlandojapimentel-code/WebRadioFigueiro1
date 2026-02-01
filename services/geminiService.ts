@@ -17,28 +17,26 @@ export const fetchLatestNews = async () => {
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-PT');
     
-    // Prompt extremamente direto para o modelo Flash
-    const prompt = `Notícias atuais Amarante, Portugal (${dateStr}). 
-    Escreve 5 títulos curtos, um por linha. 
-    Exemplo:
-    Nova obra inaugurada em Amarante
-    Câmara municipal anuncia festival
-    Trânsito condicionado no centro`;
+    // Prompt otimizado para extração de dados limpos
+    const prompt = `PESQUISA: Notícias atuais e eventos em Amarante, Portugal (${dateStr}). 
+    Escreve 5 títulos curtos e factuais.
+    IMPORTANTE: Separa cada notícia com o símbolo | (barra vertical).
+    Exemplo: Notícia 1 | Notícia 2 | Notícia 3`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0,
-        systemInstruction: "És um sistema de extração de notícias. Responde APENAS com títulos, sem introduções, sem markdown e sem números."
+        temperature: 0.2,
+        systemInstruction: "És um ticker de notícias. Fornece apenas títulos de notícias de Amarante separados por |. Não uses introduções nem markdown."
       },
     });
 
     const text = response.text || "";
     
     if (text.length < 10) {
-      throw new Error("Resposta demasiado curta");
+      throw new Error("Conteúdo insuficiente");
     }
 
     return { 
@@ -71,7 +69,7 @@ export const getRadioAssistantResponse = async (message: string) => {
 export const fetchCulturalEvents = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Lista eventos culturais em Amarante, Portugal hoje.";
+    const prompt = "Lista eventos culturais em Amarante, Portugal para os próximos dias.";
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
