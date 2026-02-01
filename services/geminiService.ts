@@ -3,12 +3,11 @@ import { GoogleGenAI } from "@google/genai";
 
 /**
  * Inicialização do SDK Gemini.
- * A chave de API deve estar configurada no ambiente como process.env.API_KEY.
  */
 const getAIInstance = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.warn("WRF Service: API_KEY não configurada ou inválida.");
+    console.warn("WRF Service: API_KEY não detetada.");
     throw new Error("MISSING_KEY");
   }
   return new GoogleGenAI({ apiKey });
@@ -16,30 +15,34 @@ const getAIInstance = () => {
 
 /**
  * Busca notícias de Amarante usando Google Search.
- * Otimizado para o modelo Gemini 3 Flash para maior velocidade.
+ * Otimizado para resposta rápida e extração de títulos.
  */
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    // Prompt extremamente direto para reduzir latência de processamento
-    const prompt = "Pesquisa e lista 5 notícias de hoje em Amarante, Portugal. Apenas os títulos, sem introdução.";
+    // Prompt mais forte para forçar a ferramenta de busca
+    const prompt = "SEARCH: Quais são as 5 notícias mais recentes de hoje em Amarante, Portugal? Apresenta apenas uma lista de títulos curtos.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.1, // Quase determinístico para ser mais rápido
+        temperature: 0, // Precisão máxima
       },
     });
 
     const text = response.text || "";
+    // Se não houver texto útil, lançamos erro para o componente usar o fallback
+    if (text.length < 20 || text.toLowerCase().includes("não encontrei")) {
+      throw new Error("EMPTY_RESPONSE");
+    }
+
     return { 
       text, 
       grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] 
     };
   } catch (error: any) {
-    // Log para ajudar a identificar se o erro é de quota, chave ou rede
     console.error("WRF News Service Error:", error.message || error);
     throw error;
   }
