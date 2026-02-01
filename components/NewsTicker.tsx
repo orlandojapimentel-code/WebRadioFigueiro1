@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fetchLatestNews } from '../services/geminiService';
 
 const NewsTicker: React.FC = () => {
@@ -15,47 +14,38 @@ const NewsTicker: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [dataSource, setDataSource] = useState<'LIVE' | 'LOCAL' | 'NONE'>('NONE');
   
-  const timerRef = useRef<any>(null);
-
   const loadTickerData = async () => {
     if (isSyncing) return;
     setIsSyncing(true);
     
     try {
-      const result: any = await fetchLatestNews();
+      const result = await fetchLatestNews();
       
       if (result && result.text) {
-        // Divide o texto por linhas ou pontos
-        const rawItems = result.text.split(/[\n|•]/);
-        
+        const rawItems = result.text.split('\n');
         const items = rawItems
-          .map((line: string) => {
-            return line
-              .replace(/^[0-9\-\*\#\.\s•]+/, '') 
-              .replace(/[*#`_]/g, '')           
-              .trim();
-          })
-          .filter((title: string) => title.length > 8); // Filtro mais leve para aceitar títulos curtos
+          .map((line: string) => line.replace(/^[0-9\-\*\#\.\s•]+/, '').replace(/[*#`_]/g, '').trim())
+          .filter((title: string) => title.length > 5); 
         
         if (items.length >= 1) {
-          setNewsText(items.slice(0, 10));
-          setDataSource(result.source || 'LOCAL');
+          setNewsText(items.slice(0, 8));
+          // Fix: cast result.source to match the allowed union type for dataSource state
+          setDataSource((result.source as 'LIVE' | 'LOCAL' | 'NONE') || 'LOCAL');
         }
       }
-    } catch (error: any) {
-      console.warn("Ticker Sync falhou, mantendo dados atuais.");
+    } catch (error) {
+      console.warn("Ticker: Mantendo dados locais devido a falha externa.");
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    const initialTimer = setTimeout(loadTickerData, 2000);
-    const interval = setInterval(loadTickerData, 900000); // 15 min
+    const initialTimer = setTimeout(loadTickerData, 3000);
+    const interval = setInterval(loadTickerData, 600000); 
     
     return () => {
       clearTimeout(initialTimer);
-      if (timerRef.current) clearTimeout(timerRef.current);
       clearInterval(interval);
     };
   }, []);
@@ -64,7 +54,6 @@ const NewsTicker: React.FC = () => {
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
-      {/* Badge Dinâmico */}
       <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_20px_rgba(0,0,0,0.3)] relative shrink-0 transition-all duration-700 
         ${isSyncing ? 'bg-blue-600' : (dataSource === 'LIVE' ? 'bg-red-600' : 'bg-slate-800')}`}>
         
@@ -84,7 +73,6 @@ const NewsTicker: React.FC = () => {
         </div>
       </div>
       
-      {/* Conteúdo do Ticker */}
       <div className="flex-grow relative h-full flex items-center">
         <div className="animate-ticker-infinite flex whitespace-nowrap items-center">
           {displayItems.map((text, i) => (

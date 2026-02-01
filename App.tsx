@@ -4,7 +4,7 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import Player from './components/Player';
 import Schedule from './components/Schedule';
-import GeminiAssistant from './components/GeminiAssistant';
+import RequestCenter from './components/RequestCenter';
 import RecentTracks from './components/RecentTracks';
 import Partnerships from './components/Partnerships';
 import Socials from './components/Socials';
@@ -22,7 +22,6 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    // Garante que a página comece sempre no topo ao carregar
     window.scrollTo(0, 0);
   }, []);
 
@@ -113,7 +112,7 @@ const App: React.FC = () => {
           
           <aside className="space-y-8">
             <WeatherWidget />
-            <GeminiAssistant />
+            <RequestCenter />
             <RecentTracks />
             <VisitorCounter />
             <News />

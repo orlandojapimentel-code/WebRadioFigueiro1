@@ -41,31 +41,35 @@ const News: React.FC = () => {
   const loadNews = async () => {
     setLoading(true);
     try {
-      const result: any = await fetchLatestNews();
+      const result = await fetchLatestNews();
       
-      const lines = result.text.split('\n')
-        .map((l: string) => l.replace(/^[0-9\-\*\#\.\s]+/, '').replace(/[*#`_]/g, '').trim())
-        .filter((l: string) => l.length > 12 && !l.toLowerCase().includes('aqui está'));
-      
-      const items: NewsItem[] = [];
-      
-      if (result.grounding && result.grounding.length > 0) {
-        lines.forEach((title: string, index: number) => {
-          // Tenta associar um link de grounding à notícia, senão usa o primeiro disponível
-          const linkData = result.grounding[index] || result.grounding[0];
-          if (linkData?.web?.uri) {
-            items.push({
-              title,
-              url: linkData.web.uri,
-              source: linkData.web.title?.split(' - ')[0] || "Portal Regional",
-              type: "LOCAL",
-              summary: "Notícia de última hora sincronizada via IA."
-            });
-          }
-        });
+      if (result && result.text) {
+        const rawLines = result.text.split('\n');
+        const lines = rawLines
+          .map((l: string) => l.replace(/^[0-9\-\*\#\.\s]+/, '').replace(/[*#`_]/g, '').trim())
+          .filter((l: string) => l.length > 12);
+        
+        const items: NewsItem[] = [];
+        const grounding = result.grounding || [];
+
+        if (grounding.length > 0) {
+          lines.forEach((title: string, index: number) => {
+            const linkData = grounding[index] || grounding[0];
+            if (linkData?.web?.uri) {
+              items.push({
+                title,
+                url: linkData.web.uri,
+                source: linkData.web.title?.split(' - ')[0] || "Portal Regional",
+                type: "LOCAL",
+                summary: "Notícia sincronizada via IA."
+              });
+            }
+          });
+        }
+        setNews(items.length >= 1 ? items.slice(0, 5) : FALLBACK_NEWS);
+      } else {
+        setNews(FALLBACK_NEWS);
       }
-      
-      setNews(items.length >= 1 ? items.slice(0, 5) : FALLBACK_NEWS);
     } catch (error) {
       setNews(FALLBACK_NEWS);
     } finally {
@@ -75,7 +79,7 @@ const News: React.FC = () => {
 
   useEffect(() => {
     loadNews();
-    const interval = setInterval(loadNews, 1800000); // 30 min
+    const interval = setInterval(loadNews, 1800000);
     return () => clearInterval(interval);
   }, []);
 
