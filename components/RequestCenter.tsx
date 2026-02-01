@@ -49,27 +49,27 @@ const RequestCenter: React.FC = () => {
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              <div className="space-y-1">
                <label className="text-[8px] font-black text-slate-400 uppercase ml-2">Artista / Cantor</label>
-               <input type="text" name="request[artist]" className="w-full bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-xl px-5 py-3 text-xs dark:text-white outline-none focus:border-blue-500/50 transition-all" placeholder="Nome do Artista" maxLength={127} />
+               <input type="text" name="request[artist]" className="w-full bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-xl px-5 py-3 text-xs dark:text-white outline-none focus:border-blue-500/50 transition-all placeholder:opacity-50" placeholder="Nome do Artista" maxLength={127} />
              </div>
              <div className="space-y-1">
                <label className="text-[8px] font-black text-slate-400 uppercase ml-2">Título da Música</label>
-               <input type="text" name="request[title]" className="w-full bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-xl px-5 py-3 text-xs dark:text-white outline-none focus:border-blue-500/50 transition-all" placeholder="Nome do Som" maxLength={127} />
+               <input type="text" name="request[title]" className="w-full bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-xl px-5 py-3 text-xs dark:text-white outline-none focus:border-blue-500/50 transition-all placeholder:opacity-50" placeholder="Nome do Som" maxLength={127} />
              </div>
            </div>
 
            <div className="space-y-1">
              <label className="text-[8px] font-black text-slate-400 uppercase ml-2">Dedicatória (Para quem?)</label>
-             <input type="text" name="request[dedication]" className="w-full bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-xl px-5 py-3 text-xs dark:text-white outline-none focus:border-blue-500/50 transition-all" placeholder="Ex: Para a minha família em Amarante" maxLength={127} />
+             <input type="text" name="request[dedication]" className="w-full bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-xl px-5 py-3 text-xs dark:text-white outline-none focus:border-blue-500/50 transition-all placeholder:opacity-50" placeholder="Ex: Para a minha família em Amarante" maxLength={127} />
            </div>
 
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              <div className="space-y-1">
                <label className="text-[8px] font-black text-slate-400 uppercase ml-2">O Seu Nome</label>
-               <input type="text" name="request[sender]" className="w-full bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-xl px-5 py-3 text-xs dark:text-white outline-none focus:border-blue-500/50 transition-all" placeholder="Identifique-se" maxLength={127} />
+               <input type="text" name="request[sender]" className="w-full bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-xl px-5 py-3 text-xs dark:text-white outline-none focus:border-blue-500/50 transition-all placeholder:opacity-50" placeholder="Identifique-se" maxLength={127} />
              </div>
              <div className="space-y-1">
                <label className="text-[8px] font-black text-slate-400 uppercase ml-2">O Seu E-Mail</label>
-               <input type="text" name="request[email]" className="w-full bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-xl px-5 py-3 text-xs dark:text-white outline-none focus:border-blue-500/50 transition-all" placeholder="exemplo@mail.com" maxLength={127} />
+               <input type="text" name="request[email]" className="w-full bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 rounded-xl px-5 py-3 text-xs dark:text-white outline-none focus:border-blue-500/50 transition-all placeholder:opacity-50" placeholder="exemplo@mail.com" maxLength={127} />
              </div>
            </div>
 
@@ -78,7 +78,7 @@ const RequestCenter: React.FC = () => {
             data-type="submit" 
             className="w-full mt-4 bg-slate-900 dark:bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] transition-all shadow-xl active:scale-[0.98] border border-white/5"
            >
-             Submeter Pedido
+             Submeter Pedido de Música
            </button>
         </form>
       </div>
