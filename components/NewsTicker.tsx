@@ -27,8 +27,8 @@ const NewsTicker: React.FC = () => {
       const result: any = await fetchLatestNews();
       
       if (result && result.text) {
-        // Parsing melhorado: divide por nova linha, ponto final ou barras
-        const rawItems = result.text.split(/[\n|.]/);
+        // Divide por nova linha ou ponto final
+        const rawItems = result.text.split(/[\n|•]/);
         
         const items = rawItems
           .map((line: string) => {
@@ -39,65 +39,67 @@ const NewsTicker: React.FC = () => {
           })
           .filter((title: string) => {
             const lower = title.toLowerCase();
-            return title.length > 12 && 
-                   !lower.includes("aqui estão") && 
+            return title.length > 15 && 
+                   !lower.includes("aqui está") && 
                    !lower.includes("pesquisa do google") &&
+                   !lower.includes("encontrei") &&
                    !lower.includes("claro que");
           });
         
-        if (items.length >= 2) {
-          setNewsText(items.slice(0, 6));
+        // Se conseguirmos pelo menos UMA notícia, já consideramos sucesso
+        if (items.length >= 1) {
+          setNewsText(items.slice(0, 8));
           setHasRealNews(true);
           setSyncError(false);
           consecutiveErrors.current = 0;
-          console.log("WRF Ticker: Sincronização OK.");
+          console.log("WRF Ticker: Sincronização estabelecida.");
         } else {
-          throw new Error("Dados insuficientes no retorno da IA.");
+          throw new Error("Filtro descartou todos os resultados.");
         }
       }
     } catch (error: any) {
       consecutiveErrors.current += 1;
-      console.warn(`WRF Ticker: Falha na sintonização (${consecutiveErrors.current})`);
       
-      // Aumentamos a tolerância: só mostra erro após 10 falhas reais (cerca de 10 min)
-      if (consecutiveErrors.current >= 10) {
+      // Só mostra erro visual após 6 falhas consecutivas (para evitar piscar em falhas de rede)
+      if (consecutiveErrors.current >= 6) {
         setSyncError(true);
-        // Se já tínhamos notícias reais, mantemo-las em vez de voltar ao fallback
-        if (!hasRealNews) {
-          setNewsText(FALLBACK_TICKER);
-        }
+        if (!hasRealNews) setNewsText(FALLBACK_TICKER);
       }
 
-      // Agenda nova tentativa rápida
+      // Em caso de erro, tenta novamente mais cedo (30 segundos)
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(loadTickerData, 60000);
+      timerRef.current = setTimeout(loadTickerData, 30000);
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    // Sincronização inicial
-    const initialTimer = setTimeout(loadTickerData, 3000);
+    // Primeira tentativa quase imediata
+    const initialTimer = setTimeout(loadTickerData, 2000);
     
-    // Ciclo de atualização normal de 15 minutos
-    const interval = setInterval(() => {
-      loadTickerData();
-    }, 900000);
+    // Tentativa secundária caso a primeira falhe silenciosamente
+    const secondaryTimer = setTimeout(() => {
+        if (!hasRealNews) loadTickerData();
+    }, 10000);
+    
+    // Intervalo de manutenção (10 minutos)
+    const interval = setInterval(loadTickerData, 600000);
     
     return () => {
       clearTimeout(initialTimer);
+      clearTimeout(secondaryTimer);
       if (timerRef.current) clearTimeout(timerRef.current);
       clearInterval(interval);
     };
-  }, []);
+  }, [hasRealNews]);
 
   const displayItems = [...newsText, ...newsText, ...newsText];
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
-      {/* Badge OLED com lógica de cor suave */}
-      <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_20px_rgba(0,0,0,0.3)] relative shrink-0 transition-all duration-1000 
+      {/* Badge OLED Dinâmico */}
+      <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_20px_rgba(0,0,0,0.3)] relative shrink-0 transition-all duration-700 
         ${isSyncing ? 'bg-blue-600' : (hasRealNews ? 'bg-red-600' : (syncError ? 'bg-amber-600' : 'bg-slate-800'))}`}>
         
         <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] whitespace-nowrap flex items-center">
@@ -111,7 +113,7 @@ const NewsTicker: React.FC = () => {
             <div className={`w-2 h-2 rounded-full mr-2 ${hasRealNews ? 'bg-green-400 animate-pulse' : 'bg-white/20'}`}></div>
           )}
           <span>
-            {isSyncing ? 'Sincronizando' : (hasRealNews ? 'Direto Amarante' : (syncError ? 'Sinal Fraco' : 'WRF Info'))}
+            {isSyncing ? 'Sintonizando' : (hasRealNews ? 'Direto Amarante' : (syncError ? 'Sinal Fraco' : 'WRF Digital'))}
           </span>
         </div>
         
@@ -120,7 +122,7 @@ const NewsTicker: React.FC = () => {
         </div>
       </div>
       
-      {/* Ticker Infinito */}
+      {/* Conteúdo do Ticker */}
       <div className="flex-grow relative h-full flex items-center">
         <div className="animate-ticker-infinite flex whitespace-nowrap items-center">
           {displayItems.map((text, i) => (
