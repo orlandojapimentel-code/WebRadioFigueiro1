@@ -45,7 +45,7 @@ const News: React.FC = () => {
       
       const lines = result.text.split('\n')
         .map((l: string) => l.replace(/^[0-9\-\*\#\.\s]+/, '').replace(/[*#`_]/g, '').trim())
-        .filter((l: string) => l.length > 12 && !l.toLowerCase().includes('aqui estão'));
+        .filter((l: string) => l.length > 15 && !l.toLowerCase().includes('aqui está'));
       
       const items: NewsItem[] = [];
       

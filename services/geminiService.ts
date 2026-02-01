@@ -16,22 +16,22 @@ const getAIInstance = () => {
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    // Prompt refinado para máxima precisão na busca
-    const prompt = "Diz-me as 5 notícias mais recentes e importantes de Amarante (Portugal) publicadas nas últimas 24-48 horas. Escreve apenas os títulos, um por linha, de forma direta e sem comentários iniciais.";
+    // Prompt otimizado para busca web em tempo real
+    const prompt = "PESQUISA WEB OBRIGATÓRIA: Quais são as 5 notícias mais recentes de Amarante, Portugal, publicadas hoje ou ontem? Fornece apenas os títulos, um por linha, sem introduções ou frases de cortesia.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.1, // Mais factual e menos criativo
+        temperature: 0, // Zero para máxima precisão factual
       },
     });
 
     const text = response.text || "";
     
-    if (text.length < 10) {
-      throw new Error("Conteúdo insuficiente retornado pela IA.");
+    if (text.length < 5) {
+      throw new Error("Resposta da IA demasiado curta.");
     }
 
     return { 
@@ -39,7 +39,7 @@ export const fetchLatestNews = async () => {
       grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] 
     };
   } catch (error: any) {
-    console.error("WRF Service Error:", error.message || error);
+    console.error("WRF News Service Error:", error.message || error);
     throw error;
   }
 };
@@ -65,7 +65,7 @@ export const getRadioAssistantResponse = async (message: string) => {
 export const fetchCulturalEvents = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Lista os próximos eventos culturais e festas em Amarante, Portugal.";
+    const prompt = "Lista eventos culturais recentes e próximos em Amarante, Portugal usando pesquisa web.";
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,

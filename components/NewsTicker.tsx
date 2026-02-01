@@ -17,7 +17,6 @@ const NewsTicker: React.FC = () => {
   const lastUpdate = useRef<number>(0);
 
   const loadTickerData = async () => {
-    // Evita pedidos em excesso se já temos notícias sincronizadas recentemente
     if (isSyncing || (Date.now() - lastUpdate.current < 600000 && hasRealNews)) return;
     
     setIsSyncing(true);
@@ -30,16 +29,15 @@ const NewsTicker: React.FC = () => {
           .split('\n')
           .map((line: string) => {
             return line
-              .replace(/^[0-9\-\*\#\.\s]+/, '') // Remove listas (1., -, *)
-              .replace(/[*#`_]/g, '')           // Remove markdown
+              .replace(/^[0-9\-\*\#\.\s]+/, '') // Remove prefixos de lista
+              .replace(/[*#`_]/g, '')           // Limpa markdown residual
               .trim();
           })
           .filter((title: string) => {
-            // Filtra ruído e frases genéricas da IA
             const lower = title.toLowerCase();
-            return title.length > 10 && 
-                   !lower.includes("aqui estão") && 
-                   !lower.includes("notícias") &&
+            // Filtro mais permissivo para não bloquear notícias reais
+            return title.length > 15 && 
+                   !lower.includes("aqui está") && 
                    !lower.includes("claro");
           });
         
@@ -47,20 +45,22 @@ const NewsTicker: React.FC = () => {
           setNewsText(items);
           setHasRealNews(true);
           lastUpdate.current = Date.now();
+          console.log("WRF: Notícias de Amarante sincronizadas com sucesso.");
+        } else {
+          console.warn("WRF: A resposta da IA não continha notícias formatadas corretamente.");
         }
       }
     } catch (error: any) {
-      console.warn("NewsTicker Sync: A usar conteúdo de reserva devido a limite de cota ou rede.");
+      console.warn("WRF: Falha na sincronização de notícias. Verifique a API_KEY.");
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    // Delay inicial maior para garantir que o ambiente está pronto
-    const timer = setTimeout(loadTickerData, 8000);
-    // Tenta atualizar a cada 15 minutos
-    const interval = setInterval(loadTickerData, 900000);
+    // Delay de 10 segundos para não sobrecarregar o carregamento inicial do site
+    const timer = setTimeout(loadTickerData, 10000);
+    const interval = setInterval(loadTickerData, 900000); // Tenta atualizar a cada 15 min
     
     return () => {
       clearTimeout(timer);
@@ -83,12 +83,12 @@ const NewsTicker: React.FC = () => {
           ) : (
             <span className={`w-2 h-2 rounded-full mr-2 ${hasRealNews ? 'bg-green-400 animate-pulse' : 'bg-white/20'}`}></span>
           )}
-          <span>{isSyncing ? 'A Sintonizar' : (hasRealNews ? 'Direto Amarante' : 'WRF INFO')}</span>
+          <span>{isSyncing ? 'A Sintonizar' : (hasRealNews ? 'Direto Amarante' : 'Última Hora')}</span>
         </span>
         <div className={`absolute right-[-12px] top-0 bottom-0 w-0 h-0 border-t-[22px] border-t-transparent border-b-[22px] border-b-transparent border-l-[12px] transition-colors duration-500 ${isSyncing ? 'border-l-blue-600' : (hasRealNews ? 'border-l-red-600' : 'border-l-slate-800')}`}></div>
       </div>
       
-      {/* Scroll Infinito */}
+      {/* Scroll de Conteúdo */}
       <div className="flex-grow relative h-full flex items-center">
         <div className="animate-ticker-infinite flex whitespace-nowrap items-center">
           {displayItems.map((text, i) => (
@@ -111,7 +111,7 @@ const NewsTicker: React.FC = () => {
         }
         .animate-ticker-infinite {
           display: inline-flex;
-          animation: ticker-infinite 170s linear infinite;
+          animation: ticker-infinite 180s linear infinite;
         }
         .animate-ticker-infinite:hover {
           animation-play-state: paused;
