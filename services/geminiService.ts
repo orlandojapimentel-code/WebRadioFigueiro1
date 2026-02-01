@@ -10,6 +10,7 @@ const getAIInstance = () => {
 
 /**
  * Busca notícias de Amarante usando Google Search.
+ * Otimizado para ser mais resiliente e natural na pesquisa.
  */
 export const fetchLatestNews = async () => {
   try {
@@ -17,26 +18,27 @@ export const fetchLatestNews = async () => {
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-PT');
     
-    // Prompt otimizado para extração de dados limpos
-    const prompt = `PESQUISA: Notícias atuais e eventos em Amarante, Portugal (${dateStr}). 
-    Escreve 5 títulos curtos e factuais.
-    IMPORTANTE: Separa cada notícia com o símbolo | (barra vertical).
-    Exemplo: Notícia 1 | Notícia 2 | Notícia 3`;
+    // Prompt mais natural para a ferramenta de pesquisa
+    const prompt = `O que está a acontecer em Amarante, Portugal hoje, dia ${dateStr}? 
+    Pesquisa as notícias e eventos mais recentes. 
+    Apresenta 5 títulos curtos, factuais e objetivos. 
+    Separa-os apenas com uma nova linha ou com o símbolo |.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.2,
-        systemInstruction: "És um ticker de notícias. Fornece apenas títulos de notícias de Amarante separados por |. Não uses introduções nem markdown."
+        temperature: 0, // Factualidade máxima
+        systemInstruction: "És um ticker de notícias da rádio. Responde apenas com os títulos das notícias encontradas sobre Amarante. Não uses introduções, nem comentários, nem markdown."
       },
     });
 
     const text = response.text || "";
     
-    if (text.length < 10) {
-      throw new Error("Conteúdo insuficiente");
+    // Se a IA devolver algo muito curto, provavelmente falhou a pesquisa
+    if (text.length < 8) {
+      throw new Error("Resposta da IA insuficiente");
     }
 
     return { 
