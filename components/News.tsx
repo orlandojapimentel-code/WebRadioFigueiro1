@@ -40,21 +40,12 @@ const News: React.FC = () => {
 
   const loadNews = async () => {
     setLoading(true);
-    
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Timeout")), 10000)
-    );
-
     try {
-      const result: any = await Promise.race([
-        fetchLatestNews(),
-        timeoutPromise
-      ]);
-
-      // Regex corrigido: Remove apenas marcadores e números de lista no INÍCIO, preservando números no meio
+      const result: any = await fetchLatestNews();
+      
       const lines = result.text.split('\n')
-        .map((l: string) => l.replace(/^[0-9\-\*\#\.\s]+/, '').replace(/[*#`]/g, '').trim())
-        .filter((l: string) => l.length > 10 && !l.toLowerCase().includes('aqui estão'));
+        .map((l: string) => l.replace(/^[0-9\-\*\#\.\s]+/, '').replace(/[*#`_]/g, '').trim())
+        .filter((l: string) => l.length > 12 && !l.toLowerCase().includes('aqui estão'));
       
       const items: NewsItem[] = [];
       
@@ -67,7 +58,7 @@ const News: React.FC = () => {
               url: linkData.web.uri,
               source: linkData.web.title?.split(' - ')[0] || "Portal Regional",
               type: "LOCAL",
-              summary: "Notícia de última hora."
+              summary: "Notícia de última hora sincronizada via IA."
             });
           }
         });

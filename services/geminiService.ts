@@ -3,16 +3,10 @@ import { GoogleGenAI } from "@google/genai";
 
 /**
  * Inicialização do SDK Gemini.
- * Tenta obter a chave de múltiplas fontes comuns em ambientes de produção.
+ * O API_KEY é obtido exclusivamente do ambiente, conforme as diretrizes.
  */
 const getAIInstance = () => {
-  const apiKey = process.env.API_KEY || (window as any).process?.env?.API_KEY;
-  
-  if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.warn("WRF Service: API_KEY não detetada. Verifique as variáveis de ambiente no Vercel.");
-    throw new Error("MISSING_KEY");
-  }
-  return new GoogleGenAI({ apiKey });
+  return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
 
 /**
@@ -22,22 +16,22 @@ const getAIInstance = () => {
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    // Prompt mais direto e imperativo para forçar o uso da ferramenta de busca
-    const prompt = "PESQUISA WEB OBRIGATÓRIA: Quais são as 5 notícias mais importantes e recentes de hoje (2025/2026) em Amarante, Portugal? Escreve apenas uma lista de títulos, um por linha, sem introduções.";
+    // Prompt refinado para máxima precisão na busca
+    const prompt = "Diz-me as 5 notícias mais recentes e importantes de Amarante (Portugal) publicadas nas últimas 24-48 horas. Escreve apenas os títulos, um por linha, de forma direta e sem comentários iniciais.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.1, // Menor temperatura = mais factual
+        temperature: 0.1, // Mais factual e menos criativo
       },
     });
 
     const text = response.text || "";
     
-    if (text.length < 5) {
-      throw new Error("Resposta da IA vazia ou insuficiente.");
+    if (text.length < 10) {
+      throw new Error("Conteúdo insuficiente retornado pela IA.");
     }
 
     return { 
@@ -45,7 +39,7 @@ export const fetchLatestNews = async () => {
       grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] 
     };
   } catch (error: any) {
-    console.error("WRF News Service Error:", error.message || error);
+    console.error("WRF Service Error:", error.message || error);
     throw error;
   }
 };
@@ -71,7 +65,7 @@ export const getRadioAssistantResponse = async (message: string) => {
 export const fetchCulturalEvents = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "PESQUISA: Eventos culturais hoje e esta semana em Amarante, Portugal.";
+    const prompt = "Lista os próximos eventos culturais e festas em Amarante, Portugal.";
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
