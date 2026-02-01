@@ -27,7 +27,6 @@ const Schedule: React.FC = () => {
 
   const isCurrentProgram = (start: number, end: number) => {
     const hour = currentTime.getHours();
-    // Lógica para programas que atravessam a meia-noite (como 19h - 08h)
     if (start > end) {
       return hour >= start || hour < end;
     }
@@ -35,7 +34,7 @@ const Schedule: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-1000">
+    <div className="space-y-8 relative">
       <div className="flex items-center space-x-4 border-b border-gray-200 dark:border-gray-800 pb-4">
         <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-600/20">
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -48,7 +47,7 @@ const Schedule: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Diária */}
-        <div className="bg-white dark:bg-gray-800/50 rounded-[2.5rem] p-8 border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden transition-all">
+        <div className="bg-white dark:bg-gray-800/50 rounded-[2.5rem] p-8 border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden transition-all h-fit">
           <h4 className="text-xl font-black mb-8 text-slate-900 dark:text-white uppercase tracking-tight flex items-center">
              <span className="w-2 h-8 bg-blue-600 rounded-full mr-3"></span>
              Emissão Diária
@@ -101,19 +100,40 @@ const Schedule: React.FC = () => {
         </div>
 
         {/* Especiais de Fim de Semana */}
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-8 text-white shadow-xl shadow-indigo-600/20 relative overflow-hidden group">
-            <div className="absolute top-[-10%] right-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200 mb-2">Destaque de Domingo</p>
-            <h5 className="text-3xl font-black tracking-tighter mb-4">Night Grooves</h5>
-            <div className="space-y-3 bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold opacity-70">Horário:</span>
-                <span className="text-xs font-black">22:00 - 00:00</span>
+        <div className="flex flex-col space-y-8">
+          <div className="relative group p-1 rounded-[2.8rem] bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-500 shadow-xl transition-all hover:scale-[1.01]">
+            <div className="relative bg-[#0b0b1e] dark:bg-[#02020a] rounded-[2.6rem] p-8 overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[80px] -z-10"></div>
+              
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center space-x-3">
+                  <div className="p-3 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl shadow-lg rotate-3">
+                    <svg className="w-6 h-6 text-[#1e1b4b]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                  </div>
+                  <div>
+                    <span className="block text-[9px] font-black uppercase tracking-[0.4em] text-amber-500 leading-none mb-1">Especial de Domingo</span>
+                    <h5 className="text-3xl md:text-4xl font-brand font-black text-white tracking-tighter leading-none">Night Grooves</h5>
+                  </div>
+                </div>
               </div>
-              <div className="h-[1px] bg-white/10"></div>
-              <p className="text-sm font-medium">1ª Hora: <span className="font-black text-amber-400">DJ Durval</span></p>
-              <p className="text-sm font-medium">2ª Hora: <span className="font-black text-amber-400">DJ Convidado</span></p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white/5 backdrop-blur-md rounded-[2rem] p-5 border border-white/10">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/40 mb-2">Horário Nobre</p>
+                  <p className="text-xl font-black text-white tracking-tighter">22h às 00h</p>
+                </div>
+                <div className="bg-white/5 backdrop-blur-md rounded-[2rem] p-5 border border-white/10">
+                   <p className="text-[9px] font-black uppercase tracking-widest text-white/40 mb-2">Convidados</p>
+                   <p className="text-[10px] font-bold text-white"><span className="text-amber-500">23h:</span> Convidado Especial</p>
+                </div>
+              </div>
+
+              <div className="mt-8 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em]">
+                <div className="flex items-center space-x-2 text-indigo-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                  <span>música eletrónica</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -123,21 +143,17 @@ const Schedule: React.FC = () => {
                 <p className="text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Podcast Literário</p>
                 <h5 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">Prazeres Interrompidos</h5>
               </div>
-              <div className="p-3 bg-blue-50 dark:bg-white/5 rounded-2xl">
-                <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-              </div>
             </div>
-            <p className="text-slate-500 dark:text-gray-400 text-sm leading-relaxed mb-6">
-              Os melhores livros do mundo em apenas um minuto. Quartas e Sextas em dose dupla.
+            <p className="text-slate-500 dark:text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
+              Os melhores livros do mundo em apenas um minuto.
             </p>
             <a 
               href="https://www.prazeresinterrompidos.pt/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center justify-center space-x-2 w-full py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-blue-700 transition-all active:scale-95"
+              className="flex items-center justify-center space-x-2 w-full py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all"
             >
-              <span>Visitar Site Oficial</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M10 6l6 6-6 6"/></svg>
+              <span>Site Oficial</span>
             </a>
           </div>
         </div>

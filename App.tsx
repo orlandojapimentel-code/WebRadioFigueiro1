@@ -38,16 +38,17 @@ const App: React.FC = () => {
   const toggleTheme = () => setIsDark(!isDark);
 
   return (
-    <div className="min-h-screen flex flex-col pb-32 transition-colors duration-500 bg-slate-50 dark:bg-[#020617]">
+    <div className="min-h-screen flex flex-col pb-40 transition-colors duration-500 bg-slate-50 dark:bg-[#020617]">
       <Header isDark={isDark} onToggleTheme={toggleTheme} />
       <NewsTicker />
       
-      <main className="flex-grow container mx-auto px-4 space-y-16 py-12 pt-24">
+      {/* pt-40 para garantir separação total do cabeçalho fixo e ticker */}
+      <main className="flex-grow container mx-auto px-4 py-12 pt-40 space-y-32">
         <Hero />
         
         {/* SECÇÃO DE SERVIÇOS PREMIUM */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Agenda Cultural - Premium Design */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+          {/* Agenda Cultural */}
           <a 
             href="https://www.viralagenda.com/pt/porto/amarante" 
             target="_blank" 
@@ -55,7 +56,6 @@ const App: React.FC = () => {
             className="group relative overflow-hidden flex items-center p-1 rounded-[2.8rem] bg-gradient-to-br from-indigo-500 via-purple-600 to-blue-700 shadow-2xl transition-all hover:scale-[1.01] active:scale-[0.99]"
           >
             <div className="relative w-full h-full flex items-center p-8 bg-[#0a0a23] rounded-[2.6rem] overflow-hidden">
-              {/* Background Glow */}
               <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-600/20 blur-3xl group-hover:bg-indigo-600/40 transition-all duration-700"></div>
               
               <div className="relative z-10 p-5 bg-gradient-to-br from-amber-400 to-orange-600 rounded-3xl shadow-xl mr-8 transform group-hover:rotate-6 transition-transform duration-500">
@@ -83,7 +83,7 @@ const App: React.FC = () => {
             </div>
           </a>
 
-          {/* Farmácias - Professional Design */}
+          {/* Farmácias */}
           <a 
             href="https://www.farmaciasdeservico.net/mapa/3719" 
             target="_blank" 
@@ -116,24 +116,27 @@ const App: React.FC = () => {
           </a>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-12">
-            <section id="programacao">
+        {/* GRELHA PRINCIPAL DE CONTEÚDO */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 relative">
+          <div className="lg:col-span-2 space-y-32">
+            <section id="programacao" className="scroll-mt-48 block relative">
               <Schedule />
             </section>
             
-            <MediaCenter />
+            <section id="multimedia" className="scroll-mt-48 block relative">
+              <MediaCenter />
+            </section>
 
-            <section id="galeria">
+            <section id="galeria" className="scroll-mt-48 block relative">
               <PhotoGallery />
             </section>
             
-            <section id="parcerias">
+            <section id="parcerias" className="scroll-mt-48 block relative">
               <Partnerships />
             </section>
           </div>
           
-          <aside className="space-y-8">
+          <aside className="space-y-12 relative">
             <WeatherWidget />
             <RequestCenter />
             <RecentTracks />
@@ -144,7 +147,7 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      <footer className="bg-white dark:bg-gray-800 py-12 border-t border-gray-200 dark:border-gray-700">
+      <footer className="bg-white dark:bg-gray-800 py-16 border-t border-gray-200 dark:border-gray-700 relative z-10">
         <div className="container mx-auto px-4 text-center text-gray-500 dark:text-gray-400">
           <p className="font-bold uppercase tracking-widest text-[10px]">© {new Date().getFullYear()} Web Rádio Figueiró • Todos os direitos reservados</p>
           <div className="mt-4 space-y-2">

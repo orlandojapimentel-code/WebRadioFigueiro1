@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { fetchLatestNews } from '../services/geminiService';
 
@@ -29,7 +30,6 @@ const NewsTicker: React.FC = () => {
         
         if (items.length >= 1) {
           setNewsText(items.slice(0, 8));
-          // Fix: cast result.source to match the allowed union type for dataSource state
           setDataSource((result.source as 'LIVE' | 'LOCAL' | 'NONE') || 'LOCAL');
         }
       }
@@ -53,8 +53,8 @@ const NewsTicker: React.FC = () => {
   const displayItems = [...newsText, ...newsText, ...newsText];
 
   return (
-    <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
-      <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_20px_rgba(0,0,0,0.3)] relative shrink-0 transition-all duration-700 
+    <div className="fixed top-20 left-0 right-0 z-[45] bg-slate-900 dark:bg-black border-b border-white/10 h-11 flex items-center overflow-hidden shadow-xl">
+      <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_25px_rgba(0,0,0,0.5)] relative shrink-0 transition-all duration-700 
         ${isSyncing ? 'bg-blue-600' : (dataSource === 'LIVE' ? 'bg-red-600' : 'bg-slate-800')}`}>
         
         <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] whitespace-nowrap flex items-center">
@@ -73,7 +73,7 @@ const NewsTicker: React.FC = () => {
         </div>
       </div>
       
-      <div className="flex-grow relative h-full flex items-center">
+      <div className="flex-grow relative h-full flex items-center bg-slate-900 dark:bg-black">
         <div className="animate-ticker-infinite flex whitespace-nowrap items-center">
           {displayItems.map((text, i) => (
             <div key={i} className="flex items-center shrink-0">
