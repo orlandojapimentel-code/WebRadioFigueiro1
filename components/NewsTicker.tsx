@@ -17,14 +17,14 @@ const NewsTicker: React.FC = () => {
   const lastUpdate = useRef<number>(0);
 
   const loadTickerData = async () => {
-    // Evita pedidos duplicados ou muito frequentes (mínimo 5 min entre sucessos)
+    // Evita pedidos em excesso se já temos notícias recentes (5 min)
     if (isSyncing || (Date.now() - lastUpdate.current < 300000 && hasRealNews)) return;
     
     setIsSyncing(true);
     
-    // Timeout de 35 segundos (pesquisa web pode ser lenta no nível gratuito)
+    // Timeout alargado para 45s pois a pesquisa web em produção pode demorar
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 35000);
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     try {
       const result: any = await fetchLatestNews();
@@ -35,43 +35,42 @@ const NewsTicker: React.FC = () => {
           .split('\n')
           .map((line: string) => {
             return line
-              .replace(/^[0-9\-\*\#\.\s]+/, '') // Remove listas
-              .replace(/[*#`_]/g, '')           // Remove markdown
+              .replace(/^[0-9\-\*\#\.\s]+/, '') // Remove marcadores de lista
+              .replace(/[*#`_]/g, '')           // Remove formatação markdown
               .trim();
           })
           .filter((title: string) => {
-            // Filtra frases conversacionais da IA e títulos muito curtos
             const lower = title.toLowerCase();
-            return title.length > 12 && 
+            // Filtro menos restritivo (mínimo 10 caracteres)
+            return title.length > 10 && 
                    !lower.includes("aqui estão") && 
-                   !lower.includes("claro que sim") &&
-                   !lower.includes("notícias de hoje");
+                   !lower.includes("claro") &&
+                   !lower.includes("pesquisa");
           });
         
         if (items.length >= 2) {
           setNewsText(items);
           setHasRealNews(true);
           lastUpdate.current = Date.now();
-          console.log("NewsTicker: Sincronização de notícias concluída.");
+          console.log("NewsTicker: Notícias locais sincronizadas com sucesso.");
+        } else {
+           console.warn("NewsTicker: IA não devolveu notícias válidas.");
         }
       }
     } catch (error: any) {
-      console.warn("NewsTicker: Sincronização falhou (Quota ou Timeout). A manter conteúdo de segurança.");
-      // Se falhou e não temos notícias, tentamos novamente em 2 minutos
-      if (!hasRealNews) {
-        lastUpdate.current = Date.now() - 180000; 
-      }
+      console.warn("NewsTicker: Falha na ligação. Mantendo mensagens da rádio.");
+      // Se falhou, permite nova tentativa daqui a 1 minuto
+      if (!hasRealNews) lastUpdate.current = Date.now() - 240000;
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    // Delay inicial de 6 segundos para dar tempo ao sistema de carregar as variáveis de ambiente
-    const timer = setTimeout(loadTickerData, 6000);
-    
-    // Verificação de rotina a cada 12 minutos
-    const interval = setInterval(loadTickerData, 720000);
+    // Primeira tentativa 5 segundos após carregar
+    const timer = setTimeout(loadTickerData, 5000);
+    // Verificação de rotina a cada 10 minutos
+    const interval = setInterval(loadTickerData, 600000);
     
     return () => {
       clearTimeout(timer);
@@ -83,24 +82,23 @@ const NewsTicker: React.FC = () => {
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
-      {/* Badge dinâmico */}
-      <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_20px_rgba(0,0,0,0.3)] relative shrink-0 transition-colors duration-500 ${isSyncing ? 'bg-blue-600' : 'bg-red-600'}`}>
+      {/* Badge de Estado */}
+      <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_20px_rgba(0,0,0,0.3)] relative shrink-0 transition-colors duration-700 ${isSyncing ? 'bg-blue-600' : 'bg-red-600'}`}>
         <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] whitespace-nowrap flex items-center">
           {isSyncing ? (
             <span className="flex space-x-1 mr-3">
-              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0s'}}></span>
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></span>
               <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></span>
-              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></span>
             </span>
           ) : (
             <span className={`w-2 h-2 rounded-full mr-2 ${hasRealNews ? 'bg-green-400 animate-pulse' : 'bg-white/40'}`}></span>
           )}
-          <span>{isSyncing ? 'Sincronizar' : (hasRealNews ? 'Direto Amarante' : 'Última Hora')}</span>
+          <span>{isSyncing ? 'A Sintonizar' : (hasRealNews ? 'Direto Amarante' : 'Última Hora')}</span>
         </span>
         <div className={`absolute right-[-12px] top-0 bottom-0 w-0 h-0 border-t-[22px] border-t-transparent border-b-[22px] border-b-transparent border-l-[12px] transition-colors duration-500 ${isSyncing ? 'border-l-blue-600' : 'border-l-red-600'}`}></div>
       </div>
       
-      {/* Texto em movimento */}
+      {/* Scroll de Notícias */}
       <div className="flex-grow relative h-full flex items-center">
         <div className="animate-ticker-infinite flex whitespace-nowrap items-center">
           {displayItems.map((text, i) => (
@@ -123,7 +121,7 @@ const NewsTicker: React.FC = () => {
         }
         .animate-ticker-infinite {
           display: inline-flex;
-          animation: ticker-infinite 180s linear infinite;
+          animation: ticker-infinite 160s linear infinite;
         }
         .animate-ticker-infinite:hover {
           animation-play-state: paused;

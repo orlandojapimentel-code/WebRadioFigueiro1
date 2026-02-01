@@ -3,12 +3,13 @@ import { GoogleGenAI } from "@google/genai";
 
 /**
  * Inicialização do SDK Gemini.
- * Obtém a chave diretamente do ambiente.
+ * Tenta obter a chave de múltiplas fontes comuns em ambientes de produção.
  */
 const getAIInstance = () => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = process.env.API_KEY || (window as any).process?.env?.API_KEY;
+  
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.warn("WRF Service: API_KEY não configurada ou inválida no ambiente.");
+    console.warn("WRF Service: API_KEY não detetada. Verifique as variáveis de ambiente no Vercel.");
     throw new Error("MISSING_KEY");
   }
   return new GoogleGenAI({ apiKey });
@@ -16,28 +17,27 @@ const getAIInstance = () => {
 
 /**
  * Busca notícias de Amarante usando Google Search.
- * Otimizado para o modelo Gemini 3 Flash para maior rapidez.
+ * Otimizado para o modelo Gemini 3 Flash.
  */
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    // Prompt natural em PT-PT para melhor ativação da ferramenta de busca
-    const prompt = "Quais são as 5 notícias mais recentes e importantes de hoje em Amarante, Portugal? Escreve apenas uma lista com os títulos das notícias, um por linha.";
+    // Prompt mais direto e imperativo para forçar o uso da ferramenta de busca
+    const prompt = "PESQUISA WEB OBRIGATÓRIA: Quais são as 5 notícias mais importantes e recentes de hoje (2025/2026) em Amarante, Portugal? Escreve apenas uma lista de títulos, um por linha, sem introduções.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0.2, // Equilíbrio entre criatividade e precisão
+        temperature: 0.1, // Menor temperatura = mais factual
       },
     });
 
     const text = response.text || "";
     
-    // Validação mínima para garantir que temos conteúdo útil
-    if (text.length < 10) {
-      throw new Error("Resposta da IA demasiado curta.");
+    if (text.length < 5) {
+      throw new Error("Resposta da IA vazia ou insuficiente.");
     }
 
     return { 
@@ -71,7 +71,7 @@ export const getRadioAssistantResponse = async (message: string) => {
 export const fetchCulturalEvents = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Lista eventos culturais próximos em Amarante, Portugal.";
+    const prompt = "PESQUISA: Eventos culturais hoje e esta semana em Amarante, Portugal.";
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
