@@ -13,10 +13,8 @@ const NewsTicker: React.FC = () => {
 
   const [newsText, setNewsText] = useState<string[]>(FALLBACK_TICKER);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [hasRealNews, setHasRealNews] = useState(false);
-  const [syncError, setSyncError] = useState(false);
+  const [dataSource, setDataSource] = useState<'LIVE' | 'LOCAL' | 'NONE'>('NONE');
   
-  const consecutiveErrors = useRef(0);
   const timerRef = useRef<any>(null);
 
   const loadTickerData = async () => {
@@ -36,43 +34,23 @@ const NewsTicker: React.FC = () => {
               .replace(/[*#`_]/g, '')           
               .trim();
           })
-          .filter((title: string) => {
-            const lower = title.toLowerCase();
-            return title.length > 15 && 
-                   !lower.includes("aqui está") && 
-                   !lower.includes("pesquisa do google") &&
-                   !lower.includes("encontrei") &&
-                   !lower.includes("claro que");
-          });
+          .filter((title: string) => title.length > 15);
         
         if (items.length >= 1) {
           setNewsText(items.slice(0, 8));
-          setHasRealNews(true);
-          setSyncError(false);
-          consecutiveErrors.current = 0;
-        } else {
-          throw new Error("Filtro descartou resultados.");
+          setDataSource(result.source || 'LOCAL');
         }
       }
     } catch (error: any) {
-      consecutiveErrors.current += 1;
-      
-      // Se tivermos muitos erros, mostramos erro visual mas mantemos o ticker fallback
-      if (consecutiveErrors.current >= 4) {
-        setSyncError(true);
-        // Não resetamos hasRealNews se já tivermos algumas, para não "piscar"
-      }
-
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(loadTickerData, 60000);
+      console.error("Ticker Sync Failed, keeping current data");
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    const initialTimer = setTimeout(loadTickerData, 1500);
-    const interval = setInterval(loadTickerData, 600000); // 10 min
+    const initialTimer = setTimeout(loadTickerData, 1000);
+    const interval = setInterval(loadTickerData, 900000); // 15 min
     
     return () => {
       clearTimeout(initialTimer);
@@ -85,27 +63,23 @@ const NewsTicker: React.FC = () => {
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
-      {/* Badge OLED Dinâmico - Mais discreto para não mostrar 'erro' tão agressivamente */}
+      {/* Badge Dinâmico */}
       <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_20px_rgba(0,0,0,0.3)] relative shrink-0 transition-all duration-700 
-        ${isSyncing ? 'bg-blue-600' : (hasRealNews ? 'bg-red-600' : (syncError ? 'bg-slate-700' : 'bg-slate-800'))}`}>
+        ${isSyncing ? 'bg-blue-600' : (dataSource === 'LIVE' ? 'bg-red-600' : 'bg-slate-800')}`}>
         
         <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] whitespace-nowrap flex items-center">
           {isSyncing ? (
-            <div className="flex space-x-1 mr-3">
-              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></span>
-              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></span>
-              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></span>
-            </div>
+            <span className="animate-pulse">Sincronizando...</span>
           ) : (
-            <div className={`w-2 h-2 rounded-full mr-2 ${hasRealNews ? 'bg-green-400 animate-pulse' : 'bg-white/20'}`}></div>
+            <>
+              <div className={`w-2 h-2 rounded-full mr-2 ${dataSource === 'LIVE' ? 'bg-green-400 animate-pulse' : 'bg-blue-400'}`}></div>
+              <span>{dataSource === 'LIVE' ? 'Direto Amarante' : 'WRF Digital'}</span>
+            </>
           )}
-          <span>
-            {isSyncing ? 'Sincronizando' : (hasRealNews ? 'Direto Amarante' : (syncError ? 'WRF Digital' : 'WRF Info'))}
-          </span>
         </div>
         
         <div className={`absolute right-[-12px] top-0 bottom-0 w-0 h-0 border-t-[22px] border-t-transparent border-b-[22px] border-b-transparent border-l-[12px] transition-colors duration-500 
-          ${isSyncing ? 'border-l-blue-600' : (hasRealNews ? 'border-l-red-600' : (syncError ? 'border-l-slate-700' : 'border-l-slate-800'))}`}>
+          ${isSyncing ? 'border-l-blue-600' : (dataSource === 'LIVE' ? 'border-l-red-600' : 'border-l-slate-800')}`}>
         </div>
       </div>
       

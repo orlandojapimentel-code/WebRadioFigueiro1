@@ -10,50 +10,57 @@ const getAIInstance = () => {
 
 /**
  * Busca notícias de Amarante. 
- * Se a ferramenta de pesquisa (googleSearch) falhar, tenta gerar sem ela.
+ * Lógica de tripla redundância para garantir que o rodapé nunca pare.
  */
 export const fetchLatestNews = async () => {
-  try {
-    const ai = getAIInstance();
-    const prompt = `Notícias Amarante Portugal recentes. Lista apenas os títulos, um por linha.`;
+  const ai = getAIInstance();
+  const promptRealTime = `Pesquisa notícias muito recentes de Amarante, Portugal (hoje e ontem). Devolve apenas uma lista de títulos, sem comentários.`;
+  const promptCreative = `És o jornalista da Web Rádio Figueiró. Cria 5 títulos de notícias ou curiosidades interessantes e verosímeis sobre Amarante (ex: Museus, Rio Tâmega, Gastronomia, Eventos típicos). Lista apenas os títulos.`;
 
+  try {
+    // TENTATIVA 1: Pesquisa em Tempo Real (Google Search Grounding)
+    // Isto só funciona se o Billing estiver ativo na consola Google Cloud
     try {
-      // Primeira tentativa: Com Google Search (Tempo Real)
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview', 
-        contents: prompt,
+        contents: promptRealTime,
         config: {
           tools: [{ googleSearch: {} }],
           temperature: 0.1,
-          systemInstruction: "És o sistema de informação da Web Rádio Figueiró. Pesquisa notícias recentes de Amarante e devolve apenas os títulos. Sê direto."
+          systemInstruction: "És o serviço de notícias da Web Rádio Figueiró. Sê factual e direto."
         },
       });
 
-      const text = response.text || "";
-      if (text.length > 10) {
+      if (response.text && response.text.length > 20) {
         return { 
-          text, 
+          text: response.text, 
+          source: 'LIVE',
           grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] 
         };
       }
-      throw new Error("Resposta curta");
-    } catch (searchError) {
-      console.warn("WRF News: Pesquisa em tempo real indisponível, usando IA de contexto.");
-      
-      // Segunda tentativa: Sem Google Search (Geração Baseada em Conhecimento)
-      const fallbackResponse = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: "Gera 5 títulos de notícias genéricas sobre cultura e eventos em Amarante que costumam acontecer, como o Museu Amadeo de Souza-Cardoso ou o Rio Tâmega.",
-        config: {
-          temperature: 0.7,
-          systemInstruction: "És o jornalista da Web Rádio Figueiró. Como não tens acesso à internet agora, gera títulos interessantes e verosímeis sobre Amarante para o nosso rodapé."
-        }
-      });
-      
-      return { text: fallbackResponse.text || "", grounding: [] };
+    } catch (e) {
+      console.warn("WRF: Google Search não disponível. A mudar para modo criativo local...");
     }
+
+    // TENTATIVA 2: Geração Criativa Local (Sem ferramentas)
+    // Funciona com qualquer chave de API básica, sem faturamento
+    const fallbackResponse = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: promptCreative,
+      config: {
+        temperature: 0.8,
+        systemInstruction: "És o animador da Web Rádio Figueiró. Gera títulos curtos e apelativos sobre Amarante para o nosso rodapé."
+      }
+    });
+
+    return { 
+      text: fallbackResponse.text || "", 
+      source: 'LOCAL',
+      grounding: [] 
+    };
+
   } catch (error: any) {
-    console.error("WRF News Service Critical Error:", error.message);
+    console.error("WRF News Service Critical Failure:", error.message);
     throw error;
   }
 };
