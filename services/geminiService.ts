@@ -3,11 +3,12 @@ import { GoogleGenAI } from "@google/genai";
 
 /**
  * Inicialização do SDK Gemini.
+ * Obtém a chave diretamente do ambiente.
  */
 const getAIInstance = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.warn("WRF Service: API_KEY não detetada.");
+    console.warn("WRF Service: API_KEY não configurada ou inválida no ambiente.");
     throw new Error("MISSING_KEY");
   }
   return new GoogleGenAI({ apiKey });
@@ -15,27 +16,28 @@ const getAIInstance = () => {
 
 /**
  * Busca notícias de Amarante usando Google Search.
- * Otimizado para resposta rápida e extração de títulos.
+ * Otimizado para o modelo Gemini 3 Flash para maior rapidez.
  */
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    // Prompt mais forte para forçar a ferramenta de busca
-    const prompt = "SEARCH: Quais são as 5 notícias mais recentes de hoje em Amarante, Portugal? Apresenta apenas uma lista de títulos curtos.";
+    // Prompt natural em PT-PT para melhor ativação da ferramenta de busca
+    const prompt = "Quais são as 5 notícias mais recentes e importantes de hoje em Amarante, Portugal? Escreve apenas uma lista com os títulos das notícias, um por linha.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0, // Precisão máxima
+        temperature: 0.2, // Equilíbrio entre criatividade e precisão
       },
     });
 
     const text = response.text || "";
-    // Se não houver texto útil, lançamos erro para o componente usar o fallback
-    if (text.length < 20 || text.toLowerCase().includes("não encontrei")) {
-      throw new Error("EMPTY_RESPONSE");
+    
+    // Validação mínima para garantir que temos conteúdo útil
+    if (text.length < 10) {
+      throw new Error("Resposta da IA demasiado curta.");
     }
 
     return { 
