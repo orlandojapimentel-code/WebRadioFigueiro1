@@ -15,55 +15,65 @@ const NewsTicker: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [hasRealNews, setHasRealNews] = useState(false);
   const [syncError, setSyncError] = useState(false);
+  const retryCount = useRef(0);
   const lastUpdate = useRef<number>(0);
 
   const loadTickerData = async () => {
     if (isSyncing) return;
     
     setIsSyncing(true);
-    setSyncError(false);
     
     try {
       const result: any = await fetchLatestNews();
       
       if (result && result.text) {
-        // Limpeza de texto mais agressiva para apanhar qualquer formato de lista
         const items = result.text
           .split('\n')
           .map((line: string) => {
             return line
-              .replace(/^[0-9\-\*\#\.\s]+/, '') // Remove prefixos de lista (ex: "1. ", "- ")
-              .replace(/^[A-Za-z]+\s[0-9]+:\s/, '') // Remove "Notícia 1: "
-              .replace(/[*#`_]/g, '')
+              .replace(/^[0-9\-\*\#\.\s•]+/, '') // Remove números, pontos, asteriscos e bullets
+              .replace(/[*#`_]/g, '')           // Remove formatação markdown
               .trim();
           })
           .filter((title: string) => {
             const lower = title.toLowerCase();
-            return title.length > 10 && 
+            return title.length > 12 && 
                    !lower.includes("aqui estão") && 
-                   !lower.includes("encontrei");
+                   !lower.includes("notícia") &&
+                   !lower.includes("claro que");
           });
         
-        if (items.length >= 2) {
-          setNewsText(items);
+        if (items.length >= 1) {
+          // Se tivermos pelo menos uma notícia, misturamos com fallback para garantir volume
+          const finalItems = items.length === 1 
+            ? [...items, FALLBACK_TICKER[0], items[0], FALLBACK_TICKER[1]]
+            : items;
+            
+          setNewsText(finalItems);
           setHasRealNews(true);
+          setSyncError(false);
+          retryCount.current = 0;
           lastUpdate.current = Date.now();
         } else {
-          throw new Error("Dados insuficientes");
+          throw new Error("Formato inválido");
         }
       }
     } catch (error: any) {
-      setSyncError(true);
-      console.warn("NewsTicker Sync: Falhou. Mantendo conteúdo de reserva.");
+      retryCount.current += 1;
+      // Só mostra erro (badge laranja) após 2 tentativas falhadas
+      if (retryCount.current > 1) {
+        setSyncError(true);
+      }
+      console.warn("NewsTicker Sync Attempt failed.");
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    // Primeira tentativa aos 3 segundos
-    const timer = setTimeout(loadTickerData, 3000);
-    // Tenta de 10 em 10 minutos
+    // Tenta carregar notícias 5 segundos após o início
+    const timer = setTimeout(loadTickerData, 5000);
+    // Tenta atualizar a cada 10 minutos
     const interval = setInterval(loadTickerData, 600000);
     
     return () => {
@@ -76,7 +86,7 @@ const NewsTicker: React.FC = () => {
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 bg-slate-900/95 dark:bg-black/95 backdrop-blur-2xl border-b border-white/5 h-11 flex items-center overflow-hidden shadow-2xl">
-      {/* Badge OLED com Feedback de Erro */}
+      {/* Badge Dinâmico */}
       <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_20px_rgba(0,0,0,0.3)] relative shrink-0 transition-all duration-700 
         ${isSyncing ? 'bg-blue-600' : (hasRealNews ? 'bg-red-600' : (syncError ? 'bg-amber-600' : 'bg-slate-800'))}`}>
         
@@ -123,7 +133,7 @@ const NewsTicker: React.FC = () => {
         }
         .animate-ticker-infinite {
           display: inline-flex;
-          animation: ticker-infinite 180s linear infinite;
+          animation: ticker-infinite 170s linear infinite;
         }
         .animate-ticker-infinite:hover {
           animation-play-state: paused;

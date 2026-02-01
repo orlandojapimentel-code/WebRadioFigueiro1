@@ -10,34 +10,37 @@ const getAIInstance = () => {
 
 /**
  * Busca notícias de Amarante usando Google Search.
- * Otimizado para máxima precisão e ativação da ferramenta de busca.
+ * Otimizado para máxima precisão e retorno de texto limpo.
  */
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
     const now = new Date().toLocaleDateString('pt-PT');
     
-    // Prompt extremamente direto para evitar "conversa" da IA
-    const prompt = `DATA ATUAL: ${now}. PESQUISA WEB OBRIGATÓRIA: Encontra as 5 notícias mais recentes de Amarante, Portugal. 
-    Regras: 
-    1. Retorna apenas os títulos, um por linha. 
-    2. Não uses introduções como "Aqui estão". 
-    3. Foca-te em jornais locais como 'A Verdade', 'Jornal de Amarante' ou 'Tâmega TV'.`;
+    // Prompt focado em obter texto simples para evitar falhas de processamento
+    const prompt = `Notícias de Amarante, Portugal hoje (${now}). Pesquisa na web e escreve 5 títulos curtos. 
+    REGRAS CRÍTICAS: 
+    1. Escreve APENAS os títulos, um por linha.
+    2. NÃO uses números (1., 2.), nem pontos, nem traços, nem asteriscos.
+    3. NÃO escrevas introduções nem conclusões.
+    Exemplo de formato esperado:
+    Título da primeira notícia aqui
+    Título da segunda notícia aqui`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0, // Precisão absoluta
-        systemInstruction: "És um extrator de notícias em tempo real. A tua única função é fornecer títulos de notícias factuais e recentes de Amarante."
+        temperature: 0,
+        systemInstruction: "És um servidor de dados. Deves responder apenas com os títulos das notícias encontradas na pesquisa web sobre Amarante, sem qualquer formatação ou conversa."
       },
     });
 
     const text = response.text || "";
     
-    if (text.length < 15) {
-      throw new Error("Resposta da IA demasiado curta ou vazia.");
+    if (text.length < 10) {
+      throw new Error("Resposta insuficiente.");
     }
 
     return { 
@@ -70,7 +73,7 @@ export const getRadioAssistantResponse = async (message: string) => {
 export const fetchCulturalEvents = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Lista eventos culturais em Amarante, Portugal para os próximos dias usando pesquisa web.";
+    const prompt = "Lista eventos culturais em Amarante, Portugal usando pesquisa web.";
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
