@@ -10,23 +10,20 @@ const getAIInstance = () => {
 
 /**
  * Busca notícias de Amarante usando Google Search.
- * Otimizado para máxima precisão e retorno de texto limpo.
  */
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-PT');
-    const timeStr = now.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
     
-    // Prompt positivo e direto para facilitar a extração
-    const prompt = `PESQUISA ATUALIZADA: Quais são as notícias mais importantes de Amarante, Portugal, hoje ${dateStr} às ${timeStr}?
-    
-    REGRAS DE RESPOSTA:
-    - Escreve apenas os títulos das notícias.
-    - Usa uma linha para cada título.
-    - Fornece entre 3 a 5 notícias recentes.
-    - Não uses formatação markdown (sem negritos ou asteriscos).`;
+    // Prompt extremamente direto para o modelo Flash
+    const prompt = `Notícias atuais Amarante, Portugal (${dateStr}). 
+    Escreve 5 títulos curtos, um por linha. 
+    Exemplo:
+    Nova obra inaugurada em Amarante
+    Câmara municipal anuncia festival
+    Trânsito condicionado no centro`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview', 
@@ -34,14 +31,14 @@ export const fetchLatestNews = async () => {
       config: {
         tools: [{ googleSearch: {} }],
         temperature: 0,
-        systemInstruction: "És um ticker de notícias em tempo real. A tua única tarefa é fornecer títulos curtos e factuais baseados em pesquisa web atual."
+        systemInstruction: "És um sistema de extração de notícias. Responde APENAS com títulos, sem introduções, sem markdown e sem números."
       },
     });
 
     const text = response.text || "";
     
-    if (text.length < 15) {
-      throw new Error("Conteúdo da resposta insuficiente.");
+    if (text.length < 10) {
+      throw new Error("Resposta demasiado curta");
     }
 
     return { 
@@ -74,7 +71,7 @@ export const getRadioAssistantResponse = async (message: string) => {
 export const fetchCulturalEvents = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Pesquisa e lista eventos culturais futuros em Amarante, Portugal.";
+    const prompt = "Lista eventos culturais em Amarante, Portugal hoje.";
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
