@@ -17,7 +17,11 @@ const NewsTicker: React.FC = () => {
   const lastUpdate = useRef<number>(0);
 
   const loadTickerData = async () => {
-    if (isSyncing || (Date.now() - lastUpdate.current < 600000 && hasRealNews)) return;
+    // Evita chamadas simultâneas
+    if (isSyncing) return;
+    
+    // Se já temos notícias reais e foram obtidas há menos de 10 minutos, não atualizamos
+    if (hasRealNews && (Date.now() - lastUpdate.current < 600000)) return;
     
     setIsSyncing(true);
     
@@ -29,38 +33,38 @@ const NewsTicker: React.FC = () => {
           .split('\n')
           .map((line: string) => {
             return line
-              .replace(/^[0-9\-\*\#\.\s]+/, '') // Remove prefixos de lista
+              .replace(/^[0-9\-\*\#\.\s]+/, '') // Remove "1.", "-", "*", etc.
               .replace(/[*#`_]/g, '')           // Limpa markdown residual
               .trim();
           })
           .filter((title: string) => {
             const lower = title.toLowerCase();
-            // Filtro mais permissivo para não bloquear notícias reais
-            return title.length > 15 && 
-                   !lower.includes("aqui está") && 
-                   !lower.includes("claro");
+            // Filtro mais resiliente: títulos com pelo menos 12 caracteres e sem frases de introdução da IA
+            return title.length > 12 && 
+                   !lower.includes("aqui estão") && 
+                   !lower.includes("notícias encontradas") &&
+                   !lower.includes("claro que") &&
+                   !lower.includes("com certeza");
           });
         
         if (items.length >= 2) {
           setNewsText(items);
           setHasRealNews(true);
           lastUpdate.current = Date.now();
-          console.log("WRF: Notícias de Amarante sincronizadas com sucesso.");
-        } else {
-          console.warn("WRF: A resposta da IA não continha notícias formatadas corretamente.");
         }
       }
     } catch (error: any) {
-      console.warn("WRF: Falha na sincronização de notícias. Verifique a API_KEY.");
+      console.warn("NewsTicker: Usando fallback devido a erro na API.");
     } finally {
       setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    // Delay de 10 segundos para não sobrecarregar o carregamento inicial do site
-    const timer = setTimeout(loadTickerData, 10000);
-    const interval = setInterval(loadTickerData, 900000); // Tenta atualizar a cada 15 min
+    // Tenta carregar notícias 4 segundos após o início para priorizar o player
+    const timer = setTimeout(loadTickerData, 4000);
+    // Tenta atualizar a cada 15 minutos
+    const interval = setInterval(loadTickerData, 900000);
     
     return () => {
       clearTimeout(timer);
@@ -79,16 +83,17 @@ const NewsTicker: React.FC = () => {
             <span className="flex space-x-1 mr-3">
               <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></span>
               <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></span>
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></span>
             </span>
           ) : (
-            <span className={`w-2 h-2 rounded-full mr-2 ${hasRealNews ? 'bg-green-400 animate-pulse' : 'bg-white/20'}`}></span>
+            <span className={`w-2 h-2 rounded-full mr-2 ${hasRealNews ? 'bg-green-400 animate-pulse shadow-[0_0_8px_#4ade80]' : 'bg-white/20'}`}></span>
           )}
-          <span>{isSyncing ? 'A Sintonizar' : (hasRealNews ? 'Direto Amarante' : 'Última Hora')}</span>
+          <span>{isSyncing ? 'A Sintonizar' : (hasRealNews ? 'Direto Amarante' : 'WRF Info')}</span>
         </span>
         <div className={`absolute right-[-12px] top-0 bottom-0 w-0 h-0 border-t-[22px] border-t-transparent border-b-[22px] border-b-transparent border-l-[12px] transition-colors duration-500 ${isSyncing ? 'border-l-blue-600' : (hasRealNews ? 'border-l-red-600' : 'border-l-slate-800')}`}></div>
       </div>
       
-      {/* Scroll de Conteúdo */}
+      {/* Scroll de Notícias */}
       <div className="flex-grow relative h-full flex items-center">
         <div className="animate-ticker-infinite flex whitespace-nowrap items-center">
           {displayItems.map((text, i) => (
@@ -111,7 +116,7 @@ const NewsTicker: React.FC = () => {
         }
         .animate-ticker-infinite {
           display: inline-flex;
-          animation: ticker-infinite 180s linear infinite;
+          animation: ticker-infinite 160s linear infinite;
         }
         .animate-ticker-infinite:hover {
           animation-play-state: paused;

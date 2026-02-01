@@ -11,27 +11,27 @@ const getAIInstance = () => {
 
 /**
  * Busca notícias de Amarante usando Google Search.
- * Otimizado para o modelo Gemini 3 Flash.
+ * Otimizado para máxima precisão e ativação da ferramenta de busca.
  */
 export const fetchLatestNews = async () => {
   try {
     const ai = getAIInstance();
-    // Prompt otimizado para busca web em tempo real
-    const prompt = "PESQUISA WEB OBRIGATÓRIA: Quais são as 5 notícias mais recentes de Amarante, Portugal, publicadas hoje ou ontem? Fornece apenas os títulos, um por linha, sem introduções ou frases de cortesia.";
+    // Prompt focado em obter apenas os factos/títulos recentes
+    const prompt = "Através de pesquisa web, lista as 5 notícias mais recentes e importantes de Amarante (Portugal) publicadas nas últimas 24 horas. Escreve apenas os títulos das notícias, um por linha, sem introduções ou frases de cortesia.";
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
-        temperature: 0, // Zero para máxima precisão factual
+        temperature: 0.1, // Quase puramente factual
       },
     });
 
     const text = response.text || "";
     
-    if (text.length < 5) {
-      throw new Error("Resposta da IA demasiado curta.");
+    if (text.length < 10) {
+      throw new Error("Conteúdo insuficiente retornado.");
     }
 
     return { 
@@ -65,7 +65,7 @@ export const getRadioAssistantResponse = async (message: string) => {
 export const fetchCulturalEvents = async () => {
   try {
     const ai = getAIInstance();
-    const prompt = "Lista eventos culturais recentes e próximos em Amarante, Portugal usando pesquisa web.";
+    const prompt = "Pesquisa e lista eventos culturais e festas populares agendadas para os próximos dias em Amarante, Portugal.";
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,

@@ -45,12 +45,13 @@ const News: React.FC = () => {
       
       const lines = result.text.split('\n')
         .map((l: string) => l.replace(/^[0-9\-\*\#\.\s]+/, '').replace(/[*#`_]/g, '').trim())
-        .filter((l: string) => l.length > 15 && !l.toLowerCase().includes('aqui está'));
+        .filter((l: string) => l.length > 12 && !l.toLowerCase().includes('aqui está'));
       
       const items: NewsItem[] = [];
       
       if (result.grounding && result.grounding.length > 0) {
         lines.forEach((title: string, index: number) => {
+          // Tenta associar um link de grounding à notícia, senão usa o primeiro disponível
           const linkData = result.grounding[index] || result.grounding[0];
           if (linkData?.web?.uri) {
             items.push({
@@ -64,7 +65,7 @@ const News: React.FC = () => {
         });
       }
       
-      setNews(items.length > 0 ? items.slice(0, 5) : FALLBACK_NEWS);
+      setNews(items.length >= 1 ? items.slice(0, 5) : FALLBACK_NEWS);
     } catch (error) {
       setNews(FALLBACK_NEWS);
     } finally {
