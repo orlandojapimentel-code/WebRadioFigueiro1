@@ -99,7 +99,7 @@ const Schedule: React.FC = () => {
           </div>
         </div>
 
-        {/* Especiais de Fim de Semana */}
+        {/* Especiais de Fim de Semana - NIGHT GROOVES */}
         <div className="flex flex-col space-y-8">
           <div className="relative group p-1 rounded-[2.8rem] bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-500 shadow-xl transition-all hover:scale-[1.01]">
             <div className="relative bg-[#0b0b1e] dark:bg-[#02020a] rounded-[2.6rem] p-8 overflow-hidden">
@@ -124,15 +124,19 @@ const Schedule: React.FC = () => {
                 </div>
                 <div className="bg-white/5 backdrop-blur-md rounded-[2rem] p-5 border border-white/10">
                    <p className="text-[9px] font-black uppercase tracking-widest text-white/40 mb-2">Convidados</p>
-                   <p className="text-[10px] font-bold text-white"><span className="text-amber-500">23h:</span> Convidado Especial</p>
+                   <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-white"><span className="text-amber-500">22h:</span> DJ Durval</p>
+                    <p className="text-[10px] font-bold text-white"><span className="text-amber-500">23h:</span> DJ Convidado</p>
+                   </div>
                 </div>
               </div>
 
               <div className="mt-8 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em]">
                 <div className="flex items-center space-x-2 text-indigo-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-                  <span>música eletrónica</span>
+                  <span>programa de música eletrónica</span>
                 </div>
+                <div className="text-white/20 font-black">WRF PREMIUM</div>
               </div>
             </div>
           </div>
@@ -145,13 +149,13 @@ const Schedule: React.FC = () => {
               </div>
             </div>
             <p className="text-slate-500 dark:text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
-              Os melhores livros do mundo em apenas um minuto.
+              Os melhores livros do mundo em apenas um minuto. Quartas e Sextas.
             </p>
             <a 
               href="https://www.prazeresinterrompidos.pt/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center justify-center space-x-2 w-full py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all"
+              className="flex items-center justify-center space-x-2 w-full py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:bg-blue-700"
             >
               <span>Site Oficial</span>
             </a>
