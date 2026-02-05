@@ -35,7 +35,7 @@ const PhotoCard: React.FC<{ photo: Photo; onClick: (p: Photo) => void }> = ({ ph
       )}
       <img 
         src={photo.url} 
-        alt={photo.title}
+        alt={`${photo.title} - Web Rádio Figueiró ${photo.category}`} 
         onLoad={() => setIsLoaded(true)}
         onError={handleImageError}
         className={`w-full h-full object-cover transition-all duration-1000 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'} group-hover:scale-110`}
@@ -83,7 +83,6 @@ const PhotoGallery: React.FC = () => {
   const allPhotos: Photo[] = [...FOTOS_ESTUDIO, ...FOTOS_EVENTOS, ...FOTOS_LUGARES];
   const filteredPhotos = filter === 'todos' ? allPhotos : allPhotos.filter(p => p.category === filter);
 
-  // Bloquear scroll do body quando o overlay está aberto
   useEffect(() => {
     if (isOverlayOpen) {
       document.body.style.overflow = 'hidden';
@@ -95,7 +94,6 @@ const PhotoGallery: React.FC = () => {
 
   return (
     <div className="w-full">
-      {/* CARD DE ENTRADA NA PÁGINA PRINCIPAL */}
       <div 
         onClick={() => setIsOverlayOpen(true)}
         className="group relative w-full h-64 md:h-80 rounded-[2.5rem] overflow-hidden cursor-pointer shadow-2xl transition-all duration-700 hover:scale-[1.02] border border-blue-500/20"
@@ -103,7 +101,7 @@ const PhotoGallery: React.FC = () => {
         <div className="absolute inset-0 bg-blue-900/40 group-hover:bg-blue-900/20 transition-colors z-10" />
         <img 
           src={FOTOS_ESTUDIO[0].url} 
-          alt="Explorar Galeria" 
+          alt="Explorar Galeria de Fotos Web Rádio Figueiró Amarante" 
           className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
         />
         
@@ -124,11 +122,8 @@ const PhotoGallery: React.FC = () => {
         </div>
       </div>
 
-      {/* OVERLAY DA GALERIA COMPLETA */}
       {isOverlayOpen && (
         <div className="fixed inset-0 z-[120] bg-gray-950 flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-500">
-          
-          {/* Header do Overlay */}
           <div className="sticky top-0 z-20 bg-gray-900/95 backdrop-blur-xl border-b border-white/5">
             <div className="container mx-auto px-4 h-20 flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -149,7 +144,6 @@ const PhotoGallery: React.FC = () => {
               </button>
             </div>
 
-            {/* Filtros de Categoria */}
             <div className="container mx-auto px-4 pb-4">
               <div className="flex flex-wrap gap-2 overflow-x-auto scrollbar-hide py-2">
                 {[
@@ -174,7 +168,6 @@ const PhotoGallery: React.FC = () => {
             </div>
           </div>
 
-          {/* Conteúdo da Grelha */}
           <div className="flex-grow overflow-y-auto p-4 md:p-8 bg-gray-950">
             <div className="container mx-auto">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -193,7 +186,6 @@ const PhotoGallery: React.FC = () => {
         </div>
       )}
 
-      {/* Lightbox para Foto Individual */}
       {selectedPhoto && (
         <div 
           className="fixed inset-0 z-[130] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4"
@@ -203,7 +195,7 @@ const PhotoGallery: React.FC = () => {
             <div className="relative group w-full bg-gray-900 rounded-[2rem] overflow-hidden shadow-2xl border border-white/10">
               <img 
                 src={selectedPhoto.url} 
-                alt={selectedPhoto.title}
+                alt={`${selectedPhoto.title} - Ampliada`}
                 className="max-h-[70vh] md:max-h-[80vh] w-full object-contain"
               />
               <button 
