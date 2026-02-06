@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ isDark, onToggleTheme }) => {
 
   const handleMailTo = (e: React.MouseEvent) => {
     e.preventDefault();
-    window.location.href = "mailto:webradiofigueiro@gmail.pt";
+    window.location.href = "mailto:webradiofigueiro@gmail.com";
   };
 
   return (

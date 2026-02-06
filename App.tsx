@@ -151,7 +151,7 @@ const App: React.FC = () => {
         <div className="container mx-auto px-4 text-center text-gray-500 dark:text-gray-400">
           <p className="font-bold uppercase tracking-widest text-[10px]">© {new Date().getFullYear()} Web Rádio Figueiró • Todos os direitos reservados</p>
           <div className="mt-4 space-y-2">
-            <p className="text-xs uppercase font-bold">Email: webradiofigueiro@gmail.pt</p>
+            <p className="text-xs uppercase font-bold">Email: webradiofigueiro@gmail.com</p>
             <p className="text-xs uppercase font-bold text-blue-600">Telefone/WhatsApp: +351 910270085</p>
           </div>
         </div>
