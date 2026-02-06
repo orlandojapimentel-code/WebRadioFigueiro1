@@ -42,13 +42,11 @@ const App: React.FC = () => {
       <Header isDark={isDark} onToggleTheme={toggleTheme} />
       <NewsTicker />
       
-      {/* pt-40 para garantir separação total do cabeçalho fixo e ticker */}
       <main className="flex-grow container mx-auto px-4 py-12 pt-40 space-y-32">
         <Hero />
         
         {/* SECÇÃO DE SERVIÇOS PREMIUM */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-          {/* Agenda Cultural */}
           <a 
             href="https://www.viralagenda.com/pt/porto/amarante" 
             target="_blank" 
@@ -72,7 +70,6 @@ const App: React.FC = () => {
                 <h4 className="text-3xl font-brand font-black text-white tracking-tighter leading-none mb-1">Agenda Cultural</h4>
                 <p className="text-slate-400 text-sm font-medium">Os melhores eventos de Amarante</p>
               </div>
-
               <div className="relative z-10 ml-auto opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500">
                 <div className="p-3 bg-white/10 rounded-full text-white">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +80,6 @@ const App: React.FC = () => {
             </div>
           </a>
 
-          {/* Farmácias */}
           <a 
             href="https://www.farmaciasdeservico.net/mapa/3719" 
             target="_blank" 
@@ -104,7 +100,6 @@ const App: React.FC = () => {
                 <h4 className="text-3xl font-brand font-black text-slate-900 dark:text-white tracking-tighter leading-none mb-1">Farmácias</h4>
                 <p className="text-slate-500 dark:text-gray-400 text-sm font-medium">Serviço permanente em Amarante</p>
               </div>
-
               <div className="relative z-10 ml-auto opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500">
                 <div className="p-3 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-full text-emerald-600 dark:text-emerald-400">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +111,6 @@ const App: React.FC = () => {
           </a>
         </section>
 
-        {/* GRELHA PRINCIPAL DE CONTEÚDO */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 relative">
           <div className="lg:col-span-2 space-y-32">
             <section id="programacao" className="scroll-mt-48 block relative">
@@ -151,7 +145,7 @@ const App: React.FC = () => {
         <div className="container mx-auto px-4 text-center text-gray-500 dark:text-gray-400">
           <p className="font-bold uppercase tracking-widest text-[10px]">© {new Date().getFullYear()} Web Rádio Figueiró • Todos os direitos reservados</p>
           <div className="mt-4 space-y-2">
-            <p className="text-xs uppercase font-bold">Email: webradiofigueiro@gmail.com</p>
+            <p className="text-xs font-black tracking-widest text-slate-700 dark:text-gray-300">EMAIL: WEBRADIOFIGUEIRO@GMAIL.COM</p>
             <p className="text-xs uppercase font-bold text-blue-600">Telefone/WhatsApp: +351 910270085</p>
           </div>
         </div>
