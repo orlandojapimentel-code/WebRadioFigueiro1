@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface VideoItem {
   id: string;
@@ -10,9 +10,105 @@ interface VideoItem {
 interface AudioItem {
   id: string;
   title: string;
-  date: string;
+  category: string;
   audioUrl: string;
+  duration?: string;
 }
+
+const CustomAudioPlayer: React.FC<{ audio: AudioItem }> = ({ audio }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        // Stop other audios if necessary? (optional behavior)
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      const current = audioRef.current.currentTime;
+      const duration = audioRef.current.duration;
+      setProgress((current / duration) * 100);
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    setProgress(0);
+  };
+
+  return (
+    <div className="relative group bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[2rem] p-6 transition-all hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1">
+      <audio 
+        ref={audioRef} 
+        src={audio.audioUrl} 
+        onTimeUpdate={handleTimeUpdate} 
+        onEnded={handleEnded}
+      />
+      
+      <div className="flex items-center space-x-5">
+        {/* Play Button */}
+        <button 
+          onClick={togglePlay}
+          className={`h-14 w-14 shrink-0 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-lg ${
+            isPlaying 
+            ? 'bg-white text-blue-600' 
+            : 'bg-blue-600 text-white hover:bg-blue-500'
+          }`}
+        >
+          {isPlaying ? (
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          ) : (
+            <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          )}
+        </button>
+
+        {/* Text Info */}
+        <div className="flex-grow min-w-0">
+          <div className="flex items-center space-x-2 mb-1">
+            <span className={`text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-md ${
+              audio.category === 'Podcast' ? 'bg-purple-500/10 text-purple-500' : 'bg-blue-500/10 text-blue-500'
+            }`}>
+              {audio.category}
+            </span>
+            {isPlaying && (
+              <div className="flex space-x-0.5 h-2 items-end">
+                <div className="w-0.5 h-full bg-blue-500 animate-bounce" style={{animationDuration: '0.6s'}}></div>
+                <div className="w-0.5 h-2/3 bg-blue-500 animate-bounce" style={{animationDuration: '0.8s'}}></div>
+                <div className="w-0.5 h-full bg-blue-500 animate-bounce" style={{animationDuration: '0.5s'}}></div>
+              </div>
+            )}
+          </div>
+          <h4 className="text-slate-900 dark:text-white font-bold text-sm md:text-base leading-tight tracking-tight line-clamp-2">
+            {audio.title}
+          </h4>
+        </div>
+      </div>
+
+      {/* Progress Bar Container */}
+      <div className="mt-6 flex flex-col space-y-2">
+        <div className="relative h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+          <div 
+            className="absolute top-0 left-0 h-full bg-blue-600 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-gray-500">
+           <span>{isPlaying ? 'A reproduzir' : 'Pronto a ouvir'}</span>
+           <span className="text-blue-600/60">{audio.duration || 'Web Rádio Figueiró'}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MediaCenter: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'video' | 'audio'>('audio');
@@ -31,14 +127,16 @@ const MediaCenter: React.FC = () => {
     { 
       id: '1', 
       title: "Entrevista: Ás da Concertina e Vasquinho da Concertina", 
-      date: "Destaque Popular", 
-      audioUrl: "https://www.dropbox.com/scl/fi/u3r7msk0h6blqpjt8mrba/Entrevista-s-da-concertina-e-Vasquinho-24-01-2025.mp3?rlkey=2sb2suromeylsn0yiwoyc67mn&st=qhx3c6fq&raw=1"
+      category: "Destaque Popular", 
+      audioUrl: "https://www.dropbox.com/scl/fi/u3r7msk0h6blqpjt8mrba/Entrevista-s-da-concertina-e-Vasquinho-24-01-2025.mp3?rlkey=2sb2suromeylsn0yiwoyc67mn&st=qhx3c6fq&raw=1",
+      duration: "1h 21min"
     },
     { 
       id: '2', 
       title: "Prazeres Interrompidos - Promo", 
-      date: "Podcast", 
-      audioUrl: "https://www.dropbox.com/scl/fi/tz8ccze2co79c16pwq1jp/PROMO-Web-R-dio-Figueir.mp3?rlkey=88lpwhzqnl845jn86g4b4b7ai&st=try9kss2&raw=1"
+      category: "Podcast", 
+      audioUrl: "https://www.dropbox.com/scl/fi/tz8ccze2co79c16pwq1jp/PROMO-Web-R-dio-Figueir.mp3?rlkey=88lpwhzqnl845jn86g4b4b7ai&st=try9kss2&raw=1",
+      duration: "0:30 seg"
     },
   ];
 
@@ -53,22 +151,22 @@ const MediaCenter: React.FC = () => {
           </div>
           <div>
             <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">Centro Multimédia</h3>
-            <p className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-[0.2em] mt-1">Conteúdos Exclusivos</p>
+            <p className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-[0.2em] mt-1">Conteúdos Premium</p>
           </div>
         </div>
 
-        <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl border border-gray-200 dark:border-white/10 w-fit">
+        <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-2xl border border-gray-200 dark:border-white/10 w-fit">
           <button 
             onClick={() => setActiveTab('video')}
-            className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'video' ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 dark:text-gray-400 hover:text-blue-600'}`}
+            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'video' ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-xl' : 'text-slate-500 dark:text-gray-400 hover:text-blue-600'}`}
           >
             Vídeos
           </button>
           <button 
             onClick={() => setActiveTab('audio')}
-            className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'audio' ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 dark:text-gray-400 hover:text-blue-600'}`}
+            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'audio' ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-xl' : 'text-slate-500 dark:text-gray-400 hover:text-blue-600'}`}
           >
-            Entrevistas
+            Podcasts
           </button>
         </div>
       </div>
@@ -77,7 +175,7 @@ const MediaCenter: React.FC = () => {
         {activeTab === 'video' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {videos.map((video) => (
-              <div key={video.id} className="group relative bg-gray-900 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl">
+              <div key={video.id} className="group relative bg-gray-900 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl transition-all hover:-translate-y-2">
                 <div className="aspect-video w-full bg-black flex items-center justify-center">
                   <iframe 
                     className="w-full h-full"
@@ -90,43 +188,28 @@ const MediaCenter: React.FC = () => {
                 </div>
                 <div className="p-8 bg-gradient-to-t from-gray-950 to-transparent">
                   <h4 className="text-white font-bold text-lg tracking-tight">{video.title}</h4>
-                  <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest mt-1">YouTube WRF</p>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+                    <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest">YouTube Oficial</p>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {audios.map((audio) => (
-              <div key={audio.id} className="bg-white dark:bg-gray-800/40 p-8 md:p-10 rounded-[2.8rem] border border-gray-200 dark:border-white/5 flex flex-col items-center group transition-all shadow-xl hover:shadow-blue-500/5">
-                <div className="w-full flex flex-col md:flex-row items-center gap-8 mb-8">
-                  <div className="w-20 h-20 bg-blue-600 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
-                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                    </svg>
-                  </div>
-                  <div className="flex-grow text-center md:text-left">
-                    <p className="text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest mb-1">{audio.date}</p>
-                    <h4 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight mb-2">{audio.title}</h4>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">Pressione o play abaixo para ouvir o conteúdo instantaneamente.</p>
-                  </div>
-                </div>
-
-                <div className="w-full">
-                  <div className="bg-slate-100 dark:bg-black/40 p-5 rounded-[1.8rem] border border-gray-200 dark:border-white/5 shadow-inner">
-                    <audio 
-                      key={audio.audioUrl}
-                      controls 
-                      className="w-full h-10 accent-blue-600"
-                      preload="auto"
-                    >
-                      <source src={audio.audioUrl} type="audio/mpeg" />
-                      O seu browser não suporta o leitor de áudio.
-                    </audio>
-                  </div>
-                </div>
-              </div>
+              <CustomAudioPlayer key={audio.id} audio={audio} />
             ))}
+            
+            {/* Call to Action for more podcasts */}
+            <div className="bg-slate-50 dark:bg-white/[0.02] border border-dashed border-gray-200 dark:border-white/10 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center">
+              <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-white/5 flex items-center justify-center text-gray-400 mb-4">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              </div>
+              <h5 className="text-slate-900 dark:text-white font-bold text-sm">Mais conteúdos brevemente</h5>
+              <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mt-1">Fique Sintonizado</p>
+            </div>
           </div>
         )}
       </div>
