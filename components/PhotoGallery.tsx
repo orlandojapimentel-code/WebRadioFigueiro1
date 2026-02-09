@@ -83,19 +83,58 @@ const PhotoGallery: React.FC = () => {
   const allPhotos: Photo[] = [...FOTOS_ESTUDIO, ...FOTOS_EVENTOS, ...FOTOS_LUGARES];
   const filteredPhotos = filter === 'todos' ? allPhotos : allPhotos.filter(p => p.category === filter);
 
+  // Lógica para sincronizar com o histórico do browser e fechar com ESC
   useEffect(() => {
+    const handlePopState = () => {
+      if (isOverlayOpen) {
+        setIsOverlayOpen(false);
+        setSelectedPhoto(null);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (selectedPhoto) {
+          setSelectedPhoto(null);
+        } else if (isOverlayOpen) {
+          handleCloseGallery();
+        }
+      }
+    };
+
     if (isOverlayOpen) {
       document.body.style.overflow = 'hidden';
+      // Adiciona um estado ao histórico para que o botão "back" feche a galeria
+      window.history.pushState({ galleryOpen: true }, '');
+      window.addEventListener('popstate', handlePopState);
+      window.addEventListener('keydown', handleKeyDown);
     } else {
       document.body.style.overflow = 'unset';
     }
-    return () => { document.body.style.overflow = 'unset'; };
-  }, [isOverlayOpen]);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOverlayOpen, selectedPhoto]);
+
+  const handleOpenGallery = () => {
+    setIsOverlayOpen(true);
+  };
+
+  const handleCloseGallery = () => {
+    setIsOverlayOpen(false);
+    // Se fecharmos manualmente e houver o estado no histórico, limpamo-lo
+    if (window.history.state?.galleryOpen) {
+      window.history.back();
+    }
+  };
 
   return (
     <div className="w-full">
       <div 
-        onClick={() => setIsOverlayOpen(true)}
+        onClick={handleOpenGallery}
         className="group relative w-full h-64 md:h-80 rounded-[2.5rem] overflow-hidden cursor-pointer shadow-2xl transition-all duration-700 hover:scale-[1.02] border border-blue-500/20"
       >
         <div className="absolute inset-0 bg-blue-900/40 group-hover:bg-blue-900/20 transition-colors z-10" />
@@ -125,21 +164,27 @@ const PhotoGallery: React.FC = () => {
       {isOverlayOpen && (
         <div className="fixed inset-0 z-[120] bg-gray-950 flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-500">
           <div className="sticky top-0 z-20 bg-gray-900/95 backdrop-blur-xl border-b border-white/5">
-            <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+            <div className="container mx-auto px-4 h-24 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-600 rounded-xl">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="p-2.5 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                   </svg>
                 </div>
-                <h2 className="text-xl font-black text-white tracking-tight">Galeria Web Rádio Figueiró</h2>
+                <div>
+                  <h2 className="text-xl font-black text-white tracking-tight leading-none">Galeria WRF</h2>
+                  <p className="text-[9px] text-blue-400 font-bold uppercase tracking-widest mt-1.5">Figueiró • Amarante</p>
+                </div>
               </div>
+
+              {/* Botão de Fechar Melhorado */}
               <button 
-                onClick={() => setIsOverlayOpen(false)}
-                className="p-3 bg-white/5 hover:bg-white/10 rounded-full text-white transition-all"
+                onClick={handleCloseGallery}
+                className="group flex items-center space-x-3 px-6 py-3.5 bg-red-600 hover:bg-red-500 text-white rounded-2xl transition-all shadow-xl shadow-red-600/20 active:scale-95"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"/>
+                <span className="text-[10px] font-black uppercase tracking-widest">Fechar Galeria</span>
+                <svg className="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </button>
             </div>
@@ -155,10 +200,10 @@ const PhotoGallery: React.FC = () => {
                   <button
                     key={cat.id}
                     onClick={() => setFilter(cat.id as any)}
-                    className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
                       filter === cat.id 
                         ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 scale-105' 
-                        : 'bg-white/5 text-gray-400 hover:text-white'
+                        : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     {cat.label}
@@ -178,7 +223,7 @@ const PhotoGallery: React.FC = () => {
               
               <div className="mt-12 mb-20 text-center py-12 border-t border-white/5">
                 <p className="text-gray-500 font-bold text-[10px] uppercase tracking-[0.3em]">
-                  Web Rádio Figueiró - A Sua Melhor Companhia
+                  Web Rádio Figueiró - Sintonizados na Comunidade
                 </p>
               </div>
             </div>
@@ -188,29 +233,29 @@ const PhotoGallery: React.FC = () => {
 
       {selectedPhoto && (
         <div 
-          className="fixed inset-0 z-[130] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4"
+          className="fixed inset-0 z-[130] bg-black/98 backdrop-blur-3xl flex items-center justify-center p-4 md:p-8 cursor-zoom-out"
           onClick={() => setSelectedPhoto(null)}
         >
-          <div className="max-w-5xl w-full flex flex-col items-center animate-in fade-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
-            <div className="relative group w-full bg-gray-900 rounded-[2rem] overflow-hidden shadow-2xl border border-white/10">
+          <div className="max-w-6xl w-full flex flex-col items-center animate-in fade-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
+            <div className="relative group w-full bg-black rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10">
               <img 
                 src={selectedPhoto.url} 
                 alt={`${selectedPhoto.title} - Ampliada`}
-                className="max-h-[70vh] md:max-h-[80vh] w-full object-contain"
+                className="max-h-[75vh] md:max-h-[85vh] w-full object-contain"
               />
               <button 
                 onClick={() => setSelectedPhoto(null)}
-                className="absolute top-4 right-4 p-3 bg-black/50 hover:bg-red-600 text-white rounded-full transition-all"
+                className="absolute top-6 right-6 p-4 bg-white/10 hover:bg-red-600 backdrop-blur-md text-white rounded-full transition-all border border-white/10"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
-            <div className="mt-6 text-center">
-              <span className="text-blue-500 font-black uppercase tracking-[0.3em] text-[9px] mb-2 block">
+            <div className="mt-8 text-center max-w-2xl px-4">
+              <span className="text-blue-500 font-black uppercase tracking-[0.4em] text-[10px] mb-3 block">
                 {selectedPhoto.category}
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-white tracking-tighter">{selectedPhoto.title}</h2>
-              <p className="text-gray-400 mt-2 text-sm md:text-base max-w-xl mx-auto">{selectedPhoto.description}</p>
+              <h2 className="text-2xl md:text-4xl font-black text-white tracking-tighter leading-tight">{selectedPhoto.title}</h2>
+              <p className="text-gray-400 mt-3 text-sm md:text-lg leading-relaxed">{selectedPhoto.description}</p>
             </div>
           </div>
         </div>
