@@ -6,10 +6,11 @@ const Player: React.FC = () => {
   const [volume, setVolume] = useState(0.8);
   const [previousVolume, setPreviousVolume] = useState(0.8);
   
-  // Imagens Temáticas de Alta Qualidade
-  const DEFAULT_RADIO_IMAGE = "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop"; // Estúdio Profissional
-  const LIVE_EMISSION_IMAGE = "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800&auto=format&fit=crop"; // Microfone/Mesa Live
-  const ORLANDO_PIMENTEL_IMAGE = "./logo.png"; // Pode ser trocado por uma foto do locutor
+  // Imagens Temáticas de Alta Qualidade (Unsplash)
+  const DEFAULT_RADIO_IMAGE = "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop"; // Estúdio Geral
+  const LIVE_EMISSION_IMAGE = "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800&auto=format&fit=crop"; // Mesa de Mistura (Live)
+  const HOST_ORLANDO_IMAGE = "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop"; // Radialista / Host
+  const LOGO_FALLBACK = "logo.png"; // Logo local
   
   const [coverUrl, setCoverUrl] = useState(DEFAULT_RADIO_IMAGE);
   const [currentSong, setCurrentSong] = useState("Sintonizando...");
@@ -17,25 +18,27 @@ const Player: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
 
-  // Lógica Inteligente de Fallback
+  // Lógica Inteligente de Fallback baseada no texto da emissão
   const getFallbackImage = (songName: string): string => {
     const text = songName.toLowerCase();
     
-    // Se for o locutor principal
-    if (text.includes("orlando pimentel")) return ORLANDO_PIMENTEL_IMAGE;
-    
-    // Se for emissão em direto / live
+    // 1. Se for Direto/Emissão, prioridade à imagem da mesa de som (Mixer)
     if (text.includes("direto") || text.includes("live") || text.includes("emissao") || text.includes("emissão")) {
       return LIVE_EMISSION_IMAGE;
     }
     
-    // Padrão: Imagem de Estúdio
+    // 2. Se for o locutor Orlando Pimentel especificamente (e não disser "Direto")
+    if (text.includes("orlando pimentel")) {
+      return HOST_ORLANDO_IMAGE;
+    }
+    
+    // 3. Padrão: Estúdio profissional
     return DEFAULT_RADIO_IMAGE;
   };
 
   const fetchAlbumArt = async (songName: string) => {
-    // Se o texto for genérico, usa logo o fallback temático
-    if (!songName || songName.includes("Sintonizando") || songName.includes("Web Rádio Figueiró")) {
+    // Se for texto genérico da rádio, usa logo o fallback temático
+    if (!songName || songName.trim() === "" || songName.includes("Sintonizando") || songName.toLowerCase().includes("web rádio figueiró")) {
       setCoverUrl(DEFAULT_RADIO_IMAGE);
       return;
     }
@@ -45,7 +48,7 @@ const Player: React.FC = () => {
       const data = await response.json();
       
       if (data.results && data.results.length > 0) {
-        // Upgrade para 600x600 para nitidez no disco giratório
+        // Upgrade para 600x600 para garantir nitidez no disco
         const highResCover = data.results[0].artworkUrl100.replace('100x100', '600x600');
         setCoverUrl(highResCover);
       } else {
@@ -56,6 +59,7 @@ const Player: React.FC = () => {
     }
   };
 
+  // Monitoriza o elemento de texto do Centova Cast para atualizar a capa
   useEffect(() => {
     const target = document.getElementById('cc_strinfo_song_orlando');
     if (!target) return;
@@ -71,6 +75,13 @@ const Player: React.FC = () => {
     });
 
     observer.observe(target, { childList: true, characterData: true, subtree: true });
+    
+    // Chamada inicial para caso o texto já lá esteja
+    if (target.innerText && target.innerText !== "Sintonizando...") {
+      setCurrentSong(target.innerText);
+      fetchAlbumArt(target.innerText);
+    }
+
     return () => observer.disconnect();
   }, [currentSong]);
 
@@ -110,16 +121,16 @@ const Player: React.FC = () => {
     <div className="fixed bottom-0 left-0 right-0 z-[100] p-3 md:p-8 pointer-events-none">
       <div className="container mx-auto max-w-5xl relative">
         
-        {/* Glow Effects */}
+        {/* Efeito de brilho quando a rádio toca */}
         {isPlaying && (
-          <div className="absolute inset-x-0 bottom-0 h-24 md:h-32 bg-blue-600/10 md:bg-blue-600/20 blur-[60px] md:blur-[100px] -z-10 animate-pulse"></div>
+          <div className="absolute inset-x-0 bottom-0 h-24 md:h-32 bg-blue-600/20 blur-[100px] -z-10 animate-pulse"></div>
         )}
 
         <div className={`relative bg-slate-900/95 dark:bg-black/98 border border-white/10 backdrop-blur-3xl rounded-3xl md:rounded-[2.5rem] p-3 md:p-5 shadow-[0_30px_60px_rgba(0,0,0,0.5)] flex flex-row items-center gap-3 md:gap-6 transition-all duration-500 pointer-events-auto ${isPlaying ? 'ring-1 md:ring-2 ring-blue-500/40 -translate-y-1 md:-translate-y-2' : ''}`}>
           
-          {/* SECÇÃO INFO E CAPA */}
+          {/* SECÇÃO INFO E DISCO GIRATÓRIO */}
           <div className="flex items-center space-x-3 md:space-x-6 flex-grow min-w-0">
-            {/* Disco Giratório com Capa Temática */}
+            {/* Disco de Vinil com Imagem Dinâmica */}
             <div className={`relative h-14 w-14 md:h-24 md:w-24 shrink-0 transition-all duration-1000 ${isPlaying ? 'scale-100' : 'scale-90 opacity-80'}`}>
                <div className={`absolute -inset-1.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full blur opacity-20 ${isPlaying ? 'animate-pulse' : 'hidden'}`}></div>
                <div className={`relative w-full h-full rounded-full border-4 border-black/40 overflow-hidden bg-gray-900 shadow-2xl transition-all duration-1000 ${isPlaying ? 'animate-spin-slow' : ''}`}>
@@ -127,11 +138,12 @@ const Player: React.FC = () => {
                     src={coverUrl} 
                     alt="Emissão Web Rádio Figueiró" 
                     className="w-full h-full object-cover" 
+                    onError={() => setCoverUrl(DEFAULT_RADIO_IMAGE)}
                  />
-                 {/* Overlay de Vinil/Reflexo */}
-                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_40%,rgba(0,0,0,0.2)_100%)]"></div>
+                 {/* Overlay de Vinil e Reflexos */}
+                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_40%,rgba(0,0,0,0.3)_100%)]"></div>
                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-30"></div>
-                 {/* Furo Central do Disco */}
+                 {/* Centro do Disco */}
                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 md:w-5 h-3 md:h-5 bg-black rounded-full border-2 border-white/10 shadow-inner z-10"></div>
                </div>
             </div>
@@ -154,7 +166,7 @@ const Player: React.FC = () => {
                 </h3>
               </div>
 
-              {/* Visualizer */}
+              {/* Visualizador de Barras (Desktop) */}
               <div className="hidden md:flex items-end space-x-[3px] h-6 opacity-80 mt-2">
                 {bars.map((bar) => (
                   <div
@@ -172,7 +184,7 @@ const Player: React.FC = () => {
             </div>
           </div>
 
-          {/* CONTROLOS */}
+          {/* CONTROLOS DO PLAYER */}
           <div className="flex items-center space-x-3 md:space-x-6 shrink-0">
             <div className="hidden lg:flex items-center space-x-4 bg-white/5 p-4 rounded-3xl border border-white/5 min-w-[150px]">
               <button onClick={toggleMute} className="text-white/40 hover:text-white transition-colors">
@@ -194,7 +206,7 @@ const Player: React.FC = () => {
 
             <button 
               onClick={togglePlay}
-              className={`relative h-14 w-14 md:h-24 md:w-24 rounded-full flex items-center justify-center transition-all duration-500 ${isPlaying ? 'bg-white text-black' : 'bg-blue-600 text-white shadow-lg'} hover:scale-105 active:scale-90 group`}
+              className={`relative h-14 w-14 md:h-24 md:w-24 rounded-full flex items-center justify-center transition-all duration-500 ${isPlaying ? 'bg-white text-black' : 'bg-blue-600 text-white shadow-lg'} hover:scale-105 active:scale-90 group shadow-2xl shadow-blue-600/20`}
             >
               {isPlaying ? (
                 <svg className="w-6 h-6 md:w-10 md:h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
