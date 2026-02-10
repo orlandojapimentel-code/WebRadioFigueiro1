@@ -6,83 +6,114 @@ const Player: React.FC = () => {
   const [volume, setVolume] = useState(0.8);
   const [previousVolume, setPreviousVolume] = useState(0.8);
   
-  // Imagens Temáticas de Alta Qualidade (Unsplash)
-  const DEFAULT_RADIO_IMAGE = "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop"; // Estúdio Geral
-  const LIVE_EMISSION_IMAGE = "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800&auto=format&fit=crop"; // Mesa de Mistura (Live)
-  const HOST_ORLANDO_IMAGE = "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop"; // Radialista / Host
-  const LOGO_FALLBACK = "logo.png"; // Logo local
+  // Imagens Temáticas de Alta Qualidade para Fallback
+  const STUDIO_IMAGE = "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop"; 
+  const MIXER_LIVE_IMAGE = "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800&auto=format&fit=crop"; 
+  const MUSIC_VINYL_IMAGE = "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=800&auto=format&fit=crop"; 
   
-  const [coverUrl, setCoverUrl] = useState(DEFAULT_RADIO_IMAGE);
+  const [coverUrl, setCoverUrl] = useState(STUDIO_IMAGE);
   const [currentSong, setCurrentSong] = useState("Sintonizando...");
+  const [isLive, setIsLive] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
 
-  // Lógica Inteligente de Fallback baseada no texto da emissão
-  const getFallbackImage = (songName: string): string => {
-    const text = songName.toLowerCase();
-    
-    // 1. Se for Direto/Emissão, prioridade à imagem da mesa de som (Mixer)
-    if (text.includes("direto") || text.includes("live") || text.includes("emissao") || text.includes("emissão")) {
-      return LIVE_EMISSION_IMAGE;
-    }
-    
-    // 2. Se for o locutor Orlando Pimentel especificamente (e não disser "Direto")
-    if (text.includes("orlando pimentel")) {
-      return HOST_ORLANDO_IMAGE;
-    }
-    
-    // 3. Padrão: Estúdio profissional
-    return DEFAULT_RADIO_IMAGE;
+  /**
+   * Limpa o nome da música para pesquisa no iTunes
+   */
+  const cleanSongNameForSearch = (name: string) => {
+    return name
+      .replace(/^DIRETO\s*-\s*/gi, '')
+      .replace(/^LIVE\s*-\s*/gi, '')
+      .replace(/^EMISSÃO\s*-\s*/gi, '')
+      .replace(/^EMISSAO\s*-\s*/gi, '')
+      .replace(/^LOCUTOR\s*-\s*/gi, '')
+      .replace(/WEB RÁDIO FIGUEIRÓ/gi, '')
+      .replace(/WEB RADIO FIGUEIRO/gi, '')
+      .trim();
   };
 
-  const fetchAlbumArt = async (songName: string) => {
-    // Se for texto genérico da rádio, usa logo o fallback temático
-    if (!songName || songName.trim() === "" || songName.includes("Sintonizando") || songName.toLowerCase().includes("web rádio figueiró")) {
-      setCoverUrl(DEFAULT_RADIO_IMAGE);
+  const fetchAlbumArt = async (rawSongName: string) => {
+    const text = rawSongName.toLowerCase();
+    
+    // 1. Deteção de modo DIRETO / EMISSÃO
+    const hasLivePrefix = text.startsWith("direto") || text.startsWith("live") || text.startsWith("emissão") || text.startsWith("emissao");
+    const isHost = text.includes("orlando pimentel") || text.includes("radialista");
+    
+    if (hasLivePrefix || isHost) {
+      setIsLive(true);
+      setCoverUrl(MIXER_LIVE_IMAGE);
+      return;
+    }
+
+    setIsLive(false);
+
+    // 2. Se for texto genérico de sintonização ou apenas o nome da rádio
+    if (!rawSongName || text.includes("sintonizando") || text === "web rádio figueiró") {
+      setCoverUrl(STUDIO_IMAGE);
+      return;
+    }
+
+    // 3. Tenta pesquisar a capa da MÚSICA
+    const songSearchTerm = cleanSongNameForSearch(rawSongName);
+    if (songSearchTerm.length < 3) {
+      setCoverUrl(MUSIC_VINYL_IMAGE);
       return;
     }
     
     try {
-      const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(songName)}&media=music&limit=1`);
+      const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(songSearchTerm)}&media=music&entity=song&limit=1`);
       const data = await response.json();
       
       if (data.results && data.results.length > 0) {
-        // Upgrade para 600x600 para garantir nitidez no disco
+        // Upgrade para 600x600 para alta definição no disco
         const highResCover = data.results[0].artworkUrl100.replace('100x100', '600x600');
         setCoverUrl(highResCover);
       } else {
-        setCoverUrl(getFallbackImage(songName));
+        // Se não houver resultado no iTunes, usa o Vinil Artístico
+        setCoverUrl(MUSIC_VINYL_IMAGE);
       }
     } catch (error) {
-      setCoverUrl(getFallbackImage(songName));
+      setCoverUrl(MUSIC_VINYL_IMAGE);
     }
   };
 
-  // Monitoriza o elemento de texto do Centova Cast para atualizar a capa
   useEffect(() => {
     const target = document.getElementById('cc_strinfo_song_orlando');
     if (!target) return;
 
+    const handleSongChange = (newSong: string) => {
+      const trimmed = newSong.trim();
+      if (trimmed && trimmed !== currentSong) {
+        setCurrentSong(trimmed);
+        fetchAlbumArt(trimmed);
+      }
+    };
+
+    // Observa mudanças dinâmicas no DOM (Centova Cast)
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        const newSong = (mutation.target as HTMLElement).innerText;
-        if (newSong && newSong !== currentSong) {
-          setCurrentSong(newSong);
-          fetchAlbumArt(newSong);
-        }
+        const text = (mutation.target as HTMLElement).innerText;
+        handleSongChange(text);
       });
     });
 
     observer.observe(target, { childList: true, characterData: true, subtree: true });
     
-    // Chamada inicial para caso o texto já lá esteja
-    if (target.innerText && target.innerText !== "Sintonizando...") {
-      setCurrentSong(target.innerText);
-      fetchAlbumArt(target.innerText);
-    }
+    // Backup: Verifica manualmente a cada 5 segundos para garantir sincronismo
+    const syncInterval = setInterval(() => {
+      if (target.innerText && target.innerText.trim() !== currentSong) {
+        handleSongChange(target.innerText);
+      }
+    }, 5000);
 
-    return () => observer.disconnect();
+    // Verificação inicial
+    if (target.innerText) handleSongChange(target.innerText);
+
+    return () => {
+      observer.disconnect();
+      clearInterval(syncInterval);
+    };
   }, [currentSong]);
 
   const togglePlay = () => {
@@ -111,7 +142,7 @@ const Player: React.FC = () => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  const bars = Array.from({ length: 20 }, (_, i) => ({
+  const bars = Array.from({ length: 24 }, (_, i) => ({
     id: i,
     delay: `${i * 0.05}s`,
     duration: `${0.4 + Math.random() * 0.6}s`
@@ -121,39 +152,36 @@ const Player: React.FC = () => {
     <div className="fixed bottom-0 left-0 right-0 z-[100] p-3 md:p-8 pointer-events-none">
       <div className="container mx-auto max-w-5xl relative">
         
-        {/* Efeito de brilho quando a rádio toca */}
+        {/* Glow de Atividade */}
         {isPlaying && (
           <div className="absolute inset-x-0 bottom-0 h-24 md:h-32 bg-blue-600/20 blur-[100px] -z-10 animate-pulse"></div>
         )}
 
         <div className={`relative bg-slate-900/95 dark:bg-black/98 border border-white/10 backdrop-blur-3xl rounded-3xl md:rounded-[2.5rem] p-3 md:p-5 shadow-[0_30px_60px_rgba(0,0,0,0.5)] flex flex-row items-center gap-3 md:gap-6 transition-all duration-500 pointer-events-auto ${isPlaying ? 'ring-1 md:ring-2 ring-blue-500/40 -translate-y-1 md:-translate-y-2' : ''}`}>
           
-          {/* SECÇÃO INFO E DISCO GIRATÓRIO */}
           <div className="flex items-center space-x-3 md:space-x-6 flex-grow min-w-0">
-            {/* Disco de Vinil com Imagem Dinâmica */}
+            {/* DISCO DE VINIL DINÂMICO */}
             <div className={`relative h-14 w-14 md:h-24 md:w-24 shrink-0 transition-all duration-1000 ${isPlaying ? 'scale-100' : 'scale-90 opacity-80'}`}>
                <div className={`absolute -inset-1.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full blur opacity-20 ${isPlaying ? 'animate-pulse' : 'hidden'}`}></div>
                <div className={`relative w-full h-full rounded-full border-4 border-black/40 overflow-hidden bg-gray-900 shadow-2xl transition-all duration-1000 ${isPlaying ? 'animate-spin-slow' : ''}`}>
                  <img 
                     src={coverUrl} 
-                    alt="Emissão Web Rádio Figueiró" 
-                    className="w-full h-full object-cover" 
-                    onError={() => setCoverUrl(DEFAULT_RADIO_IMAGE)}
+                    alt="Capa" 
+                    key={coverUrl}
+                    className="w-full h-full object-cover animate-in fade-in duration-700"
+                    onError={() => setCoverUrl(MUSIC_VINYL_IMAGE)}
                  />
-                 {/* Overlay de Vinil e Reflexos */}
                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_40%,rgba(0,0,0,0.3)_100%)]"></div>
-                 <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-30"></div>
-                 {/* Centro do Disco */}
                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 md:w-5 h-3 md:h-5 bg-black rounded-full border-2 border-white/10 shadow-inner z-10"></div>
                </div>
             </div>
 
             <div className="flex flex-col min-w-0 flex-grow">
               <div className="flex items-center space-x-2 mb-1">
-                <div className={`flex items-center space-x-1 px-2 py-0.5 rounded-md border transition-colors ${isPlaying ? 'bg-red-600/10 border-red-500/30' : 'bg-white/5 border-white/5'}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-red-500 animate-pulse' : 'bg-gray-600'}`}></span>
-                  <span className={`text-[8px] font-black uppercase tracking-widest ${isPlaying ? 'text-red-500' : 'text-gray-500'}`}>
-                    {currentSong.toLowerCase().includes("direto") ? 'Direto' : 'Emissão'}
+                <div className={`flex items-center space-x-1 px-2 py-0.5 rounded-md border transition-colors ${isPlaying ? (isLive ? 'bg-red-600/10 border-red-500/30' : 'bg-blue-600/10 border-blue-500/30') : 'bg-white/5 border-white/5'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-current animate-pulse' : 'bg-gray-600'} ${isLive ? 'text-red-500' : 'text-blue-500'}`}></span>
+                  <span className={`text-[8px] font-black uppercase tracking-widest ${isPlaying ? (isLive ? 'text-red-500' : 'text-blue-500') : 'text-gray-500'}`}>
+                    {isLive ? 'Direto' : 'Emissão'}
                   </span>
                 </div>
                 <span className="hidden sm:inline text-white/20 text-[10px]">•</span>
@@ -166,16 +194,15 @@ const Player: React.FC = () => {
                 </h3>
               </div>
 
-              {/* Visualizador de Barras (Desktop) */}
-              <div className="hidden md:flex items-end space-x-[3px] h-6 opacity-80 mt-2">
+              {/* Visualizador de Áudio Animado */}
+              <div className="hidden md:flex items-end space-x-[2px] h-6 opacity-60 mt-2">
                 {bars.map((bar) => (
                   <div
                     key={bar.id}
-                    className="flex-grow max-w-[5px] bg-gradient-to-t from-blue-600 via-blue-400 to-white rounded-full visualizer-bar origin-bottom"
+                    className={`flex-grow max-w-[4px] rounded-full origin-bottom transition-all duration-300 ${isLive ? 'bg-red-500' : 'bg-blue-500'}`}
                     style={{ 
-                      animationDelay: bar.delay, 
-                      animationDuration: bar.duration,
-                      animationPlayState: isPlaying ? 'running' : 'paused',
+                      animation: isPlaying ? `wave ${bar.duration} ease-in-out infinite` : 'none',
+                      animationDelay: bar.delay,
                       height: isPlaying ? '100%' : '15%'
                     }}
                   />
@@ -184,7 +211,7 @@ const Player: React.FC = () => {
             </div>
           </div>
 
-          {/* CONTROLOS DO PLAYER */}
+          {/* CONTROLOS */}
           <div className="flex items-center space-x-3 md:space-x-6 shrink-0">
             <div className="hidden lg:flex items-center space-x-4 bg-white/5 p-4 rounded-3xl border border-white/5 min-w-[150px]">
               <button onClick={toggleMute} className="text-white/40 hover:text-white transition-colors">
@@ -200,13 +227,13 @@ const Player: React.FC = () => {
                   onChange={(e) => setVolume(parseFloat(e.target.value))}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                 />
-                <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${volume * 100}%` }} />
+                <div className={`h-full rounded-full transition-all ${isLive ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${volume * 100}%` }} />
               </div>
             </div>
 
             <button 
               onClick={togglePlay}
-              className={`relative h-14 w-14 md:h-24 md:w-24 rounded-full flex items-center justify-center transition-all duration-500 ${isPlaying ? 'bg-white text-black' : 'bg-blue-600 text-white shadow-lg'} hover:scale-105 active:scale-90 group shadow-2xl shadow-blue-600/20`}
+              className={`relative h-14 w-14 md:h-24 md:w-24 rounded-full flex items-center justify-center transition-all duration-500 ${isPlaying ? 'bg-white text-black' : 'bg-blue-600 text-white shadow-xl'} hover:scale-105 active:scale-95 group`}
             >
               {isPlaying ? (
                 <svg className="w-6 h-6 md:w-10 md:h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
@@ -220,7 +247,11 @@ const Player: React.FC = () => {
       <audio ref={audioRef} preload="none" />
       <style>{`
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .animate-spin-slow { animation: spin-slow 15s linear infinite; }
+        .animate-spin-slow { animation: spin-slow 12s linear infinite; }
+        @keyframes wave {
+          0%, 100% { height: 15%; }
+          50% { height: 100%; }
+        }
       `}</style>
     </div>
   );
