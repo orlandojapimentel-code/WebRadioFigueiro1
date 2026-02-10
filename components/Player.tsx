@@ -6,8 +6,10 @@ const Player: React.FC = () => {
   const [volume, setVolume] = useState(0.8);
   const [previousVolume, setPreviousVolume] = useState(0.8);
   
-  const DEFAULT_RADIO_IMAGE = "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop"; 
-  const LIVE_EMISSION_IMAGE = "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800&auto=format&fit=crop"; 
+  // Imagens Temáticas de Alta Qualidade
+  const DEFAULT_RADIO_IMAGE = "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop"; // Estúdio Profissional
+  const LIVE_EMISSION_IMAGE = "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800&auto=format&fit=crop"; // Microfone/Mesa Live
+  const ORLANDO_PIMENTEL_IMAGE = "./logo.png"; // Pode ser trocado por uma foto do locutor
   
   const [coverUrl, setCoverUrl] = useState(DEFAULT_RADIO_IMAGE);
   const [currentSong, setCurrentSong] = useState("Sintonizando...");
@@ -15,15 +17,25 @@ const Player: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
 
+  // Lógica Inteligente de Fallback
   const getFallbackImage = (songName: string): string => {
     const text = songName.toLowerCase();
-    if (text.includes("orlando pimentel")) return "./logo.png";
-    if (text.includes("direto") || text.includes("live") || text.includes("emissao")) return LIVE_EMISSION_IMAGE;
+    
+    // Se for o locutor principal
+    if (text.includes("orlando pimentel")) return ORLANDO_PIMENTEL_IMAGE;
+    
+    // Se for emissão em direto / live
+    if (text.includes("direto") || text.includes("live") || text.includes("emissao") || text.includes("emissão")) {
+      return LIVE_EMISSION_IMAGE;
+    }
+    
+    // Padrão: Imagem de Estúdio
     return DEFAULT_RADIO_IMAGE;
   };
 
   const fetchAlbumArt = async (songName: string) => {
-    if (!songName || songName.includes("Sintonizando") || songName.includes("Web Rádio")) {
+    // Se o texto for genérico, usa logo o fallback temático
+    if (!songName || songName.includes("Sintonizando") || songName.includes("Web Rádio Figueiró")) {
       setCoverUrl(DEFAULT_RADIO_IMAGE);
       return;
     }
@@ -33,6 +45,7 @@ const Player: React.FC = () => {
       const data = await response.json();
       
       if (data.results && data.results.length > 0) {
+        // Upgrade para 600x600 para nitidez no disco giratório
         const highResCover = data.results[0].artworkUrl100.replace('100x100', '600x600');
         setCoverUrl(highResCover);
       } else {
@@ -97,7 +110,7 @@ const Player: React.FC = () => {
     <div className="fixed bottom-0 left-0 right-0 z-[100] p-3 md:p-8 pointer-events-none">
       <div className="container mx-auto max-w-5xl relative">
         
-        {/* Glow Effects - Mais subtil no mobile */}
+        {/* Glow Effects */}
         {isPlaying && (
           <div className="absolute inset-x-0 bottom-0 h-24 md:h-32 bg-blue-600/10 md:bg-blue-600/20 blur-[60px] md:blur-[100px] -z-10 animate-pulse"></div>
         )}
@@ -106,12 +119,19 @@ const Player: React.FC = () => {
           
           {/* SECÇÃO INFO E CAPA */}
           <div className="flex items-center space-x-3 md:space-x-6 flex-grow min-w-0">
-            {/* Capa do Disco - Tamanho reduzido no mobile */}
+            {/* Disco Giratório com Capa Temática */}
             <div className={`relative h-14 w-14 md:h-24 md:w-24 shrink-0 transition-all duration-1000 ${isPlaying ? 'scale-100' : 'scale-90 opacity-80'}`}>
                <div className={`absolute -inset-1.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full blur opacity-20 ${isPlaying ? 'animate-pulse' : 'hidden'}`}></div>
-               <div className={`relative w-full h-full rounded-full border border-white/10 overflow-hidden bg-gray-900 shadow-2xl ${isPlaying ? 'animate-spin-slow' : ''}`}>
-                 <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
-                 <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent"></div>
+               <div className={`relative w-full h-full rounded-full border-4 border-black/40 overflow-hidden bg-gray-900 shadow-2xl transition-all duration-1000 ${isPlaying ? 'animate-spin-slow' : ''}`}>
+                 <img 
+                    src={coverUrl} 
+                    alt="Emissão Web Rádio Figueiró" 
+                    className="w-full h-full object-cover" 
+                 />
+                 {/* Overlay de Vinil/Reflexo */}
+                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_40%,rgba(0,0,0,0.2)_100%)]"></div>
+                 <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-30"></div>
+                 {/* Furo Central do Disco */}
                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 md:w-5 h-3 md:h-5 bg-black rounded-full border-2 border-white/10 shadow-inner z-10"></div>
                </div>
             </div>
@@ -119,12 +139,13 @@ const Player: React.FC = () => {
             <div className="flex flex-col min-w-0 flex-grow">
               <div className="flex items-center space-x-2 mb-1">
                 <div className={`flex items-center space-x-1 px-2 py-0.5 rounded-md border transition-colors ${isPlaying ? 'bg-red-600/10 border-red-500/30' : 'bg-white/5 border-white/5'}`}>
-                  <span className={`w-1 h-1 rounded-full ${isPlaying ? 'bg-red-500 animate-pulse' : 'bg-gray-600'}`}></span>
-                  <span className={`text-[8px] font-black uppercase tracking-widest ${isPlaying ? 'text-red-500' : 'text-gray-500'}`}>Emissão</span>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-red-500 animate-pulse' : 'bg-gray-600'}`}></span>
+                  <span className={`text-[8px] font-black uppercase tracking-widest ${isPlaying ? 'text-red-500' : 'text-gray-500'}`}>
+                    {currentSong.toLowerCase().includes("direto") ? 'Direto' : 'Emissão'}
+                  </span>
                 </div>
-                {/* Oculto no mobile para poupar espaço */}
                 <span className="hidden sm:inline text-white/20 text-[10px]">•</span>
-                <span className="hidden sm:inline text-[8px] font-black text-white/40 uppercase tracking-widest">320KBPS HD</span>
+                <span className="hidden sm:inline text-[8px] font-black text-white/40 uppercase tracking-widest">Digital HD</span>
               </div>
               
               <div className="overflow-hidden">
@@ -133,7 +154,7 @@ const Player: React.FC = () => {
                 </h3>
               </div>
 
-              {/* Visualizer - Apenas visível de tablet para cima */}
+              {/* Visualizer */}
               <div className="hidden md:flex items-end space-x-[3px] h-6 opacity-80 mt-2">
                 {bars.map((bar) => (
                   <div
@@ -153,7 +174,6 @@ const Player: React.FC = () => {
 
           {/* CONTROLOS */}
           <div className="flex items-center space-x-3 md:space-x-6 shrink-0">
-            {/* Volume - Oculto no mobile */}
             <div className="hidden lg:flex items-center space-x-4 bg-white/5 p-4 rounded-3xl border border-white/5 min-w-[150px]">
               <button onClick={toggleMute} className="text-white/40 hover:text-white transition-colors">
                 {volume === 0 ? (
@@ -172,7 +192,6 @@ const Player: React.FC = () => {
               </div>
             </div>
 
-            {/* Play Button - Redimensionado para mobile */}
             <button 
               onClick={togglePlay}
               className={`relative h-14 w-14 md:h-24 md:w-24 rounded-full flex items-center justify-center transition-all duration-500 ${isPlaying ? 'bg-white text-black' : 'bg-blue-600 text-white shadow-lg'} hover:scale-105 active:scale-90 group`}
