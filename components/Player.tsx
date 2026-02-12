@@ -88,14 +88,14 @@ const Player: React.FC = () => {
     <div className="fixed bottom-0 left-0 right-0 z-[100] p-3 sm:p-6 md:p-12 pointer-events-none">
       <div className="container mx-auto max-w-7xl w-full relative">
         
-        {/* Glow de base sutil para profundidade */}
+        {/* Glow de base sutil */}
         <div className={`absolute inset-x-16 bottom-0 h-2 transition-all duration-1000 blur-3xl ${isPlaying ? 'bg-blue-600 opacity-40' : 'bg-slate-700 opacity-10'}`}></div>
 
-        <div className={`relative bg-slate-900/95 border border-white/10 backdrop-blur-3xl rounded-3xl sm:rounded-[4rem] p-3.5 sm:p-6 md:p-9 shadow-[0_40px_100px_rgba(0,0,0,0.95)] flex flex-row items-center gap-4 sm:gap-8 md:gap-14 transition-all duration-700 pointer-events-auto w-full ${isPlaying ? 'ring-1 ring-blue-500/20 -translate-y-2 sm:-translate-y-3' : ''}`}>
+        <div className={`relative bg-slate-900/95 border border-white/10 backdrop-blur-3xl rounded-3xl sm:rounded-[4rem] p-4 sm:p-6 md:p-9 shadow-[0_40px_100px_rgba(0,0,0,0.95)] flex flex-row items-center gap-4 sm:gap-8 md:gap-14 transition-all duration-700 pointer-events-auto w-full ${isPlaying ? 'ring-1 ring-blue-500/20 -translate-y-2 sm:-translate-y-3' : ''}`}>
           
           <div className="flex items-center space-x-4 sm:space-x-8 md:space-x-12 flex-grow min-w-0">
-            {/* DISCO ADAPTATIVO: shrink-0 e aspect-square garantem o círculo perfeito */}
-            <div className={`relative h-14 w-14 sm:h-24 md:h-32 aspect-square flex-shrink-0 transition-all duration-1000 ${isPlaying ? 'scale-110 rotate-3' : 'scale-100 opacity-90'}`}>
+            {/* DISCO: Uso de min-w e min-h para evitar achatamento */}
+            <div className={`relative h-14 w-14 min-w-[3.5rem] min-h-[3.5rem] sm:h-24 sm:w-24 sm:min-w-[6rem] sm:min-h-[6rem] md:h-32 md:w-32 md:min-w-[8rem] md:min-h-[8rem] aspect-square flex-shrink-0 transition-all duration-1000 ${isPlaying ? 'scale-110 rotate-3' : 'scale-100 opacity-90'}`}>
                <div className={`absolute inset-0 rounded-full border-2 sm:border-[8px] border-white/5 overflow-hidden bg-black shadow-2xl ${isPlaying ? 'animate-spin-slow' : ''}`}>
                  <img src={coverUrl} alt="Capa Album" className="w-full h-full object-cover" />
                  <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-transparent to-white/10"></div>
@@ -105,7 +105,7 @@ const Player: React.FC = () => {
             </div>
 
             <div className="flex flex-col min-w-0 flex-1">
-              <div className="flex items-center space-x-2 sm:space-x-4 mb-1.5 sm:mb-4">
+              <div className="flex items-center space-x-2 sm:space-x-4 mb-1 sm:mb-4">
                 <span className={`text-[9px] sm:text-[11px] font-black uppercase tracking-widest sm:tracking-[0.4em] px-2.5 sm:px-5 py-1 sm:py-2 rounded-full border transition-colors flex-shrink-0 ${isLive ? 'border-red-500 bg-red-500/10 text-red-500' : 'border-blue-500 bg-blue-500/10 text-blue-400'}`}>
                   {isLive ? 'Em Direto' : 'WRF Digital'}
                 </span>
@@ -132,10 +132,10 @@ const Player: React.FC = () => {
               </div>
             </div>
 
-            {/* BOTÃO PLAY: shrink-0 e aspect-square garantem o círculo perfeito */}
+            {/* BOTÃO PLAY: min-w e min-h blindados contra compressão */}
             <button 
               onClick={togglePlay}
-              className={`relative h-14 w-14 sm:h-24 md:h-28 aspect-square flex-shrink-0 rounded-full flex items-center justify-center transition-all duration-500 ${isPlaying ? 'bg-white text-black scale-105 shadow-[0_0_60px_rgba(255,255,255,0.3)]' : 'bg-blue-600 text-white shadow-[0_15px_40px_rgba(37,99,235,0.4)]'} hover:scale-110 active:scale-95 group overflow-hidden`}
+              className={`relative h-14 w-14 min-w-[3.5rem] min-h-[3.5rem] sm:h-24 sm:w-24 sm:min-w-[6rem] sm:min-h-[6rem] md:h-28 md:w-28 md:min-w-[7rem] md:min-h-[7rem] aspect-square flex-shrink-0 rounded-full flex items-center justify-center transition-all duration-500 ${isPlaying ? 'bg-white text-black scale-105 shadow-[0_0_60px_rgba(255,255,255,0.3)]' : 'bg-blue-600 text-white shadow-[0_15px_40px_rgba(37,99,235,0.4)]'} hover:scale-110 active:scale-95 group overflow-hidden`}
             >
               <div className={`absolute inset-0 rounded-full border-2 sm:border-[5px] border-current opacity-20 ${isPlaying ? 'animate-ping' : ''}`}></div>
               {isPlaying ? (
