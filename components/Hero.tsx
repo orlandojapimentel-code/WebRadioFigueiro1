@@ -3,99 +3,64 @@ import React from 'react';
 
 const Hero: React.FC = () => {
   return (
-    <div className="relative min-h-[550px] md:min-h-[650px] w-full flex items-center justify-center overflow-hidden rounded-[3rem] md:rounded-[4rem] bg-[#020617] border border-white/5 shadow-2xl">
+    <div className="relative min-h-[500px] md:min-h-[650px] w-full flex items-center justify-center overflow-hidden rounded-[3rem] md:rounded-[5rem] bg-[#050510] border border-white/10 shadow-[0_50px_100px_rgba(0,0,0,0.9)]">
       
-      {/* BACKGROUND TÉCNICO E ARTÍSTICO */}
+      {/* BACKGROUND DECORATIVO */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Camada 1: Mesh Gradient Animado */}
-        <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-5%] w-[60%] h-[60%] bg-indigo-600/20 rounded-full blur-[120px]"></div>
-        
-        {/* Camada 2: Grelha Técnica de Estúdio */}
-        <div className="absolute inset-0 opacity-[0.15] dark:opacity-[0.07]" 
-             style={{ backgroundImage: `radial-gradient(circle at 1px 1px, #4f46e5 1px, transparent 0)`, backgroundSize: '40px 40px' }}></div>
-        
-        {/* Camada 3: Textura de Ruído Analógico */}
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 mix-blend-overlay"></div>
-        
-        {/* Camada 4: Linha de varrimento (VFX) */}
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-blue-500/5 to-transparent h-[2px] animate-scan z-10"></div>
+        <div className="absolute top-0 left-0 w-full h-full opacity-[0.08]" 
+             style={{ backgroundImage: `radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0)`, backgroundSize: '40px 40px' }}></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-full bg-gradient-to-b from-blue-500/40 via-blue-500/10 to-transparent"></div>
+        {/* Orbs de luz extras para o Hero */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px]"></div>
+        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-600/10 rounded-full blur-[120px]"></div>
       </div>
 
       <div className="relative z-20 container mx-auto px-6 flex flex-col items-center text-center">
         
-        {/* BADGE DE STATUS OLED STYLE */}
-        <div className="inline-flex items-center space-x-3 px-5 py-2.5 bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 mb-10 transform hover:scale-105 transition-transform duration-500 shadow-xl">
-          <div className="flex space-x-1">
-            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
-            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400">Emissão Digital HD</span>
-          <div className="h-4 w-[1px] bg-white/10 mx-2"></div>
-          <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Amarante</span>
+        {/* BADGE PREMIUM */}
+        <div className="inline-flex items-center space-x-3 px-6 py-3 bg-white/5 backdrop-blur-3xl rounded-2xl border border-white/10 mb-12 group hover:border-blue-500/50 transition-all">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+          </span>
+          <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white group-hover:text-blue-400 transition-colors">Digital High Fidelity Stream</span>
         </div>
 
-        {/* TIPOGRAFIA BRANDING PRINCIPAL */}
-        <div className="max-w-5xl space-y-4">
-          <h2 className="text-3xl md:text-5xl font-brand font-extralight text-white/70 tracking-tight">
+        {/* TÍTULO PRINCIPAL */}
+        <div className="max-w-6xl space-y-4">
+          <h2 className="text-2xl md:text-3xl font-brand font-medium text-slate-400 tracking-[0.6em] uppercase">
             Web Rádio
           </h2>
-          <div className="relative inline-block">
-             <h1 className="text-6xl sm:text-8xl md:text-[11rem] font-brand font-[900] tracking-tighter text-white leading-[0.85] filter drop-shadow-2xl">
-              FIGUEIRÓ<span className="text-blue-600 inline-block animate-pulse">.</span>
-            </h1>
-            {/* Reflexo Elegante */}
-            <div className="absolute -bottom-8 left-0 right-0 h-16 bg-gradient-to-t from-transparent to-white/5 blur-xl -z-10 opacity-50"></div>
-          </div>
+          <h1 className="text-7xl sm:text-9xl md:text-[13rem] font-brand font-[950] tracking-tighter text-shimmer leading-[0.85] py-6 filter drop-shadow-[0_20px_40px_rgba(59,130,246,0.3)]">
+            FIGUEIRÓ<span className="text-blue-600">.</span>
+          </h1>
         </div>
 
-        <p className="mt-12 text-lg md:text-2xl text-slate-400 font-medium max-w-3xl leading-relaxed [text-wrap:balance]">
-          Sintonize a <span className="text-white border-b-2 border-blue-600/50">excelência sonora</span>. Elevando a voz de Amarante para o mundo com tecnologia de ponta e paixão musical.
+        <p className="mt-12 text-xl md:text-3xl text-slate-300 font-medium max-w-3xl leading-relaxed">
+          Sintonize a voz de Amarante. Paixão musical e tecnologia digital <span className="text-white font-bold border-b-2 border-blue-600">desde 2022</span>.
         </p>
 
-        {/* INFO CARDS - GLASSMORPHISM */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16 w-full max-w-4xl">
-          <div className="group relative p-8 rounded-[2.5rem] bg-white/5 backdrop-blur-md border border-white/10 text-left transition-all hover:bg-white/10 hover:-translate-y-1">
-            <div className="absolute top-6 right-8 text-blue-600/30 group-hover:text-blue-600/60 transition-colors">
-              <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+        {/* INFO CARDS SUPER-CONTRASTE */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20 w-full max-w-5xl">
+          <div className="glass-card p-12 rounded-[3rem] text-left relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-2 h-full bg-blue-600"></div>
+            <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center mb-6 text-white shadow-xl shadow-blue-600/20">
+               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.18L12 21z"/></svg>
             </div>
-            <p className="text-blue-500 text-[10px] font-black uppercase tracking-[0.3em] mb-3">Conceito</p>
-            <h4 className="text-white font-bold text-xl mb-2">A Nossa Missão</h4>
-            <p className="text-slate-400 text-sm leading-relaxed italic">"Criar ligações através da música, levando Amarante a todos os corações."</p>
+            <h4 className="text-white font-black text-2xl mb-3 tracking-tighter">Missão Local</h4>
+            <p className="text-slate-300 text-base leading-relaxed opacity-90">Conectando Figueiró ao mundo através de cada nota musical com orgulho em Amarante.</p>
           </div>
 
-          <div className="group relative p-8 rounded-[2.5rem] bg-white/5 backdrop-blur-md border border-white/10 text-left transition-all hover:bg-white/10 hover:-translate-y-1">
-             <div className="absolute top-6 right-8 text-indigo-600/30 group-hover:text-indigo-600/60 transition-colors">
-              <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          <div className="glass-card p-12 rounded-[3rem] text-left relative overflow-hidden group">
+             <div className="absolute top-0 left-0 w-2 h-full bg-indigo-600"></div>
+             <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center mb-6 text-white shadow-xl shadow-indigo-600/20">
+               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
             </div>
-            <p className="text-indigo-500 text-[10px] font-black uppercase tracking-[0.3em] mb-3">Broadcasting</p>
-            <h4 className="text-white font-bold text-xl mb-4">Emissão Global</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-bold uppercase tracking-tighter">Estúdio Principal</span>
-                <span className="text-white font-black">Figueiró</span>
-              </div>
-              <div className="w-full h-[1px] bg-white/5"></div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-bold uppercase tracking-tighter">Bitrate HD</span>
-                <span className="text-blue-400 font-black">320kbps</span>
-              </div>
-            </div>
+            <h4 className="text-white font-black text-2xl mb-3 tracking-tighter">Qualidade HD</h4>
+            <p className="text-slate-300 text-base leading-relaxed opacity-90">Emissão cristalina em 320kbps com processamento de áudio profissional de estúdio.</p>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes scan {
-          0% { transform: translateY(-100%); opacity: 0; }
-          50% { opacity: 1; }
-          100% { transform: translateY(1000%); opacity: 0; }
-        }
-        .animate-scan {
-          animation: scan 8s linear infinite;
-        }
-      `}</style>
     </div>
   );
 };
