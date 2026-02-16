@@ -53,35 +53,35 @@ const NewsTicker: React.FC = () => {
   const displayItems = [...newsText, ...newsText, ...newsText];
 
   return (
-    <div className="fixed top-20 left-0 right-0 z-[45] bg-slate-900 dark:bg-black border-b border-white/10 h-11 flex items-center overflow-hidden shadow-xl">
+    <div className="fixed top-20 left-0 right-0 z-[45] bg-black border-b border-red-600/20 h-11 flex items-center overflow-hidden shadow-xl">
       <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_25px_rgba(0,0,0,0.5)] relative shrink-0 transition-all duration-700 
-        ${isSyncing ? 'bg-blue-600' : (dataSource === 'LIVE' ? 'bg-red-600' : 'bg-slate-800')}`}>
+        ${isSyncing ? 'bg-blue-600' : (dataSource === 'LIVE' ? 'bg-red-600' : 'bg-red-600')}`}>
         
         <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] whitespace-nowrap flex items-center">
           {isSyncing ? (
             <span className="animate-pulse">Sincronizando...</span>
           ) : (
             <>
-              <div className={`w-2 h-2 rounded-full mr-2 ${dataSource === 'LIVE' ? 'bg-green-400 animate-pulse' : 'bg-blue-400'}`}></div>
-              <span>{dataSource === 'LIVE' ? 'Direto Amarante' : 'WRF Digital'}</span>
+              <div className={`w-2 h-2 rounded-full mr-2 ${dataSource === 'LIVE' ? 'bg-white animate-pulse' : 'bg-white'}`}></div>
+              <span>{dataSource === 'LIVE' ? 'Direto Amarante' : 'WRF News'}</span>
             </>
           )}
         </div>
         
         <div className={`absolute right-[-12px] top-0 bottom-0 w-0 h-0 border-t-[22px] border-t-transparent border-b-[22px] border-b-transparent border-l-[12px] transition-colors duration-500 
-          ${isSyncing ? 'border-l-blue-600' : (dataSource === 'LIVE' ? 'border-l-red-600' : 'border-l-slate-800')}`}>
+          ${isSyncing ? 'border-l-blue-600' : (dataSource === 'LIVE' ? 'border-l-red-600' : 'border-l-red-600')}`}>
         </div>
       </div>
       
-      <div className="flex-grow relative h-full flex items-center bg-slate-900 dark:bg-black">
+      <div className="flex-grow relative h-full flex items-center bg-black">
         <div className="animate-ticker-infinite flex whitespace-nowrap items-center">
           {displayItems.map((text, i) => (
             <div key={i} className="flex items-center shrink-0">
-              <span className="text-white dark:text-gray-100 text-[10px] md:text-[11px] font-bold tracking-tight uppercase px-12">
+              <span className="text-white text-[10px] md:text-[11px] font-bold tracking-tight uppercase px-12">
                 {text}
               </span>
               <div className="h-4 w-[1px] bg-white/10"></div>
-              <span className="text-blue-500 font-black text-[9px] px-8 tracking-tighter">WRF NEWS</span>
+              <span className="text-red-500 font-black text-[9px] px-8 tracking-tighter">WRF NEWS</span>
               <div className="h-4 w-[1px] bg-white/10"></div>
             </div>
           ))}

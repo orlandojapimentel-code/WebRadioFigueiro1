@@ -1,19 +1,14 @@
 
 import { GoogleGenAI } from "@google/genai";
+import { Language } from "../translations";
 
-/**
- * Inicializa o SDK de forma segura.
- */
+// Helper to get the AI instance. Creates a new instance before each call as per guidelines.
 const getAIInstance = () => {
   const key = process.env.API_KEY;
   if (!key) return null;
   return new GoogleGenAI({ apiKey: key });
 };
 
-/**
- * Conteúdo de reserva para quando a API atinge limites ou falha.
- * Mantém a aplicação funcional e com aspeto "vivo".
- */
 const FALLBACK_NEWS_DATA = [
   "Web Rádio Figueiró: Sintonize a melhor seleção musical de Amarante 24h por dia.",
   "Peça a sua música favorita através do nosso novo Centro de Pedidos digital.",
@@ -22,28 +17,16 @@ const FALLBACK_NEWS_DATA = [
   "Web Rádio Figueiró: A elevar a voz de Amarante para o mundo inteiro."
 ].join('\n');
 
-/**
- * Busca notícias ou curiosidades sobre Amarante.
- * Implementação resiliente que evita logs de erro "scary" no console.
- */
-export const fetchLatestNews = async () => {
+export const fetchLatestNews = async (lang: Language = 'pt') => {
   const ai = getAIInstance();
-  
-  // Se não houver IA disponível, retorna o conteúdo de backup imediatamente
-  if (!ai) {
-    return { 
-      text: FALLBACK_NEWS_DATA, 
-      source: 'LOCAL' as const, 
-      grounding: [] 
-    };
-  }
+  if (!ai) return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
 
   const model = 'gemini-3-flash-preview';
-  const prompt = "Lista 5 notícias ou curiosidades curtas sobre Amarante, Portugal. Apenas os títulos, um por linha.";
+  const prompt = `Lista 5 notícias ou curiosidades curtas sobre Amarante, Portugal. Escreve obrigatoriamente em ${lang === 'pt' ? 'Português' : lang === 'en' ? 'Inglês' : lang === 'es' ? 'Espanhol' : 'Francês'}. Apenas os títulos, um por linha.`;
 
   try {
-    // Tentativa 1: Pesquisa em tempo real (Google Search Grounding)
     try {
+      // Create fresh instance before call
       const response = await ai.models.generateContent({
         model: model,
         contents: prompt,
@@ -52,113 +35,86 @@ export const fetchLatestNews = async () => {
           systemInstruction: "És o serviço de notícias da Web Rádio Figueiró. Sê curto, direto e profissional."
         },
       });
-
-      if (response && response.text && response.text.length > 10) {
-        return { 
-          text: response.text, 
-          source: 'LIVE' as const,
-          grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] 
-        };
+      if (response && response.text) {
+        return { text: response.text, source: 'LIVE' as const, grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] };
       }
-    } catch (innerError) {
-      // Falha na pesquisa (quota ou erro de ferramenta), segue para geração normal
+    } catch (e) {
+      console.warn("News grounding failed, falling back to basic generation.", e);
     }
-
-    // Tentativa 2: Geração baseada no conhecimento interno da IA
+    
     const fallbackResponse = await ai.models.generateContent({
       model: model,
       contents: prompt,
-      config: {
-        systemInstruction: "És o animador da Web Rádio Figueiró. Gera títulos interessantes e atuais sobre Amarante."
-      }
+      config: { systemInstruction: "És o animador da Web Rádio Figueiró." }
     });
-
-    if (fallbackResponse && fallbackResponse.text) {
-      return { 
-        text: fallbackResponse.text, 
-        source: 'LOCAL' as const,
-        grounding: [] 
-      };
-    }
-
+    return { text: fallbackResponse.text || FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
+  } catch (error) {
+    console.error("fetchLatestNews error:", error);
     return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
-
-  } catch (error) {
-    // Erro crítico (ex: Quota Exceeded). Retorna backup silenciosamente.
-    return { 
-      text: FALLBACK_NEWS_DATA, 
-      source: 'LOCAL' as const, 
-      grounding: [] 
-    };
   }
 };
 
-/**
- * Busca eventos culturais (para uso em widgets ou agenda).
- * FIX: Atualizado para retornar o formato de blocos esperado pelo componente AgendaCultural.
- */
-export const fetchCulturalEvents = async () => {
+export const getRadioAssistantResponse = async (userPrompt: string, lang: Language = 'pt'): Promise<string> => {
   const ai = getAIInstance();
-  if (!ai) return { text: "" };
-
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: "Pesquisa e lista 3 eventos culturais reais em Amarante, Portugal para os próximos meses.",
-      config: { 
-        tools: [{ googleSearch: {} }],
-        systemInstruction: `Gera a resposta estritamente no seguinte formato para CADA evento:
-EVENTO_START
-TITULO: Nome do Evento
-DATA: Data por extenso (ex: 20 de Maio)
-LOCAL: Local exato em Amarante
-TIPO: Categoria (CONCERTO, EXPOSIÇÃO, TEATRO, FESTA ou GERAL)
-IMAGEM: URL de uma imagem real representativa do local ou evento
-LINK: URL oficial para mais informações
-EVENTO_END`
-      },
-    });
-    return { text: response.text || "" };
-  } catch (error) {
-    return { text: "" };
-  }
-};
-
-/**
- * Responde a perguntas do chat da rádio.
- * FIX: Implementação necessária para o componente GeminiAssistant.
- */
-export const getRadioAssistantResponse = async (userPrompt: string): Promise<string> => {
-  const ai = getAIInstance();
-  if (!ai) return "Desculpa, a minha inteligência artificial está offline de momento.";
+  if (!ai) return "Offline.";
 
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: userPrompt,
       config: {
-        systemInstruction: "És a assistente virtual da Web Rádio Figueiró. Sê simpática, prestativa e fala sobre música ou Amarante. Mantém as respostas curtas e amigáveis. Usa o Google Search se precisares de informações atuais.",
+        systemInstruction: `És a assistente virtual da Web Rádio Figueiró. Responde sempre no idioma: ${lang}. Sê simpática e prestativa.`,
         tools: [{ googleSearch: {} }]
       },
     });
-
-    let resultText = response.text || "Não consegui processar o teu pedido.";
-    
-    // Extrai URLs de grounding para exibição, conforme as diretrizes obrigatórias da API
-    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-    if (groundingChunks && groundingChunks.length > 0) {
-      const links = groundingChunks
-        .map(chunk => chunk.web?.uri)
-        .filter(Boolean)
-        .slice(0, 2);
-      
-      if (links.length > 0) {
-        resultText += "\n\nSaiba mais em:\n" + links.join('\n');
-      }
-    }
-
-    return resultText;
+    return response.text || "Error.";
   } catch (error) {
-    return "Desculpa, tive uma pequena falha na sintonização. Podes repetir a tua pergunta?";
+    console.error("getRadioAssistantResponse error:", error);
+    return "Error.";
+  }
+};
+
+/**
+ * Fetches real cultural events in Amarante using Google Search grounding.
+ * Returns formatted blocks expected by AgendaCultural component.
+ */
+export const fetchCulturalEvents = async () => {
+  const key = process.env.API_KEY;
+  if (!key) {
+    // Component expects this error to trigger key selection dialog or alert
+    throw new Error("MISSING_KEY");
+  }
+
+  const ai = new GoogleGenAI({ apiKey: key });
+  const model = 'gemini-3-flash-preview';
+
+  const prompt = `Procura eventos culturais reais, concertos, exposições, teatro ou festas populares em Amarante, Portugal para as próximas semanas e meses. 
+  Retorna uma lista de eventos formatada rigorosamente usando os blocos abaixo para cada evento:
+
+  EVENTO_START
+  TITULO: [Nome do Evento]
+  DATA: [Dia e Mês, ex: 15 de Julho]
+  LOCAL: [Local exato em Amarante]
+  TIPO: [Escolhe uma categoria: CONCERTO, EXPOSIÇÃO, TEATRO, FESTA ou GERAL]
+  IMAGEM: [URL de uma imagem do cartaz ou local se encontrada]
+  LINK: [URL para mais informações]
+  EVENTO_END
+
+  Inclui pelo menos 4 eventos se possível.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }],
+        systemInstruction: "És o curador da agenda cultural da Web Rádio Figueiró. A tua missão é encontrar eventos reais e atuais em Amarante, Portugal."
+      },
+    });
+
+    return { text: response.text };
+  } catch (error) {
+    console.error("Error fetching cultural events:", error);
+    throw error;
   }
 };

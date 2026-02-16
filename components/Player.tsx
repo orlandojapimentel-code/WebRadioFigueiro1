@@ -1,158 +1,147 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Player: React.FC = () => {
+  const { t } = useLanguage();
   const [isPlaying, setIsPlaying] = useState(false);
-  
-  const STUDIO_IMAGE = "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop"; 
-  const MIXER_LIVE_IMAGE = "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800&auto=format&fit=crop"; 
-  const MUSIC_VINYL_IMAGE = "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=800&auto=format&fit=crop"; 
-  
-  const [coverUrl, setCoverUrl] = useState(STUDIO_IMAGE);
-  const [currentSong, setCurrentSong] = useState("Sintonizando...");
-  const [isLive, setIsLive] = useState(false);
+  const [songTitle, setSongTitle] = useState(t.player.tuning);
+  const [coverUrl, setCoverUrl] = useState("https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=600&auto=format&fit=crop");
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream?type=.mp3";
+  const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream";
 
-  const fetchAlbumArt = async (rawSongName: string) => {
-    const text = rawSongName.toLowerCase();
-    const hasLivePrefix = text.startsWith("direto") || text.startsWith("live") || text.startsWith("emissão");
-    
-    if (hasLivePrefix) {
-      setIsLive(true);
-      setCoverUrl(MIXER_LIVE_IMAGE);
-      return;
-    }
-
-    setIsLive(false);
-
-    if (!rawSongName || text.includes("sintonizando") || text === "web rádio figueiró") {
-      setCoverUrl(STUDIO_IMAGE);
-      return;
-    }
-
+  // Função para procurar capa do álbum baseada no nome da música
+  const fetchAlbumArt = async (title: string) => {
+    if (!title || title.includes("Sintonizando") || title.toLowerCase().includes("web rádio")) return;
     try {
-      const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(rawSongName)}&media=music&limit=1`);
+      const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(title)}&media=music&limit=1`);
       const data = await response.json();
       if (data.results && data.results.length > 0) {
         setCoverUrl(data.results[0].artworkUrl100.replace('100x100', '600x600'));
-      } else {
-        setCoverUrl(MUSIC_VINYL_IMAGE);
       }
-    } catch {
-      setCoverUrl(MUSIC_VINYL_IMAGE);
+    } catch (err) {
+      console.warn("Erro ao carregar capa do álbum");
     }
   };
 
   useEffect(() => {
+    // Observar o elemento oculto preenchido pelo script externo centova
     const target = document.getElementById('cc_strinfo_song_orlando');
     if (!target) return;
 
-    const handleSongChange = (newSong: string) => {
-      const trimmed = newSong.trim();
-      if (trimmed && trimmed !== currentSong) {
-        setCurrentSong(trimmed);
-        fetchAlbumArt(trimmed);
-      }
-    };
-
     const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => handleSongChange((mutation.target as HTMLElement).innerText));
+      mutations.forEach((mutation) => {
+        const newSong = (mutation.target as HTMLElement).innerText;
+        if (newSong && newSong !== songTitle) {
+          setSongTitle(newSong);
+          fetchAlbumArt(newSong);
+        }
+      });
     });
 
     observer.observe(target, { childList: true, characterData: true, subtree: true });
     
-    const syncInterval = setInterval(() => {
-      if (target.innerText && target.innerText.trim() !== currentSong) {
-        handleSongChange(target.innerText);
+    // Fallback interval para garantir sincronização
+    const interval = setInterval(() => {
+      const current = target.innerText;
+      if (current && current !== songTitle) {
+        setSongTitle(current);
+        fetchAlbumArt(current);
       }
     }, 5000);
 
-    return () => { observer.disconnect(); clearInterval(syncInterval); };
-  }, [currentSong]);
+    return () => {
+      observer.disconnect();
+      clearInterval(interval);
+    };
+  }, [songTitle]);
 
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
+        // Recarregar o stream para evitar delay de buffer
         audioRef.current.src = `${streamUrl}&t=${Date.now()}`;
-        audioRef.current.play().catch(e => console.error(e));
+        audioRef.current.play().catch(e => console.error("Erro ao reproduzir áudio:", e));
       }
       setIsPlaying(!isPlaying);
     }
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] p-3 sm:p-6 md:p-12 pointer-events-none">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 sm:p-8 md:p-12 pointer-events-none">
       <div className="container mx-auto max-w-7xl w-full relative">
+        {/* Glow Effect */}
+        <div className={`absolute inset-x-16 bottom-0 h-4 transition-all duration-1000 blur-[80px] ${isPlaying ? 'bg-red-600 opacity-40' : 'bg-slate-700 opacity-10'}`}></div>
         
-        {/* Glow de base sutil */}
-        <div className={`absolute inset-x-16 bottom-0 h-2 transition-all duration-1000 blur-3xl ${isPlaying ? 'bg-blue-600 opacity-40' : 'bg-slate-700 opacity-10'}`}></div>
-
-        <div className={`relative bg-slate-900/95 border border-white/10 backdrop-blur-3xl rounded-3xl sm:rounded-[4rem] p-4 sm:p-6 md:p-9 shadow-[0_40px_100px_rgba(0,0,0,0.95)] flex flex-row items-center gap-4 sm:gap-8 md:gap-14 transition-all duration-700 pointer-events-auto w-full ${isPlaying ? 'ring-1 ring-blue-500/20 -translate-y-2 sm:-translate-y-3' : ''}`}>
+        <div className={`relative bg-[#020617]/95 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] sm:rounded-[4rem] p-4 sm:p-6 md:p-8 shadow-[0_40px_100px_rgba(0,0,0,0.95)] flex flex-row items-center gap-6 sm:gap-10 pointer-events-auto w-full transition-all duration-700 ${isPlaying ? 'ring-1 ring-red-500/30 -translate-y-2' : ''}`}>
           
-          <div className="flex items-center space-x-4 sm:space-x-8 md:space-x-12 flex-grow min-w-0">
-            {/* DISCO: Uso de min-w e min-h para evitar achatamento */}
-            <div className={`relative h-14 w-14 min-w-[3.5rem] min-h-[3.5rem] sm:h-24 sm:w-24 sm:min-w-[6rem] sm:min-h-[6rem] md:h-32 md:w-32 md:min-w-[8rem] md:min-h-[8rem] aspect-square flex-shrink-0 transition-all duration-1000 ${isPlaying ? 'scale-110 rotate-3' : 'scale-100 opacity-90'}`}>
-               <div className={`absolute inset-0 rounded-full border-2 sm:border-[8px] border-white/5 overflow-hidden bg-black shadow-2xl ${isPlaying ? 'animate-spin-slow' : ''}`}>
-                 <img src={coverUrl} alt="Capa Album" className="w-full h-full object-cover" />
-                 <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-transparent to-white/10"></div>
-                 {/* Centro do disco */}
-                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 sm:w-6 sm:h-6 bg-slate-900 rounded-full border border-white/10 shadow-inner z-10"></div>
+          <div className="flex-grow min-w-0 flex items-center space-x-6 sm:space-x-10">
+            {/* Disco Animado */}
+            <div className="relative h-20 w-20 sm:h-28 sm:w-28 md:h-36 md:w-36 flex-shrink-0">
+               <div className={`absolute inset-0 rounded-full border-[6px] sm:border-[10px] border-white/5 overflow-hidden bg-black shadow-2xl transition-transform duration-[2s] ${isPlaying ? 'animate-spin-slow' : 'scale-95 opacity-80'}`}>
+                  <img 
+                    src={coverUrl} 
+                    alt="Cover" 
+                    className="w-full h-full object-cover" 
+                  />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 sm:w-8 sm:h-8 bg-slate-900 rounded-full border border-white/10 z-10 shadow-inner"></div>
+               </div>
+               {/* Agulha ou detalhe decorativo */}
+               <div className={`absolute -top-2 -right-2 h-10 w-10 transition-all duration-500 ${isPlaying ? 'rotate-0 opacity-100' : 'rotate-12 opacity-0'}`}>
+                  <svg className="w-full h-full text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"/></svg>
                </div>
             </div>
 
             <div className="flex flex-col min-w-0 flex-1">
-              <div className="flex items-center space-x-2 sm:space-x-4 mb-1 sm:mb-4">
-                <span className={`text-[9px] sm:text-[11px] font-black uppercase tracking-widest sm:tracking-[0.4em] px-2.5 sm:px-5 py-1 sm:py-2 rounded-full border transition-colors flex-shrink-0 ${isLive ? 'border-red-500 bg-red-500/10 text-red-500' : 'border-blue-500 bg-blue-500/10 text-blue-400'}`}>
-                  {isLive ? 'Em Direto' : 'WRF Digital'}
+              <div className="flex items-center space-x-3 mb-2">
+                <span className={`text-[10px] font-black uppercase tracking-[0.3em] px-3 py-1 rounded-full border transition-all ${isPlaying ? 'border-red-500 bg-red-500/10 text-red-500' : 'border-slate-700 bg-slate-800 text-slate-500'}`}>
+                  {isPlaying ? t.player.live : 'OFF AIR'}
                 </span>
-                <span className="hidden sm:inline-flex items-center space-x-2.5 text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest flex-shrink-0">
-                   <span className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-green-500 animate-pulse' : 'bg-slate-600'}`}></span>
-                   <span className="hidden md:inline opacity-60">High Fidelity 320kbps</span>
-                </span>
+                {isPlaying && (
+                  <div className="flex space-x-1 h-3 items-end">
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} className="w-0.5 bg-red-500 animate-bounce" style={{ height: `${30 + Math.random() * 70}%`, animationDuration: `${0.6 + i*0.1}s` }}></div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <h3 className="text-white text-base sm:text-2xl md:text-4xl font-brand font-black tracking-tighter truncate leading-tight">
-                <span id="cc_strinfo_song_orlando" className="cc_streaminfo" data-type="song" data-username="orlando">Sintonizando...</span>
-              </h3>
-              <p className="text-slate-400 text-[9px] sm:text-sm font-medium mt-1 sm:mt-3 uppercase tracking-[0.2em] sm:tracking-[0.4em] hidden xs:block truncate">Web Rádio Figueiró • Amarante</p>
+              
+              <h4 className="text-white font-brand font-black text-xl sm:text-3xl md:text-4xl truncate tracking-tighter leading-none mb-1 sm:mb-2">
+                <span id="cc_strinfo_song_orlando" className="cc_streaminfo" data-type="song" data-username="orlando">
+                  {songTitle}
+                </span>
+              </h4>
+              <p className="text-slate-400 text-[10px] sm:text-sm font-bold uppercase tracking-[0.3em] truncate opacity-60">
+                Web Rádio Figueiró • Amarante
+              </p>
             </div>
           </div>
-
-          {/* CONTROLOS DO PLAYER */}
+          
           <div className="flex items-center space-x-3 sm:space-x-10 flex-shrink-0">
-            <div className="hidden lg:flex flex-col items-end space-y-4 px-6 border-r border-white/10 mr-4">
-              <div className="flex space-x-2 h-8 items-center">
-                 {[...Array(15)].map((_, i) => (
-                   <div key={i} className={`w-1 rounded-full transition-all duration-300 ${isPlaying ? 'bg-blue-500 animate-bounce' : 'bg-slate-800 h-2'}`} 
-                        style={{ animationDelay: `${i * 0.07}s`, height: isPlaying ? `${40 + Math.random() * 60}%` : '8px' }}></div>
-                 ))}
-              </div>
-            </div>
-
-            {/* BOTÃO PLAY: min-w e min-h blindados contra compressão */}
             <button 
-              onClick={togglePlay}
-              className={`relative h-14 w-14 min-w-[3.5rem] min-h-[3.5rem] sm:h-24 sm:w-24 sm:min-w-[6rem] sm:min-h-[6rem] md:h-28 md:w-28 md:min-w-[7rem] md:min-h-[7rem] aspect-square flex-shrink-0 rounded-full flex items-center justify-center transition-all duration-500 ${isPlaying ? 'bg-white text-black scale-105 shadow-[0_0_60px_rgba(255,255,255,0.3)]' : 'bg-blue-600 text-white shadow-[0_15px_40px_rgba(37,99,235,0.4)]'} hover:scale-110 active:scale-95 group overflow-hidden`}
+              onClick={togglePlay} 
+              className={`relative h-16 w-16 sm:h-24 sm:w-24 md:h-32 md:w-32 aspect-square flex-shrink-0 rounded-full flex items-center justify-center transition-all duration-500 ${isPlaying ? 'bg-white text-black scale-105 shadow-[0_0_60px_rgba(255,255,255,0.3)]' : 'bg-red-600 text-white shadow-[0_15px_40px_rgba(220,38,38,0.4)]'} hover:scale-110 active:scale-95 group overflow-hidden`}
             >
-              <div className={`absolute inset-0 rounded-full border-2 sm:border-[5px] border-current opacity-20 ${isPlaying ? 'animate-ping' : ''}`}></div>
               {isPlaying ? (
-                <svg className="w-6 h-6 sm:w-12 sm:h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                <svg className="w-8 h-8 sm:w-14 sm:h-14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               ) : (
-                <svg className="w-6 h-6 sm:w-12 sm:h-12 ml-1 sm:ml-2 group-hover:translate-x-1.5 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg className="w-8 h-8 sm:w-14 sm:h-14 ml-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
               )}
             </button>
           </div>
         </div>
       </div>
-      <audio ref={audioRef} preload="none" />
+      <audio ref={audioRef} src={streamUrl} preload="none" />
       <style>{`
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .animate-spin-slow { animation: spin-slow 20s linear infinite; }
-        @media (max-width: 480px) {
-          .xs\\:block { display: none !important; }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 15s linear infinite;
         }
       `}</style>
     </div>
