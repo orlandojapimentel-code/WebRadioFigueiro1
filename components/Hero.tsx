@@ -8,11 +8,21 @@ const Hero: React.FC = () => {
   return (
     <div className="relative w-full flex flex-col items-center overflow-hidden rounded-[3.5rem] md:rounded-[6rem] bg-[#02020a] border border-white/5 shadow-[0_50px_100px_rgba(0,0,0,0.95)]">
       
-      {/* Aurora Background */}
-      <div className="absolute inset-0 pointer-events-none">
+      {/* Imagem de Fundo Desfocada (Estilo Mega Web Radio) */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2000&auto=format&fit=crop" 
+          alt="Studio Background" 
+          className="w-full h-full object-cover opacity-30 blur-sm scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#02020a]/80 via-transparent to-[#02020a]"></div>
+      </div>
+
+      {/* Aurora Background Overlay */}
+      <div className="absolute inset-0 pointer-events-none z-10">
         <div className="absolute top-0 left-0 w-full h-full opacity-[0.07]" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0)`, backgroundSize: '50px 50px' }}></div>
-        <div className="absolute -top-60 -left-60 w-[600px] h-[600px] bg-red-600/15 rounded-full blur-[160px] animate-pulse-slow"></div>
-        <div className="absolute -bottom-60 -right-60 w-[600px] h-[600px] bg-blue-600/15 rounded-full blur-[160px] animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute -top-60 -left-60 w-[600px] h-[600px] bg-red-600/20 rounded-full blur-[160px] animate-pulse-slow"></div>
+        <div className="absolute -bottom-60 -right-60 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[160px] animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
       </div>
 
       <div className="relative z-20 w-full pt-16 md:pt-32 pb-0 flex flex-col items-center text-center px-6">
@@ -26,17 +36,17 @@ const Hero: React.FC = () => {
         </div>
 
         <div className="max-w-7xl space-y-4 mb-14">
-          <h2 className="text-xl md:text-3xl font-brand font-medium text-slate-400 tracking-[0.7em] uppercase">{t.hero.subtitle}</h2>
-          <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] lg:text-[16rem] font-brand font-[1000] tracking-tighter leading-[0.8] py-6 filter drop-shadow-[0_25px_50px_rgba(239,68,68,0.3)]">
+          <h2 className="text-xl md:text-3xl font-brand font-medium text-slate-400 tracking-[0.7em] uppercase drop-shadow-lg">{t.hero.subtitle}</h2>
+          <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] lg:text-[16rem] font-brand font-[1000] tracking-tighter leading-[0.8] py-6 filter drop-shadow-[0_25px_50px_rgba(239,68,68,0.4)]">
             <span className="text-white">FIGUEIRÓ</span><span className="text-red-600">.</span>
           </h1>
         </div>
 
-        <p className="text-xl md:text-3xl text-slate-300 font-medium max-w-4xl leading-relaxed mb-20 px-4">
+        <p className="text-xl md:text-3xl text-slate-300 font-medium max-w-4xl leading-relaxed mb-20 px-4 drop-shadow-md">
           {t.hero.description} <span className="text-white font-black border-b-4 border-red-600 pb-1">desde 2022</span>.
         </p>
 
-        {/* Banner de Estatísticas */}
+        {/* Banner de Estatísticas Atualizado conforme solicitado: 12M e 5+ */}
         <div className="w-full bg-red-600 py-12 md:py-20 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4 items-center">
           <div className="flex flex-col items-center border-r-0 md:border-r border-white/20">
             <span className="text-5xl md:text-8xl font-brand font-black text-white tracking-tighter mb-2">12 M</span>
