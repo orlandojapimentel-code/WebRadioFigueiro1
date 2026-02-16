@@ -141,18 +141,34 @@ const MediaCenter: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex bg-slate-100 dark:bg-white/5 p-1.5 rounded-[1.8rem] border border-gray-200 dark:border-white/10 shadow-inner">
+        {/* Seletor de Abas com Destaque Máximo */}
+        <div className="flex bg-slate-900/10 dark:bg-white/[0.03] p-2 rounded-[2.2rem] border border-slate-200 dark:border-white/10 shadow-inner backdrop-blur-sm">
           <button 
             onClick={() => setActiveTab('video')}
-            className={`px-10 py-3.5 rounded-[1.3rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${activeTab === 'video' ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-xl scale-105' : 'text-slate-500 dark:text-gray-400 hover:text-blue-600'}`}
+            className={`flex items-center space-x-3 px-8 md:px-12 py-4 rounded-[1.8rem] text-[12px] font-black uppercase tracking-[0.15em] transition-all duration-500 ${
+              activeTab === 'video' 
+                ? 'bg-blue-600 text-white shadow-[0_10px_30px_rgba(37,99,235,0.4)] scale-105 z-10' 
+                : 'text-slate-500 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-500/5'
+            }`}
           >
-            Vídeos
+            <svg className={`w-5 h-5 transition-transform duration-500 ${activeTab === 'video' ? 'scale-110' : 'opacity-50'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span>Vídeos</span>
           </button>
+          
           <button 
             onClick={() => setActiveTab('audio')}
-            className={`px-10 py-3.5 rounded-[1.3rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${activeTab === 'audio' ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-xl scale-105' : 'text-slate-500 dark:text-gray-400 hover:text-blue-600'}`}
+            className={`flex items-center space-x-3 px-8 md:px-12 py-4 rounded-[1.8rem] text-[12px] font-black uppercase tracking-[0.15em] transition-all duration-500 ${
+              activeTab === 'audio' 
+                ? 'bg-blue-600 text-white shadow-[0_10px_30px_rgba(37,99,235,0.4)] scale-105 z-10' 
+                : 'text-slate-500 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-500/5'
+            }`}
           >
-            Podcasts
+            <svg className={`w-5 h-5 transition-transform duration-500 ${activeTab === 'audio' ? 'scale-110' : 'opacity-50'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+            <span>Podcasts</span>
           </button>
         </div>
       </div>
@@ -174,7 +190,6 @@ const MediaCenter: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {/* O conteúdo de vídeo já está bom, mas podes adicionar uma borda neon aqui também se quiseres */}
             {[
               { id: '1', title: "Emissão Especial WRF", youtubeId: "r5GzTRSWXgc", color: "from-blue-600 to-indigo-600" }, 
               { id: '2', title: "Destaque Musical", youtubeId: "kjRBK718BtM", color: "from-red-600 to-rose-600" }
