@@ -83,6 +83,20 @@ const PhotoGallery: React.FC = () => {
   const allPhotos: Photo[] = [...FOTOS_ESTUDIO, ...FOTOS_EVENTOS, ...FOTOS_LUGARES];
   const filteredPhotos = filter === 'todos' ? allPhotos : allPhotos.filter(p => p.category === filter);
 
+  const handleCloseGallery = () => {
+    setIsOverlayOpen(false);
+    setSelectedPhoto(null);
+    // Se fecharmos manualmente e houver o estado no histórico, limpamo-lo
+    if (window.history.state?.galleryOpen) {
+      window.history.back();
+    }
+  };
+
+  const handleOpenGallery = () => {
+    window.dispatchEvent(new CustomEvent('close-overlays'));
+    setIsOverlayOpen(true);
+  };
+
   // Lógica para sincronizar com o histórico do browser e fechar com ESC
   useEffect(() => {
     const handlePopState = () => {
@@ -103,33 +117,25 @@ const PhotoGallery: React.FC = () => {
     };
 
     if (isOverlayOpen) {
+      const handleCloseOverlays = () => handleCloseGallery();
+      window.addEventListener('close-overlays', handleCloseOverlays);
+      
       document.body.style.overflow = 'hidden';
       // Adiciona um estado ao histórico para que o botão "back" feche a galeria
       window.history.pushState({ galleryOpen: true }, '');
       window.addEventListener('popstate', handlePopState);
       window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        window.removeEventListener('close-overlays', handleCloseOverlays);
+        window.removeEventListener('popstate', handlePopState);
+        window.removeEventListener('keydown', handleKeyDown);
+        document.body.style.overflow = 'unset';
+      };
     } else {
       document.body.style.overflow = 'unset';
     }
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
-    };
   }, [isOverlayOpen, selectedPhoto]);
-
-  const handleOpenGallery = () => {
-    setIsOverlayOpen(true);
-  };
-
-  const handleCloseGallery = () => {
-    setIsOverlayOpen(false);
-    // Se fecharmos manualmente e houver o estado no histórico, limpamo-lo
-    if (window.history.state?.galleryOpen) {
-      window.history.back();
-    }
-  };
 
   return (
     <div className="w-full">
@@ -162,7 +168,7 @@ const PhotoGallery: React.FC = () => {
       </div>
 
       {isOverlayOpen && (
-        <div className="fixed inset-0 z-[120] bg-gray-950 flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-500">
+        <div className="fixed inset-0 z-[300] bg-gray-950 flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-500">
           <div className="sticky top-0 z-20 bg-gray-900/95 backdrop-blur-xl border-b border-white/5">
             <div className="container mx-auto px-4 h-24 flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -177,13 +183,14 @@ const PhotoGallery: React.FC = () => {
                 </div>
               </div>
 
-              {/* Botão de Fechar Melhorado */}
+              {/* Botão de Fechar Melhorado - Mais visível e acessível */}
               <button 
                 onClick={handleCloseGallery}
-                className="group flex items-center space-x-3 px-6 py-3.5 bg-red-600 hover:bg-red-500 text-white rounded-2xl transition-all shadow-xl shadow-red-600/20 active:scale-95"
+                className="group flex items-center space-x-2 sm:space-x-3 px-4 sm:px-6 py-2.5 sm:py-3.5 bg-red-600 hover:bg-red-500 text-white rounded-xl sm:rounded-2xl transition-all shadow-xl shadow-red-600/20 active:scale-95 z-50"
+                aria-label="Fechar Galeria"
               >
-                <span className="text-[10px] font-black uppercase tracking-widest">Fechar Galeria</span>
-                <svg className="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest hidden xs:inline">Fechar</span>
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </button>
@@ -199,7 +206,7 @@ const PhotoGallery: React.FC = () => {
                 ].map((cat) => (
                   <button
                     key={cat.id}
-                    onClick={() => setFilter(cat.id as any)}
+                    onClick={() => setFilter(cat.id as 'todos' | 'eventos' | 'lugares' | 'estudio')}
                     className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
                       filter === cat.id 
                         ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 scale-105' 
@@ -233,7 +240,7 @@ const PhotoGallery: React.FC = () => {
 
       {selectedPhoto && (
         <div 
-          className="fixed inset-0 z-[130] bg-black/98 backdrop-blur-3xl flex items-center justify-center p-4 md:p-8 cursor-zoom-out"
+          className="fixed inset-0 z-[310] bg-black/98 backdrop-blur-3xl flex items-center justify-center p-4 md:p-8 cursor-zoom-out"
           onClick={() => setSelectedPhoto(null)}
         >
           <div className="max-w-6xl w-full flex flex-col items-center animate-in fade-in zoom-in duration-300" onClick={e => e.stopPropagation()}>

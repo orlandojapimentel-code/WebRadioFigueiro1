@@ -60,9 +60,9 @@ const Schedule: React.FC = () => {
           return (
             <div 
               key={i} 
-              className={`group relative overflow-hidden rounded-[1.8rem] md:rounded-[2.5rem] transition-all duration-700 ${active ? 'p-[2px] bg-gradient-to-r ' + p.color + ' shadow-2xl scale-[1.01] md:scale-[1.02]' : 'bg-transparent border border-white/5 hover:border-white/10'}`}
+              className={`group relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem] transition-all duration-700 ${active ? 'p-[2px] bg-gradient-to-br ' + p.color + ' shadow-[0_0_40px_rgba(37,99,235,0.2)] scale-[1.01] md:scale-[1.02]' : 'bg-transparent border border-white/5 hover:border-white/10'}`}
             >
-              <div className={`relative flex flex-col md:flex-row md:items-center justify-between p-5 md:p-8 rounded-[1.7rem] md:rounded-[2.4rem] transition-all duration-500 ${active ? 'bg-black/90 backdrop-blur-3xl' : 'bg-white/5 hover:bg-white/10'}`}>
+              <div className={`relative flex flex-col md:flex-row md:items-center justify-between p-5 md:p-8 rounded-[1.4rem] md:rounded-[1.9rem] transition-all duration-500 ${active ? 'bg-black/90 backdrop-blur-3xl' : 'bg-white/5 hover:bg-white/10'}`}>
                 
                 <div className="flex items-center space-x-4 md:space-x-6 flex-grow min-w-0">
                   <div className={`h-12 w-12 md:h-16 md:w-16 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 shadow-xl transition-transform group-hover:scale-110 ${active ? 'bg-gradient-to-br ' + p.color : 'bg-white/5'}`}>
@@ -70,10 +70,10 @@ const Schedule: React.FC = () => {
                   </div>
                   
                   <div className="space-y-0.5 min-w-0">
-                    <h4 className={`text-lg md:text-2xl font-brand font-black tracking-tighter leading-none truncate ${active ? 'text-white' : 'text-slate-400'}`}>
+                    <h4 className={`text-lg md:text-2xl font-brand font-black tracking-tighter leading-none truncate text-white`}>
                       {p.name}
                     </h4>
-                    <p className={`text-[10px] md:text-sm font-medium truncate ${active ? 'text-blue-400' : 'text-slate-600 dark:text-gray-500'}`}>
+                    <p className={`text-[10px] md:text-sm font-medium truncate ${active ? 'text-blue-400' : 'text-slate-500'}`}>
                       {p.host}
                     </p>
                   </div>
@@ -82,10 +82,10 @@ const Schedule: React.FC = () => {
                 <div className="mt-4 md:mt-0 flex items-center space-x-4 md:space-x-6 justify-between md:justify-end">
                    <div className="text-left md:text-right">
                      <p className={`text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] mb-0.5 ${active ? 'text-blue-500' : 'text-slate-500'}`}>Duração</p>
-                     <p className={`text-xs md:text-sm font-mono font-black ${active ? 'text-white' : 'text-slate-400'}`}>{p.time}</p>
+                     <p className={`text-xs md:text-sm font-mono font-black text-white`}>{p.time}</p>
                    </div>
                    {active && (
-                     <div className="px-3 md:px-6 py-1.5 md:py-2 rounded-full bg-white text-slate-900 text-[8px] md:text-[10px] font-black uppercase tracking-widest animate-pulse shadow-lg whitespace-nowrap">
+                     <div className="px-3 md:px-6 py-1.5 md:py-2 rounded-full bg-red-600 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest animate-pulse shadow-lg whitespace-nowrap">
                        No Ar
                      </div>
                    )}

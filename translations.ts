@@ -1,181 +1,205 @@
+export type Language = 'pt' | 'en' | 'es' | 'fr';
 
-export type Language = 'pt' | 'es' | 'fr' | 'en';
+export interface Translation {
+  nav: {
+    prog: string;
+    media: string;
+    gallery: string;
+    news: string;
+    contactBtn: string;
+  };
+  hero: {
+    title: string;
+    subtitle: string;
+    description: string;
+    cta: string;
+    stats: {
+      listeners: string;
+      programs: string;
+      reach: string;
+    };
+  };
+  schedule: {
+    title: string;
+    days: string[];
+  };
+  request: {
+    title: string;
+    subtitle: string;
+    whatsapp: string;
+    orSite: string;
+    artist: string;
+    song: string;
+    dedication: string;
+    name: string;
+    email: string;
+    submit: string;
+  };
+  player: {
+    tuning: string;
+    live: string;
+  };
+}
 
-export const translations = {
+export const translations: Record<Language, Translation> = {
   pt: {
     nav: {
-      prog: "Programação",
-      media: "Media",
-      gallery: "Galeria",
-      news: "Notícias",
-      partners: "Parcerias",
-      contacts: "Contactos",
-      contactBtn: "Contactar"
+      prog: 'Programação',
+      media: 'Multimédia',
+      gallery: 'Galeria',
+      news: 'Notícias',
+      contactBtn: 'Contactar'
     },
     hero: {
-      subtitle: "Web Rádio",
-      description: "Sintonize a voz de Amarante. Paixão musical e tecnologia digital",
-      since: "desde 2022",
-      missionTitle: "Missão Local",
-      missionDesc: "Conectando Figueiró ao mundo através de cada nota musical com o orgulho da nossa terra.",
-      qualityTitle: "Qualidade HD",
-      qualityDesc: "Emissão cristalina em 320kbps com processamento de áudio profissional de última geração.",
+      title: 'A Sua Rádio em Amarante',
+      subtitle: 'Sintonize a melhor música e notícias locais 24h por dia.',
+      description: 'A voz de Amarante para o mundo, com emissão digital de alta fidelidade e a melhor companhia',
+      cta: 'Ouvir Agora',
       stats: {
-        listeners: "Ouvintes",
-        programs: "Programas",
-        reach: "Alcance Semanal"
+        listeners: 'Ouvintes Mensais',
+        programs: 'Programas Ativos',
+        reach: 'Alcance Global'
       }
     },
-    player: {
-      tuning: "Sintonizando...",
-      live: "Em Direto",
-      digital: "WRF Digital",
-      hiFi: "High Fidelity 320kbps",
-      location: "Amarante • Portugal"
+    schedule: {
+      title: 'Programação Semanal',
+      days: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
     },
     request: {
-      title: "Peça a sua Música",
-      subtitle: "O seu som na WRF Digital",
-      whatsapp: "Pedir via WhatsApp",
-      orSite: "Ou pelo Site",
-      artist: "Artista / Cantor",
-      song: "Título da Música",
-      dedication: "Dedicatória (Para quem?)",
-      name: "O Seu Nome",
-      email: "O Seu E-Mail",
-      submit: "Submeter Pedido de Música"
-    }
-  },
-  es: {
-    nav: {
-      prog: "Programación",
-      media: "Media",
-      gallery: "Galería",
-      news: "Noticias",
-      partners: "Alianzas",
-      contacts: "Contactos",
-      contactBtn: "Contactar"
-    },
-    hero: {
-      subtitle: "Web Radio",
-      description: "Sintonice la voz de Amarante. Pasión musical y tecnología digital",
-      since: "desde 2022",
-      missionTitle: "Misión Local",
-      missionDesc: "Conectando Figueiró con el mundo a través de cada nota musical con el orgullo de nuestra tierra.",
-      qualityTitle: "Calidad HD",
-      qualityDesc: "Emisión cristalina en 320kbps con procesamiento de audio profesional de última generación.",
-      stats: {
-        listeners: "Oyentes",
-        programs: "Programas",
-        reach: "Alcance Semanal"
-      }
+      title: 'Pedir Música',
+      subtitle: 'Peça a sua música favorita',
+      whatsapp: 'Pedir via WhatsApp',
+      orSite: 'Ou pelo site',
+      artist: 'Artista',
+      song: 'Música',
+      dedication: 'Dedicatória',
+      name: 'Seu Nome',
+      email: 'Seu Email',
+      submit: 'Enviar Pedido'
     },
     player: {
-      tuning: "Sintonizando...",
-      live: "En Directo",
-      digital: "WRF Digital",
-      hiFi: "Alta Fidelidad 320kbps",
-      location: "Amarante • Portugal"
-    },
-    request: {
-      title: "Pide tu Música",
-      subtitle: "Tu sonido en WRF Digital",
-      whatsapp: "Pedir por WhatsApp",
-      orSite: "O por el Sitio",
-      artist: "Artista / Cantante",
-      song: "Título de la Canción",
-      dedication: "Dedicatoria (¿Para quién?)",
-      name: "Tu Nombre",
-      email: "Tu E-Mail",
-      submit: "Enviar Pedido de Música"
-    }
-  },
-  fr: {
-    nav: {
-      prog: "Programme",
-      media: "Média",
-      gallery: "Galerie",
-      news: "Actualités",
-      partners: "Partenariats",
-      contacts: "Contacts",
-      contactBtn: "Contacter"
-    },
-    hero: {
-      subtitle: "Web Radio",
-      description: "Écoutez la voix d'Amarante. Passion musicale et technologie numérique",
-      since: "depuis 2022",
-      missionTitle: "Mission Locale",
-      missionDesc: "Connecter Figueiró au monde à travers chaque note de musique avec la fierté de notre terre.",
-      qualityTitle: "Qualité HD",
-      qualityDesc: "Émission cristalline à 320 kbps avec un traitement audio profissional de pointe.",
-      stats: {
-        listeners: "Auditeurs",
-        programs: "Programmes",
-        reach: "Portée Hebdo"
-      }
-    },
-    player: {
-      tuning: "Syntonisation...",
-      live: "En Direct",
-      digital: "WRF Digital",
-      hiFi: "Haute Fidélité 320kbps",
-      location: "Amarante • Portugal"
-    },
-    request: {
-      title: "Demandez votre Musique",
-      subtitle: "Votre son sur WRF Digital",
-      whatsapp: "Commander via WhatsApp",
-      orSite: "Ou via le Site",
-      artist: "Artiste / Chanteur",
-      song: "Titre de la Chanson",
-      dedication: "Dédicace (Pour qui ?)",
-      name: "Votre Nom",
-      email: "Votre E-Mail",
-      submit: "Soumettre la Demande"
+      tuning: 'Sintonizando...',
+      live: 'DIRETO'
     }
   },
   en: {
     nav: {
-      prog: "Schedule",
-      media: "Media",
-      gallery: "Gallery",
-      news: "News",
-      partners: "Partnerships",
-      contacts: "Contacts",
-      contactBtn: "Contact Us"
+      prog: 'Schedule',
+      media: 'Multimedia',
+      gallery: 'Gallery',
+      news: 'News',
+      contactBtn: 'Contact'
     },
     hero: {
-      subtitle: "Web Radio",
-      description: "Tune in to the voice of Amarante. Musical passion and digital technology",
-      since: "since 2022",
-      missionTitle: "Local Mission",
-      missionDesc: "Connecting Figueiró to the world through every musical note with the pride of our land.",
-      qualityTitle: "HD Quality",
-      qualityDesc: "Crystal clear 320kbps broadcast with professional state-of-the-art audio processing.",
+      title: 'Your Radio in Amarante',
+      subtitle: 'Tune in to the best music and local news 24/7.',
+      description: 'The voice of Amarante to the world, with high-fidelity digital broadcast and the best company',
+      cta: 'Listen Now',
       stats: {
-        listeners: "Listeners",
-        programs: "Shows",
-        reach: "Weekly Reach"
+        listeners: 'Monthly Listeners',
+        programs: 'Active Programs',
+        reach: 'Global Reach'
       }
     },
-    player: {
-      tuning: "Tuning in...",
-      live: "Live",
-      digital: "WRF Digital",
-      hiFi: "High Fidelity 320kbps",
-      location: "Amarante • Portugal"
+    schedule: {
+      title: 'Weekly Schedule',
+      days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     },
     request: {
-      title: "Request a Song",
-      subtitle: "Your sound on WRF Digital",
-      whatsapp: "Request via WhatsApp",
-      orSite: "Or via Website",
-      artist: "Artist / Singer",
-      song: "Song Title",
-      dedication: "Dedication (To whom?)",
-      name: "Your Name",
-      email: "Your E-Mail",
-      submit: "Submit Request"
+      title: 'Request Song',
+      subtitle: 'Ask for your favorite song',
+      whatsapp: 'Request via WhatsApp',
+      orSite: 'Or via website',
+      artist: 'Artist',
+      song: 'Song',
+      dedication: 'Dedication',
+      name: 'Your Name',
+      email: 'Your Email',
+      submit: 'Send Request'
+    },
+    player: {
+      tuning: 'Tuning...',
+      live: 'LIVE'
+    }
+  },
+  es: {
+    nav: {
+      prog: 'Programación',
+      media: 'Multimedia',
+      gallery: 'Galería',
+      news: 'Noticias',
+      contactBtn: 'Contactar'
+    },
+    hero: {
+      title: 'Su Radio en Amarante',
+      subtitle: 'Sintonice la mejor música y noticias locales las 24 horas.',
+      description: 'La voz de Amarante para el mundo, con emisión digital de alta fidelidade e a melhor companhia',
+      cta: 'Escuchar Ahora',
+      stats: {
+        listeners: 'Oyentes Mensuales',
+        programs: 'Programas Ativos',
+        reach: 'Alcance Global'
+      }
+    },
+    schedule: {
+      title: 'Programación Semanal',
+      days: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+    },
+    request: {
+      title: 'Pedir Música',
+      subtitle: 'Pide tu canción favorita',
+      whatsapp: 'Pedir por WhatsApp',
+      orSite: 'O por el sitio',
+      artist: 'Artista',
+      song: 'Canción',
+      dedication: 'Dedicatoria',
+      name: 'Tu Nombre',
+      email: 'Tu Email',
+      submit: 'Enviar Pedido'
+    },
+    player: {
+      tuning: 'Sintonizando...',
+      live: 'DIRECTO'
+    }
+  },
+  fr: {
+    nav: {
+      prog: 'Programme',
+      media: 'Multimédia',
+      gallery: 'Galerie',
+      news: 'Nouvelles',
+      contactBtn: 'Contact'
+    },
+    hero: {
+      title: 'Votre Radio à Amarante',
+      subtitle: 'Écoutez la meilleure musique et les nouvelles locales 24h/24.',
+      description: 'La voix d\'Amarante vers le monde, avec une diffusion numérique haute fidélité et la meilleure compagnie',
+      cta: 'Écouter Maintenant',
+      stats: {
+        listeners: 'Auditeurs Mensuels',
+        programs: 'Programmes Actifs',
+        reach: 'Portée Mondiale'
+      }
+    },
+    schedule: {
+      title: 'Programme Hebdomadaire',
+      days: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+    },
+    request: {
+      title: 'Demander une chanson',
+      subtitle: 'Demandez votre chanson préférée',
+      whatsapp: 'Demander via WhatsApp',
+      orSite: 'Ou via le site',
+      artist: 'Artiste',
+      song: 'Chanson',
+      dedication: 'Dédicace',
+      name: 'Votre Nom',
+      email: 'Votre Email',
+      submit: 'Envoyer la demande'
+    },
+    player: {
+      tuning: 'Syntonisation...',
+      live: 'EN DIRECT'
     }
   }
 };

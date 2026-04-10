@@ -7,6 +7,7 @@ const Player: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [songTitle, setSongTitle] = useState(t.player.tuning);
   const [coverUrl, setCoverUrl] = useState("https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=600&auto=format&fit=crop");
+  const songTitleRef = useRef(t.player.tuning);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const streamUrl = "https://rs2.ptservidor.com/proxy/orlando?mp=/stream";
@@ -20,42 +21,78 @@ const Player: React.FC = () => {
       if (data.results && data.results.length > 0) {
         setCoverUrl(data.results[0].artworkUrl100.replace('100x100', '600x600'));
       }
-    } catch (err) {
+    } catch {
       console.warn("Erro ao carregar capa do álbum");
     }
   };
 
   useEffect(() => {
-    // Observar o elemento oculto preenchido pelo script externo centova
-    const target = document.getElementById('cc_strinfo_song_orlando');
-    if (!target) return;
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        const newSong = (mutation.target as HTMLElement).innerText;
-        if (newSong && newSong !== songTitle) {
-          setSongTitle(newSong);
-          fetchAlbumArt(newSong);
-        }
-      });
-    });
-
-    observer.observe(target, { childList: true, characterData: true, subtree: true });
+    // Procurar o elemento proxy que o script do Centova atualiza
+    const proxyId = 'cc_strinfo_song_orlando';
+    let proxy = document.getElementById(proxyId);
     
-    // Fallback interval para garantir sincronização
-    const interval = setInterval(() => {
-      const current = target.innerText;
-      if (current && current !== songTitle) {
-        setSongTitle(current);
-        fetchAlbumArt(current);
+    if (!proxy) {
+      proxy = document.createElement('span');
+      proxy.id = proxyId;
+      proxy.className = 'cc_streaminfo';
+      proxy.style.display = 'none';
+      proxy.setAttribute('data-type', 'song');
+      proxy.setAttribute('data-username', 'orlando');
+      document.body.appendChild(proxy);
+    }
+
+    const updateSong = () => {
+      if (!proxy) return;
+      const newSong = (proxy.textContent || proxy.innerText || "").trim();
+      
+      // Filtros para evitar placeholders do Centova ou estados de carregamento
+      const isPlaceholder = !newSong || 
+                           newSong === "" || 
+                           newSong.includes('cc_streaminfo') || 
+                           newSong.toLowerCase() === 'loading...' || 
+                           newSong.toLowerCase() === 'sintonizando...';
+
+      if (!isPlaceholder && newSong !== songTitleRef.current) {
+        songTitleRef.current = newSong;
+        setSongTitle(newSong);
+        fetchAlbumArt(newSong);
       }
-    }, 5000);
+    };
+
+    const fetchFromApi = async () => {
+      try {
+        const response = await fetch('https://rs2.ptservidor.com:2199/rpc/orlando/streaminfo.get');
+        const data = await response.json();
+        if (data && data.data && data.data[0] && data.data[0].song) {
+          const apiSong = data.data[0].song.trim();
+          if (apiSong && apiSong !== songTitleRef.current && !apiSong.toLowerCase().includes('sintonizando')) {
+            songTitleRef.current = apiSong;
+            setSongTitle(apiSong);
+            fetchAlbumArt(apiSong);
+          }
+        }
+      } catch {
+        // Fallback falhou, sem problemas
+      }
+    };
+
+    const observer = new MutationObserver(updateSong);
+    observer.observe(proxy, { childList: true, characterData: true, subtree: true });
+    
+    // Tenta atualizar imediatamente
+    updateSong();
+    fetchFromApi();
+
+    const interval = setInterval(() => {
+      updateSong();
+      fetchFromApi();
+    }, 15000); // A cada 15 segundos para não sobrecarregar
 
     return () => {
       observer.disconnect();
       clearInterval(interval);
     };
-  }, [songTitle]);
+  }, []); // Executa apenas uma vez ao montar
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -83,9 +120,10 @@ const Player: React.FC = () => {
             <div className="relative h-14 w-14 sm:h-28 sm:w-28 md:h-36 md:w-36 flex-shrink-0">
                <div className={`absolute inset-0 rounded-full border-[4px] sm:border-[10px] border-white/5 overflow-hidden bg-black shadow-2xl transition-transform duration-[2s] ${isPlaying ? 'animate-spin-slow' : 'scale-95 opacity-80'}`}>
                   <img 
+                    key={coverUrl}
                     src={coverUrl} 
                     alt="Cover" 
-                    className="w-full h-full object-cover" 
+                    className="w-full h-full object-cover animate-in fade-in duration-1000" 
                   />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 sm:w-8 sm:h-8 bg-slate-900 rounded-full border border-white/10 z-10 shadow-inner"></div>
                </div>
@@ -111,7 +149,7 @@ const Player: React.FC = () => {
               
               {/* Título da música ajustado para mobile (text-sm em vez de text-xl) */}
               <h4 className="text-white font-brand font-black text-sm sm:text-3xl md:text-4xl truncate tracking-tight sm:tracking-tighter leading-tight mb-0.5">
-                <span id="cc_strinfo_song_orlando" className="cc_streaminfo" data-type="song" data-username="orlando">
+                <span key={songTitle} className="animate-in fade-in slide-in-from-left-4 duration-700 block">
                   {songTitle}
                 </span>
               </h4>

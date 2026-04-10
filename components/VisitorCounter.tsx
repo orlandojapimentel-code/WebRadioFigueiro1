@@ -9,9 +9,7 @@ const VisitorCounter: React.FC = () => {
   const [hasNewEntry, setHasNewEntry] = useState(false);
   const hasHit = useRef(false);
 
-  const performSync = async (isFirstLoad: boolean) => {
-    const randomIncrement = Math.floor(Math.random() * 3);
-    
+  const performSync = React.useCallback(async (isFirstLoad: boolean) => {
     try {
       const action = isFirstLoad ? 'up' : 'get';
       const url = `https://api.counterapi.dev/v1/${SITE_ID}/counter/${action}?t=${Date.now()}`;
@@ -28,14 +26,14 @@ const VisitorCounter: React.FC = () => {
         }
         setTotalVisits(newTotal);
       }
-    } catch (err) {
+    } catch {
       if (!isFirstLoad && Math.random() > 0.7) {
         setTotalVisits(prev => prev + 1);
         setHasNewEntry(true);
         setTimeout(() => setHasNewEntry(false), 2000);
       }
     }
-  };
+  }, [totalVisits]);
 
   useEffect(() => {
     if (!hasHit.current) {
@@ -44,7 +42,7 @@ const VisitorCounter: React.FC = () => {
     }
     const interval = setInterval(() => performSync(false), 60000);
     return () => clearInterval(interval);
-  }, [totalVisits]);
+  }, [performSync]);
 
   const digits = totalVisits.toString().padStart(6, '0').split('');
 

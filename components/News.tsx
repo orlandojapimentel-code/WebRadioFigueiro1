@@ -46,7 +46,7 @@ const News: React.FC = () => {
       if (result && result.text) {
         const rawLines = result.text.split('\n');
         const lines = rawLines
-          .map((l: string) => l.replace(/^[0-9\-\*\#\.\s]+/, '').replace(/[*#`_]/g, '').trim())
+          .map((l: string) => l.replace(/^[0-9\-*#.\s]+/, '').replace(/[*#`_]/g, '').trim())
           .filter((l: string) => l.length > 12);
         
         const items: NewsItem[] = [];
@@ -70,7 +70,7 @@ const News: React.FC = () => {
       } else {
         setNews(FALLBACK_NEWS);
       }
-    } catch (error) {
+    } catch {
       setNews(FALLBACK_NEWS);
     } finally {
       setLoading(false);

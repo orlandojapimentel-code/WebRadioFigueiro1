@@ -15,7 +15,7 @@ const NewsTicker: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [dataSource, setDataSource] = useState<'LIVE' | 'LOCAL' | 'NONE'>('NONE');
   
-  const loadTickerData = async () => {
+  const loadTickerData = React.useCallback(async () => {
     if (isSyncing) return;
     setIsSyncing(true);
     
@@ -25,7 +25,7 @@ const NewsTicker: React.FC = () => {
       if (result && result.text) {
         const rawItems = result.text.split('\n');
         const items = rawItems
-          .map((line: string) => line.replace(/^[0-9\-\*\#\.\s•]+/, '').replace(/[*#`_]/g, '').trim())
+          .map((line: string) => line.replace(/^[0-9\-*#.\s•]+/, '').replace(/[*#`_]/g, '').trim())
           .filter((title: string) => title.length > 5); 
         
         if (items.length >= 1) {
@@ -33,12 +33,12 @@ const NewsTicker: React.FC = () => {
           setDataSource((result.source as 'LIVE' | 'LOCAL' | 'NONE') || 'LOCAL');
         }
       }
-    } catch (error) {
+    } catch {
       console.warn("Ticker: Mantendo dados locais devido a falha externa.");
     } finally {
       setIsSyncing(false);
     }
-  };
+  }, [isSyncing]);
 
   useEffect(() => {
     const initialTimer = setTimeout(loadTickerData, 3000);
@@ -48,7 +48,7 @@ const NewsTicker: React.FC = () => {
       clearTimeout(initialTimer);
       clearInterval(interval);
     };
-  }, []);
+  }, [loadTickerData]);
 
   const displayItems = [...newsText, ...newsText, ...newsText];
 

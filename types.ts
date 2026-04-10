@@ -1,16 +1,21 @@
-
-export interface Program {
+export interface Track {
+  id: string;
+  title: string;
+  artist: string;
   time: string;
-  name: string;
-  description: string;
+  cover?: string;
 }
 
-export interface WeeklyProgram {
-  day: string;
-  programs: Program[];
+export interface NewsItem {
+  id: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  image?: string;
 }
 
-export interface ChatMessage {
-  role: 'user' | 'model';
-  text: string;
+export interface ScheduleItem {
+  time: string;
+  program: string;
+  host: string;
 }

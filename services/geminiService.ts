@@ -2,6 +2,10 @@
 import { GoogleGenAI } from "@google/genai";
 import { Language } from "../translations";
 
+// Simple in-memory cache to avoid redundant API calls and respect rate limits
+const cache: Record<string, { data: any; timestamp: number }> = {};
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+
 // Helper to get the AI instance. Creates a new instance before each call as per guidelines.
 const getAIInstance = () => {
   const key = process.env.API_KEY;
@@ -18,6 +22,13 @@ const FALLBACK_NEWS_DATA = [
 ].join('\n');
 
 export const fetchLatestNews = async (lang: Language = 'pt') => {
+  const cacheKey = `news_${lang}`;
+  const now = Date.now();
+
+  if (cache[cacheKey] && (now - cache[cacheKey].timestamp < CACHE_DURATION)) {
+    return cache[cacheKey].data;
+  }
+
   const ai = getAIInstance();
   if (!ai) return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
 
@@ -26,7 +37,6 @@ export const fetchLatestNews = async (lang: Language = 'pt') => {
 
   try {
     try {
-      // Create fresh instance before call
       const response = await ai.models.generateContent({
         model: model,
         contents: prompt,
@@ -36,9 +46,16 @@ export const fetchLatestNews = async (lang: Language = 'pt') => {
         },
       });
       if (response && response.text) {
-        return { text: response.text, source: 'LIVE' as const, grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] };
+        const result = { text: response.text, source: 'LIVE' as const, grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] };
+        cache[cacheKey] = { data: result, timestamp: now };
+        return result;
       }
-    } catch (e) {
+    } catch (e: any) {
+      // Check for quota error
+      if (e?.status === 'RESOURCE_EXHAUSTED' || e?.message?.includes('quota')) {
+        console.warn("Gemini Quota Exceeded. Using fallback data.");
+        return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
+      }
       console.warn("News grounding failed, falling back to basic generation.", e);
     }
     
@@ -47,9 +64,15 @@ export const fetchLatestNews = async (lang: Language = 'pt') => {
       contents: prompt,
       config: { systemInstruction: "És o animador da Web Rádio Figueiró." }
     });
-    return { text: fallbackResponse.text || FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
-  } catch (error) {
-    console.error("fetchLatestNews error:", error);
+    const result = { text: fallbackResponse.text || FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
+    cache[cacheKey] = { data: result, timestamp: now };
+    return result;
+  } catch (error: any) {
+    if (error?.status === 'RESOURCE_EXHAUSTED' || error?.message?.includes('quota')) {
+      console.warn("Gemini Quota Exceeded (Global).");
+    } else {
+      console.error("fetchLatestNews error:", error);
+    }
     return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
   }
 };
@@ -68,20 +91,25 @@ export const getRadioAssistantResponse = async (userPrompt: string, lang: Langua
       },
     });
     return response.text || "Error.";
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.status === 'RESOURCE_EXHAUSTED' || error?.message?.includes('quota')) {
+      return "Desculpe, atingi o limite de respostas por agora. Tente novamente mais tarde.";
+    }
     console.error("getRadioAssistantResponse error:", error);
     return "Error.";
   }
 };
 
-/**
- * Fetches real cultural events in Amarante using Google Search grounding.
- * Returns formatted blocks expected by AgendaCultural component.
- */
 export const fetchCulturalEvents = async () => {
+  const cacheKey = 'cultural_events';
+  const now = Date.now();
+
+  if (cache[cacheKey] && (now - cache[cacheKey].timestamp < CACHE_DURATION)) {
+    return cache[cacheKey].data;
+  }
+
   const key = process.env.API_KEY;
   if (!key) {
-    // Component expects this error to trigger key selection dialog or alert
     throw new Error("MISSING_KEY");
   }
 
@@ -112,8 +140,15 @@ export const fetchCulturalEvents = async () => {
       },
     });
 
-    return { text: response.text };
-  } catch (error) {
+    const result = { text: response.text };
+    cache[cacheKey] = { data: result, timestamp: now };
+    return result;
+  } catch (error: any) {
+    if (error?.status === 'RESOURCE_EXHAUSTED' || error?.message?.includes('quota')) {
+      console.warn("Gemini Quota Exceeded for Cultural Events.");
+      // We don't have a good fallback for events yet, but we can return empty or throw a specific error
+      return { text: "" };
+    }
     console.error("Error fetching cultural events:", error);
     throw error;
   }

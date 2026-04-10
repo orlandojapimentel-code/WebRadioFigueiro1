@@ -29,7 +29,7 @@ const GeminiAssistant: React.FC = () => {
     try {
       const response = await getRadioAssistantResponse(userMsg);
       setMessages(prev => [...prev, { role: 'model', text: response }]);
-    } catch (error) {
+    } catch {
       setMessages(prev => [...prev, { role: 'model', text: 'Desculpa, tive uma pequena falha na sintonização. Podes repetir?' }]);
     } finally {
       setIsTyping(false);

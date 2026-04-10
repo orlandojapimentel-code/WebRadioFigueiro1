@@ -28,9 +28,9 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const handleSintonizar = async () => {
     // Tenta usar o seletor do AI Studio se disponível, senão avisa que precisa de chave
-    // @ts-ignore
+    // @ts-expect-error - AI Studio API
     if (window.aistudio) {
-      // @ts-ignore
+      // @ts-expect-error - AI Studio API
       await window.aistudio.openSelectKey();
       loadEvents();
     } else {
@@ -91,9 +91,9 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       });
 
       setEvents(parsed);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      if (err.message === "MISSING_KEY") {
+      if (err instanceof Error && err.message === "MISSING_KEY") {
         setErrorType('key');
       } else {
         setErrorType('empty');
@@ -104,11 +104,38 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   useEffect(() => {
+    const handleCloseOverlays = () => onClose();
+    window.addEventListener('close-overlays', handleCloseOverlays);
+    
     loadEvents();
+
+    // Adicionar estado ao histórico para permitir retroceder
+    window.history.pushState({ modal: 'agenda' }, '');
+    
+    const handlePopState = () => {
+      onClose();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('close-overlays', handleCloseOverlays);
+      window.removeEventListener('popstate', handlePopState);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleClose = () => {
+    // Se o modal estiver aberto, retroceder no histórico se o estado for do modal
+    if (window.history.state?.modal === 'agenda') {
+      window.history.back();
+    } else {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-[100] bg-[#fcfcfd] overflow-y-auto animate-in fade-in duration-700">
+    <div className="fixed inset-0 z-[300] bg-[#fcfcfd] overflow-y-auto animate-in fade-in duration-700">
       {/* Header Premium */}
       <div className="sticky top-0 z-30 bg-[#1e1b4b] text-white shadow-2xl">
         <div className="container mx-auto px-6 h-24 flex items-center justify-between">
@@ -124,7 +151,7 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
           </div>
           <button 
-            onClick={onClose}
+            onClick={handleClose}
             className="group flex items-center space-x-2 px-6 py-3 bg-white/10 hover:bg-red-500/20 rounded-xl border border-white/10 transition-all text-[10px] font-black uppercase tracking-widest"
           >
             <span>Fechar Agenda</span>

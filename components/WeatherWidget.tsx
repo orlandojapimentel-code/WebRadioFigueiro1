@@ -42,6 +42,7 @@ const WeatherWidget: React.FC = () => {
     fetchWeather();
     const interval = setInterval(fetchWeather, 1800000); // Atualiza a cada 30 min
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getWeatherIcon = (code: number, isDay: boolean) => {
