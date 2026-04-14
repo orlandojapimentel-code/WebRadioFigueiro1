@@ -7,61 +7,61 @@ const Hero: React.FC = () => {
   const { t } = useLanguage();
 
   return (
-    <div className="relative w-full flex flex-col items-center overflow-hidden rounded-[2rem] md:rounded-[3rem] bg-black border border-white/10 shadow-2xl">
+    <div className="relative w-full flex flex-col items-center overflow-hidden rounded-[2.5rem] md:rounded-[4rem] bg-[#02020a] border border-white/5 shadow-2xl min-h-[600px] justify-center">
       
-      {/* Imagem de Fundo Desfocada (Estilo Mega Web Radio) */}
+      {/* Imagem de Fundo Dinâmica */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=2000&auto=format&fit=crop" 
-          alt="Radio Studio Background" 
-          className="w-full h-full object-cover opacity-60 blur-[2px] scale-105"
+          src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2000&auto=format&fit=crop" 
+          alt="Studio" 
+          className="w-full h-full object-cover opacity-40 scale-110 animate-pulse-soft"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-black"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#02020a]/80 via-transparent to-[#02020a]"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#02020a] via-transparent to-[#02020a]"></div>
       </div>
 
-      {/* Aurora Background Overlay */}
-      <div className="absolute inset-0 pointer-events-none z-10">
-        <div className="absolute top-0 left-0 w-full h-full opacity-[0.05]" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0)`, backgroundSize: '50px 50px' }}></div>
-        <div className="absolute -top-40 -left-40 w-[400px] h-[400px] bg-red-600/10 rounded-full blur-[120px] animate-pulse-slow"></div>
-        <div className="absolute -bottom-40 -right-40 w-[400px] h-[400px] bg-blue-600/5 rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-      </div>
+      {/* Mesh Gradient Overlay */}
+      <div className="absolute inset-0 z-10 mesh-gradient opacity-60"></div>
 
-      <div className="relative z-20 w-full pt-16 md:pt-32 pb-0 flex flex-col items-center text-center px-6">
-        {/* Badge Animada */}
-        <div className="inline-flex items-center space-x-3 px-7 py-3.5 bg-red-600/10 backdrop-blur-3xl rounded-2xl border border-red-500/20 mb-10 group hover:border-red-500/40 transition-all duration-500">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+      <div className="relative z-20 w-full flex flex-col items-center text-center px-6 py-20">
+        {/* Live Badge Premium */}
+        <div className="inline-flex items-center space-x-4 px-6 py-2.5 bg-white/[0.03] backdrop-blur-2xl rounded-full border border-white/10 mb-12 animate-float">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
           </span>
-          <span className="text-[11px] font-black uppercase tracking-[0.4em] text-red-100 group-hover:text-red-400">Emissão 24H Ultra HD</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/80">Emissão Digital HD</span>
         </div>
 
-        <div className="max-w-7xl space-y-4 mb-14 bg-black/60 backdrop-blur-md p-10 rounded-3xl border border-white/10 flex flex-col items-center">
-          <div className="w-32 h-32 md:w-48 md:h-48 mb-8 relative">
-            <div className="absolute inset-0 bg-red-600/20 rounded-full blur-2xl animate-pulse"></div>
-            <img src={RADIO_LOGO} alt="Web Rádio Figueiró" className="w-full h-full object-contain relative z-10" />
+        <div className="max-w-5xl flex flex-col items-center">
+          <div className="w-40 h-40 md:w-56 md:h-56 mb-12 relative group">
+            <div className="absolute inset-0 bg-red-600/30 rounded-full blur-3xl group-hover:bg-red-600/50 transition-all duration-700 animate-pulse"></div>
+            <img src={RADIO_LOGO} alt="WRF" className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_30px_rgba(239,68,68,0.3)]" />
           </div>
-          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-brand font-black tracking-tighter leading-tight py-6 text-white">
-            FIGUEIRÓ<span className="text-red-600">.</span>
+          
+          <h1 className="text-6xl sm:text-8xl md:text-9xl font-brand font-black tracking-tighter leading-[0.9] text-white mb-8">
+            WEB RÁDIO<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-red-500 to-white bg-300% animate-shimmer">FIGUEIRÓ</span>
           </h1>
-          <p className="text-lg md:text-2xl text-slate-300 font-medium max-w-4xl leading-relaxed">
-            {t.hero.description} <span className="text-white font-black border-b-4 border-red-600 pb-1">desde 2022</span>.
+          
+          <p className="text-lg md:text-2xl text-slate-400 font-medium max-w-2xl leading-relaxed mb-12">
+            {t.hero.description} <span className="text-white font-black">desde 2022</span>.
           </p>
-        </div>
 
-        {/* Banner de Estatísticas Atualizado conforme solicitado: 12M e 5+ */}
-        <div className="w-full bg-red-600 py-12 md:py-20 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4 items-center">
-          <div className="flex flex-col items-center border-r-0 md:border-r border-white/20">
-            <span className="text-5xl md:text-8xl font-brand font-black text-white tracking-tighter mb-2">12 M</span>
-            <span className="text-[10px] md:text-[14px] font-black uppercase tracking-[0.4em] text-red-100 opacity-90">{t.hero.stats.listeners}</span>
-          </div>
-          <div className="flex flex-col items-center border-r-0 md:border-r border-white/20">
-            <span className="text-5xl md:text-8xl font-brand font-black text-white tracking-tighter mb-2">5 +</span>
-            <span className="text-[10px] md:text-[14px] font-black uppercase tracking-[0.4em] text-red-100 opacity-90">{t.hero.stats.programs}</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-5xl md:text-8xl font-brand font-black text-white tracking-tighter mb-2">83 K</span>
-            <span className="text-[10px] md:text-[14px] font-black uppercase tracking-[0.4em] text-red-100 opacity-90">{t.hero.stats.reach}</span>
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <button className="px-12 py-5 bg-red-600 hover:bg-red-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-[0_0_40px_-10px_rgba(239,68,68,0.5)] hover:scale-105 active:scale-95">
+              {t.hero.cta}
+            </button>
+            <div className="flex -space-x-3">
+              {[1,2,3].map(i => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-[#02020a] bg-slate-800 overflow-hidden">
+                  <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" />
+                </div>
+              ))}
+              <div className="px-4 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-bold flex items-center">
+                +12K Ouvintes
+              </div>
+            </div>
           </div>
         </div>
       </div>

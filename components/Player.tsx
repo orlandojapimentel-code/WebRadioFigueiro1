@@ -108,67 +108,79 @@ const Player: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] p-3 sm:p-8 md:p-12 pointer-events-none">
-      <div className="container mx-auto max-w-7xl w-full relative">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 sm:p-8 md:p-10 pointer-events-none">
+      <div className="container mx-auto max-w-6xl w-full relative">
         {/* Glow Effect */}
-        <div className={`absolute inset-x-16 bottom-0 h-4 transition-all duration-1000 blur-[80px] ${isPlaying ? 'bg-red-600 opacity-40' : 'bg-slate-700 opacity-10'}`}></div>
+        <div className={`absolute inset-x-20 bottom-0 h-8 transition-all duration-1000 blur-[100px] ${isPlaying ? 'bg-red-600/40' : 'bg-slate-700/10'}`}></div>
         
-        <div className={`relative bg-[#020617]/95 border border-white/10 backdrop-blur-3xl rounded-[2rem] sm:rounded-[4rem] p-3 sm:p-6 md:p-8 shadow-[0_40px_100px_rgba(0,0,0,0.95)] flex flex-row items-center gap-3 sm:gap-10 pointer-events-auto w-full transition-all duration-700 ${isPlaying ? 'ring-1 ring-red-500/30 -translate-y-1 sm:-translate-y-2' : ''}`}>
+        <div className={`relative premium-glass rounded-[2.5rem] sm:rounded-[3.5rem] p-4 sm:p-6 shadow-2xl flex flex-row items-center gap-4 sm:gap-10 pointer-events-auto w-full transition-all duration-700 ${isPlaying ? 'border-red-500/30 -translate-y-2' : ''}`}>
           
-          <div className="flex-grow min-w-0 flex items-center space-x-3 sm:space-x-10">
-            {/* Disco Animado - Ajustado para ser menor em mobile */}
-            <div className="relative h-14 w-14 sm:h-28 sm:w-28 md:h-36 md:w-36 flex-shrink-0">
-               <div className={`absolute inset-0 rounded-full border-[4px] sm:border-[10px] border-white/5 overflow-hidden bg-black shadow-2xl transition-transform duration-[2s] ${isPlaying ? 'animate-spin-slow' : 'scale-95 opacity-80'}`}>
+          <div className="flex-grow min-w-0 flex items-center space-x-4 sm:space-x-10">
+            {/* Disco Animado - Hi-Fi Style */}
+            <div className="relative h-16 w-16 sm:h-28 sm:w-28 md:h-32 md:w-32 flex-shrink-0">
+               <div className={`absolute inset-0 rounded-full border-[8px] border-black/80 overflow-hidden bg-black shadow-2xl transition-transform duration-[2s] ${isPlaying ? 'animate-spin-slow' : 'scale-95 opacity-80'}`}>
                   <img 
                     key={coverUrl}
                     src={coverUrl} 
                     alt="Cover" 
-                    className="w-full h-full object-cover animate-in fade-in duration-1000" 
+                    className="w-full h-full object-cover opacity-80" 
                   />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 sm:w-8 sm:h-8 bg-slate-900 rounded-full border border-white/10 z-10 shadow-inner"></div>
-               </div>
-               {/* Agulha - Escondida em mobile muito pequeno */}
-               <div className={`absolute -top-1 -right-1 h-6 w-6 sm:h-10 sm:w-10 transition-all duration-500 hidden xs:block ${isPlaying ? 'rotate-0 opacity-100' : 'rotate-12 opacity-0'}`}>
-                  <svg className="w-full h-full text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"/></svg>
+                  {/* Vinyl Texture Overlay */}
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.4)_70%)] pointer-events-none"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 sm:w-8 sm:h-8 bg-[#1a1a1a] rounded-full border border-white/10 z-10 shadow-inner flex items-center justify-center">
+                    <div className="w-1 h-1 bg-white/20 rounded-full"></div>
+                  </div>
                </div>
             </div>
 
             <div className="flex flex-col min-w-0 flex-1">
-              <div className="flex items-center space-x-2 mb-1">
-                <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border transition-all ${isPlaying ? 'border-red-500 bg-red-500/10 text-red-500' : 'border-slate-700 bg-slate-800 text-slate-500'}`}>
-                  {isPlaying ? t.player.live : 'OFF'}
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="flex space-x-1 h-4 items-end bg-black/40 px-3 py-1 rounded-full border border-white/5">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className={`w-0.5 bg-red-500 ${isPlaying ? 'animate-bounce' : 'h-1 opacity-20'}`} style={{ height: isPlaying ? `${40 + Math.random() * 60}%` : '4px', animationDuration: `${0.5 + i*0.1}s` }}></div>
+                  ))}
+                </div>
+                <span className={`text-[9px] font-black uppercase tracking-[0.3em] ${isPlaying ? 'text-red-500 animate-pulse' : 'text-slate-500'}`}>
+                  {isPlaying ? 'Live Stream 320kbps' : 'Standby'}
                 </span>
-                {isPlaying && (
-                  <div className="flex space-x-0.5 h-2 items-end">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-0.5 bg-red-500 animate-bounce" style={{ height: `${30 + Math.random() * 70}%`, animationDuration: `${0.6 + i*0.1}s` }}></div>
-                    ))}
-                  </div>
-                )}
               </div>
               
-              {/* Título da música ajustado para mobile (text-sm em vez de text-xl) */}
-              <h4 className="text-white font-brand font-black text-sm sm:text-3xl md:text-4xl truncate tracking-tight sm:tracking-tighter leading-tight mb-0.5">
-                <span key={songTitle} className="animate-in fade-in slide-in-from-left-4 duration-700 block">
+              <h4 className="text-white font-brand font-black text-lg sm:text-3xl md:text-4xl truncate tracking-tighter leading-tight mb-1 text-glow">
+                <span key={songTitle} className="animate-in fade-in slide-in-from-bottom-2 duration-700 block">
                   {songTitle}
                 </span>
               </h4>
-              <p className="text-slate-400 text-[8px] sm:text-sm font-bold uppercase tracking-[0.2em] truncate opacity-60">
-                Web Rádio Figueiró • Amarante
-              </p>
+              <div className="flex items-center space-x-3">
+                <p className="text-slate-500 text-[9px] sm:text-xs font-black uppercase tracking-[0.2em] truncate">
+                  Web Rádio Figueiró
+                </p>
+                <div className="h-1 w-1 rounded-full bg-slate-700"></div>
+                <p className="text-slate-500 text-[9px] sm:text-xs font-black uppercase tracking-[0.2em] truncate">
+                  Amarante, PT
+                </p>
+              </div>
             </div>
           </div>
           
-          <div className="flex items-center space-x-2 sm:space-x-10 flex-shrink-0">
-            {/* Botão de Play ajustado para mobile */}
+          <div className="flex items-center space-x-4 sm:space-x-8 flex-shrink-0">
+            {/* VU Meter Visualizer (Fake) */}
+            <div className="hidden lg:flex flex-col space-y-1 w-24">
+              {[1,2,3].map(i => (
+                <div key={i} className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
+                  <div className={`h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 transition-all duration-300 ${isPlaying ? '' : 'w-0'}`} style={{ width: isPlaying ? `${60 + Math.random() * 40}%` : '0%' }}></div>
+                </div>
+              ))}
+            </div>
+
             <button 
               onClick={togglePlay} 
-              className={`relative h-12 w-12 sm:h-24 sm:w-24 md:h-32 md:w-32 aspect-square flex-shrink-0 rounded-full flex items-center justify-center transition-all duration-500 ${isPlaying ? 'bg-white text-black scale-105 shadow-[0_0_60px_rgba(255,255,255,0.3)]' : 'bg-red-600 text-white shadow-[0_15px_40px_rgba(220,38,38,0.4)]'} hover:scale-110 active:scale-95 group overflow-hidden`}
+              className={`relative h-16 w-16 sm:h-24 sm:w-24 md:h-28 md:w-28 flex-shrink-0 rounded-3xl flex items-center justify-center transition-all duration-500 ${isPlaying ? 'bg-white text-black shadow-[0_0_50px_rgba(255,255,255,0.2)]' : 'bg-red-600 text-white shadow-lg'} hover:scale-105 active:scale-95 group overflow-hidden border border-white/10`}
             >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               {isPlaying ? (
-                <svg className="w-6 h-6 sm:w-14 sm:h-14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                <svg className="w-8 h-8 sm:w-12 sm:h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               ) : (
-                <svg className="w-6 h-6 sm:w-14 sm:h-14 ml-0.5 sm:ml-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg className="w-8 h-8 sm:w-12 sm:h-12 ml-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
               )}
             </button>
           </div>
