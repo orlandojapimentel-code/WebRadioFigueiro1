@@ -99,25 +99,28 @@ const AppContent: React.FC = () => {
             </div>
           </div>
 
-          {/* Pedir Música - Small Vertical Item */}
-          <div className="md:col-span-4 bento-item group bg-gradient-to-br from-blue-600/10 to-indigo-900/10">
+          {/* Destaques Semanais - Small Vertical Item */}
+          <div className="md:col-span-4 bento-item group bg-gradient-to-br from-purple-600/10 to-pink-900/10 border-purple-500/20">
             <div className="flex flex-col h-full relative z-10">
-              <div className="p-5 bg-blue-600/10 border border-blue-500/20 rounded-3xl w-fit mb-8 group-hover:scale-110 transition-transform duration-500">
-                <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+              <div className="p-5 bg-purple-600/10 border border-purple-500/20 rounded-3xl w-fit mb-8 group-hover:scale-110 transition-transform duration-500">
+                <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
               </div>
-              <h3 className="text-3xl font-black tracking-tighter text-white mb-4">Pedir Música</h3>
-              <p className="text-slate-400 text-sm leading-relaxed mb-8 font-medium">
-                A sua música favorita à distância de um clique. Peça agora via WhatsApp ou pelo nosso formulário direto.
-              </p>
-              <div className="mt-auto space-y-3">
-                <button className="w-full py-4 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center space-x-2 shadow-lg">
-                  <span>WhatsApp</span>
-                </button>
-                <a href="#request-section" className="w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center border border-white/10">
-                  Formulário
-                </a>
+              <h3 className="text-3xl font-black tracking-tighter text-white mb-6">Destaques</h3>
+              
+              <div className="space-y-6">
+                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all">
+                  <h4 className="text-purple-400 font-black text-xs uppercase tracking-widest mb-1">Night Grooves</h4>
+                  <p className="text-white font-bold text-sm">Domingos, 22:00 - 00:00</p>
+                  <p className="text-slate-500 text-[10px] mt-1">1ª Hora: DJ Durval | 2ª Hora: DJ Convidado</p>
+                </div>
+
+                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all">
+                  <h4 className="text-pink-400 font-black text-xs uppercase tracking-widest mb-1">Prazeres Interrompidos</h4>
+                  <p className="text-white font-bold text-sm">Quartas e Sextas, 13:00</p>
+                  <p className="text-slate-500 text-[10px] mt-1">Repetição às 20:00</p>
+                </div>
               </div>
             </div>
           </div>

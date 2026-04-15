@@ -95,6 +95,39 @@ const Schedule: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Destaques Semanais Section */}
+      <div className="mt-16 space-y-8">
+        <div className="flex items-center space-x-4">
+          <div className="h-px flex-grow bg-white/10"></div>
+          <h3 className="text-xl font-black text-white uppercase tracking-[0.3em] whitespace-nowrap">Destaques Semanais</h3>
+          <div className="h-px flex-grow bg-white/10"></div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="premium-glass p-6 rounded-3xl border-purple-500/20 hover:bg-white/5 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest bg-purple-500/10 px-3 py-1 rounded-full">Domingos</span>
+              <span className="text-xs font-mono text-slate-400">22:00 - 00:00</span>
+            </div>
+            <h4 className="text-2xl font-black text-white tracking-tight mb-2">Night Grooves</h4>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              1ª Hora: <span className="text-white font-bold">DJ Durval</span> | 2ª Hora: <span className="text-white font-bold">DJ Convidado</span>
+            </p>
+          </div>
+
+          <div className="premium-glass p-6 rounded-3xl border-pink-500/20 hover:bg-white/5 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-black text-pink-500 uppercase tracking-widest bg-pink-500/10 px-3 py-1 rounded-full">Quartas & Sextas</span>
+              <span className="text-xs font-mono text-slate-400">13:00 & 20:00</span>
+            </div>
+            <h4 className="text-2xl font-black text-white tracking-tight mb-2">Prazeres Interrompidos</h4>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Emissão às 13:00 com repetição especial às <span className="text-white font-bold">20:00</span>.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
