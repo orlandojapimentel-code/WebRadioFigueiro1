@@ -8,7 +8,7 @@ const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
 // Helper to get the AI instance. Creates a new instance before each call as per guidelines.
 const getAIInstance = () => {
-  const key = process.env.API_KEY;
+  const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
   return new GoogleGenAI({ apiKey: key });
 };
@@ -100,6 +100,44 @@ export const getRadioAssistantResponse = async (userPrompt: string, lang: Langua
   }
 };
 
+const FALLBACK_CULTURAL_DATA = `
+EVENTO_START
+TITULO: Música no Rio
+DATA: Todos os Sábados de Julho
+LOCAL: Parque Ribeirinho, Amarante
+TIPO: CONCERTO
+IMAGEM: https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800
+LINK: https://www.cm-amarante.pt
+EVENTO_END
+
+EVENTO_START
+TITULO: Exposição Amadeo de Souza-Cardoso
+DATA: Permanente
+LOCAL: Museu Municipal, Amarante
+TIPO: EXPOSIÇÃO
+IMAGEM: https://images.unsplash.com/photo-1531265726475-52ad60219627?q=80&w=800
+LINK: https://www.cm-amarante.pt
+EVENTO_END
+
+EVENTO_START
+TITULO: Cinema ao Ar Livre
+DATA: Sextas-feiras, 21:30
+LOCAL: Claustros do Convento, Amarante
+TIPO: GERAL
+IMAGEM: https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800
+LINK: https://www.cm-amarante.pt
+EVENTO_END
+
+EVENTO_START
+TITULO: Feira de Artesanato
+DATA: Último Domingo do Mês
+LOCAL: Largo de S. Gonçalo, Amarante
+TIPO: FESTA
+IMAGEM: https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800
+LINK: https://www.cm-amarante.pt
+EVENTO_END
+`;
+
 export const fetchCulturalEvents = async () => {
   const cacheKey = 'cultural_events';
   const now = Date.now();
@@ -108,9 +146,9 @@ export const fetchCulturalEvents = async () => {
     return cache[cacheKey].data;
   }
 
-  const key = process.env.API_KEY;
+  const key = process.env.GEMINI_API_KEY;
   if (!key) {
-    throw new Error("MISSING_KEY");
+    return { text: FALLBACK_CULTURAL_DATA };
   }
 
   const ai = new GoogleGenAI({ apiKey: key });
@@ -140,16 +178,15 @@ export const fetchCulturalEvents = async () => {
       },
     });
 
-    const result = { text: response.text };
+    const result = { text: response.text || FALLBACK_CULTURAL_DATA };
     cache[cacheKey] = { data: result, timestamp: now };
     return result;
   } catch (error: any) {
     if (error?.status === 'RESOURCE_EXHAUSTED' || error?.message?.includes('quota')) {
       console.warn("Gemini Quota Exceeded for Cultural Events.");
-      // We don't have a good fallback for events yet, but we can return empty or throw a specific error
-      return { text: "" };
+      return { text: FALLBACK_CULTURAL_DATA };
     }
     console.error("Error fetching cultural events:", error);
-    throw error;
+    return { text: FALLBACK_CULTURAL_DATA };
   }
 };

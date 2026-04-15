@@ -93,11 +93,7 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       setEvents(parsed);
     } catch (err) {
       console.error(err);
-      if (err instanceof Error && err.message === "MISSING_KEY") {
-        setErrorType('key');
-      } else {
-        setErrorType('empty');
-      }
+      setErrorType('empty');
     } finally {
       setLoading(false);
     }
@@ -176,9 +172,7 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
             <h3 className="text-2xl font-black text-slate-900 mb-4">Sinal Cultural Indisponível</h3>
             <p className="text-slate-500 text-sm leading-relaxed mb-10 px-8">
-              {errorType === 'key' 
-                ? "A sintonização da IA requer uma autorização. No site publicado, certifique-se que a chave de API está ativa." 
-                : "Não conseguimos captar eventos para as próximas datas. Tente sintonizar novamente ou regresse mais tarde."}
+              Não conseguimos captar eventos em tempo real neste momento. Tente recarregar ou regresse mais tarde para ver as novidades de Amarante.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button 
