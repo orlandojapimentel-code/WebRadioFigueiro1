@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const VisitorCounter: React.FC = () => {
-  const VALOR_BASE = 10180; 
-  const SITE_ID = 'webradiofigueiro_v5_final';
+  const VALOR_BASE = 13000; 
+  const SITE_ID = 'webradiofigueiro_v6_restart';
   
   const [totalVisits, setTotalVisits] = useState(VALOR_BASE);
   const [hasNewEntry, setHasNewEntry] = useState(false);
