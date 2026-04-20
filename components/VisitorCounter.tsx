@@ -3,13 +3,18 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const VisitorCounter: React.FC = () => {
   const VALOR_BASE = 13000; 
-  const SITE_ID = 'wrf_global_traffic_v1';
+  const SITE_NAMESPACE = 'wrf_radio_figueiro_prod_2026';
+  const SITE_KEY = 'visits_main_v2';
   
-  const [totalVisits, setTotalVisits] = useState(VALOR_BASE);
+  const [totalVisits, setTotalVisits] = useState(() => {
+    // Tenta recuperar o último valor guardado no browser para evitar que o utilizador veja o número "saltar para trás"
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('wrf_vcount_persist') : null;
+    return saved ? parseInt(saved, 10) : VALOR_BASE;
+  });
+  
   const [hasNewEntry, setHasNewEntry] = useState(false);
   const hasHit = useRef(false);
 
-  // Função para incrementar visualmente para dar um ar mais "vivo"
   const triggerEntryEffect = () => {
     setHasNewEntry(true);
     setTimeout(() => setHasNewEntry(false), 2000);
@@ -17,40 +22,57 @@ const VisitorCounter: React.FC = () => {
 
   const performSync = React.useCallback(async (action: 'up' | 'get') => {
     try {
-      const url = `https://api.counterapi.dev/v1/${SITE_ID}/counter/${action}?t=${Date.now()}`;
+      const url = `https://api.counterapi.dev/v1/${SITE_NAMESPACE}/${SITE_KEY}/${action}?t=${Date.now()}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error();
       const data = await response.json();
       
       if (data && typeof data.count === 'number') {
         const newTotal = VALOR_BASE + data.count;
-        if (newTotal > totalVisits) {
-          triggerEntryEffect();
-        }
-        setTotalVisits(newTotal);
+        
+        setTotalVisits(current => {
+          // Só atualiza se o novo total for maior que o atual (evita regressão)
+          if (newTotal > current) {
+            triggerEntryEffect();
+            localStorage.setItem('wrf_vcount_persist', newTotal.toString());
+            return newTotal;
+          }
+          return current;
+        });
       }
     } catch {
-      // Se a API falhar, simulamos crescimento orgânico
-      if (action === 'up' || Math.random() > 0.5) {
+      // Fallback: se a API falhar, simulamos crescimento orgânico
+      if (action === 'up' || Math.random() > 0.8) {
         setTotalVisits(prev => {
           const next = prev + 1;
           triggerEntryEffect();
+          localStorage.setItem('wrf_vcount_persist', next.toString());
           return next;
         });
       }
     }
-  }, [totalVisits]);
+  }, []);
 
   useEffect(() => {
     if (!hasHit.current) {
-      performSync('up'); // Incrementa ao carregar a página
+      // Só faz o "UP" (incremento real) uma vez por sessão de navegação
+      const sessionKey = 'wrf_session_hit';
+      const alreadyHit = sessionStorage.getItem(sessionKey);
+      
+      if (!alreadyHit) {
+        performSync('up');
+        sessionStorage.setItem(sessionKey, 'true');
+      } else {
+        performSync('get');
+      }
+      
       hasHit.current = true;
     }
     
-    // Sincroniza/simula a cada 30 segundos para ser mais dinâmico
+    // Atualiza/Sincroniza a cada 45 segundos
     const interval = setInterval(() => {
       performSync('get');
-    }, 30000);
+    }, 45000);
 
     return () => clearInterval(interval);
   }, [performSync]);
