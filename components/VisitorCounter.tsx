@@ -3,17 +3,21 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const VisitorCounter: React.FC = () => {
   const VALOR_BASE = 13000; 
-  const SITE_ID = 'webradiofigueiro_v6_restart';
+  const SITE_ID = 'wrf_global_traffic_v1';
   
   const [totalVisits, setTotalVisits] = useState(VALOR_BASE);
   const [hasNewEntry, setHasNewEntry] = useState(false);
   const hasHit = useRef(false);
 
-  const performSync = React.useCallback(async (isFirstLoad: boolean) => {
+  // Função para incrementar visualmente para dar um ar mais "vivo"
+  const triggerEntryEffect = () => {
+    setHasNewEntry(true);
+    setTimeout(() => setHasNewEntry(false), 2000);
+  };
+
+  const performSync = React.useCallback(async (action: 'up' | 'get') => {
     try {
-      const action = isFirstLoad ? 'up' : 'get';
       const url = `https://api.counterapi.dev/v1/${SITE_ID}/counter/${action}?t=${Date.now()}`;
-      
       const response = await fetch(url);
       if (!response.ok) throw new Error();
       const data = await response.json();
@@ -21,26 +25,33 @@ const VisitorCounter: React.FC = () => {
       if (data && typeof data.count === 'number') {
         const newTotal = VALOR_BASE + data.count;
         if (newTotal > totalVisits) {
-          setHasNewEntry(true);
-          setTimeout(() => setHasNewEntry(false), 2000);
+          triggerEntryEffect();
         }
         setTotalVisits(newTotal);
       }
     } catch {
-      if (!isFirstLoad && Math.random() > 0.7) {
-        setTotalVisits(prev => prev + 1);
-        setHasNewEntry(true);
-        setTimeout(() => setHasNewEntry(false), 2000);
+      // Se a API falhar, simulamos crescimento orgânico
+      if (action === 'up' || Math.random() > 0.5) {
+        setTotalVisits(prev => {
+          const next = prev + 1;
+          triggerEntryEffect();
+          return next;
+        });
       }
     }
   }, [totalVisits]);
 
   useEffect(() => {
     if (!hasHit.current) {
-      performSync(true);
+      performSync('up'); // Incrementa ao carregar a página
       hasHit.current = true;
     }
-    const interval = setInterval(() => performSync(false), 60000);
+    
+    // Sincroniza/simula a cada 30 segundos para ser mais dinâmico
+    const interval = setInterval(() => {
+      performSync('get');
+    }, 30000);
+
     return () => clearInterval(interval);
   }, [performSync]);
 
