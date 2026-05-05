@@ -3,13 +3,14 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const VisitorCounter: React.FC = () => {
   const VALOR_BASE = 13000; 
-  const SITE_NAMESPACE = 'wrf_radio_figueiro_prod_2026';
-  const SITE_KEY = 'visits_main_v2';
+  // Alterado para um namespace e chave únicos para garantir isolamento total
+  const SITE_NAMESPACE = 'wer_radio_figueiro_global_2026';
+  const SITE_KEY = 'main_counter_v3_secure';
   
   const [totalVisits, setTotalVisits] = useState(() => {
-    // Tenta recuperar o último valor guardado no browser para evitar que o utilizador veja o número "saltar para trás"
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('wrf_vcount_persist') : null;
-    return saved ? parseInt(saved, 10) : VALOR_BASE;
+    if (typeof window === 'undefined') return VALOR_BASE;
+    const saved = localStorage.getItem('wrf_vcount_v3_persist');
+    return saved ? Math.max(parseInt(saved, 10), VALOR_BASE) : VALOR_BASE;
   });
   
   const [hasNewEntry, setHasNewEntry] = useState(false);
@@ -22,7 +23,8 @@ const VisitorCounter: React.FC = () => {
 
   const performSync = React.useCallback(async (action: 'up' | 'get') => {
     try {
-      const url = `https://api.counterapi.dev/v1/${SITE_NAMESPACE}/${SITE_KEY}/${action}?t=${Date.now()}`;
+      // Adicionamos um timestamp único para forçar a API a ignorar a sua própria cache
+      const url = `https://api.counterapi.dev/v1/${SITE_NAMESPACE}/${SITE_KEY}/${action}?nocache=${Date.now()}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error();
       const data = await response.json();
@@ -31,22 +33,23 @@ const VisitorCounter: React.FC = () => {
         const newTotal = VALOR_BASE + data.count;
         
         setTotalVisits(current => {
-          // Só atualiza se o novo total for maior que o atual (evita regressão)
+          // LÓGICA CRÍTICA: Nunca permitir que o número regresse atrás
+          // Mesmo que a API devolva 1 ou um valor baixo, mantemos o maior valor visto
           if (newTotal > current) {
             triggerEntryEffect();
-            localStorage.setItem('wrf_vcount_persist', newTotal.toString());
+            localStorage.setItem('wrf_vcount_v3_persist', newTotal.toString());
             return newTotal;
           }
           return current;
         });
       }
     } catch {
-      // Fallback: se a API falhar, simulamos crescimento orgânico
-      if (action === 'up' || Math.random() > 0.8) {
+      // Fallback: Simulamos progressão lenta se a rede falhar
+      if (Math.random() > 0.9) {
         setTotalVisits(prev => {
           const next = prev + 1;
           triggerEntryEffect();
-          localStorage.setItem('wrf_vcount_persist', next.toString());
+          localStorage.setItem('wrf_vcount_v3_persist', next.toString());
           return next;
         });
       }
@@ -55,8 +58,7 @@ const VisitorCounter: React.FC = () => {
 
   useEffect(() => {
     if (!hasHit.current) {
-      // Só faz o "UP" (incremento real) uma vez por sessão de navegação
-      const sessionKey = 'wrf_session_hit';
+      const sessionKey = 'wrf_hit_v3';
       const alreadyHit = sessionStorage.getItem(sessionKey);
       
       if (!alreadyHit) {
@@ -69,11 +71,8 @@ const VisitorCounter: React.FC = () => {
       hasHit.current = true;
     }
     
-    // Atualiza/Sincroniza a cada 45 segundos
-    const interval = setInterval(() => {
-      performSync('get');
-    }, 45000);
-
+    // Sincronização agressiva (cada 30 seg) para manter PC e Mobile alinhados
+    const interval = setInterval(() => performSync('get'), 30000);
     return () => clearInterval(interval);
   }, [performSync]);
 
