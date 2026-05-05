@@ -14,8 +14,8 @@ const Partnerships: React.FC = () => {
   const partners: Partner[] = [
     { 
       name: "F.M. Rent-a-Car & Bicycle House", 
-      logo: "F.M.",
-      isTextLogo: true,
+      logo: "https://www.dropbox.com/scl/fi/8la6gvr4dxctbqidu43i7/IMG-20240205-WA0036.jpg?rlkey=91k4rg9fqhkchiiiyr1w7v07g&st=mhw8hm2l&raw=1",
+      isTextLogo: false,
       url: "https://fm-bicycle.pt/",
       description: "Soluções de mobilidade em Felgueiras: Táxi, transporte escolar e aluguer de veículos. Conheça também o nosso alojamento local.",
       highlight: true
