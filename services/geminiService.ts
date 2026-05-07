@@ -190,3 +190,47 @@ export const fetchCulturalEvents = async () => {
     return { text: FALLBACK_CULTURAL_DATA };
   }
 };
+
+export const fetchDetailedNews = async (lang: Language = 'pt') => {
+  const cacheKey = `detailed_news_${lang}`;
+  const now = Date.now();
+
+  if (cache[cacheKey] && (now - cache[cacheKey].timestamp < CACHE_DURATION)) {
+    return cache[cacheKey].data;
+  }
+
+  const ai = getAIInstance();
+  if (!ai) return { text: "", source: 'LOCAL' };
+
+  const model = 'gemini-3-flash-preview';
+  const prompt = `Procura as 4 notícias mais recentes e relevantes de Amarante, Portugal. 
+  Para cada notícia, gera um bloco estruturado como o seguinte:
+
+  NOTICIA_START
+  TITULO: [Título Curto e Impactante]
+  DATA: [Dia e Mês atualizado, ex: 15 de Maio, 2026]
+  RESUMO: [Um parágrafo curto de introdução]
+  CONTEUDO: [Texto detalhado da notícia com pelo menos 3 parágrafos]
+  IMAGEM: [URL de uma imagem real relacionada se encontrada, senão deixa vazio]
+  NOTICIA_END
+
+  Escreve obrigatoriamente em ${lang === 'pt' ? 'Português' : 'Inglês'}.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }],
+        systemInstruction: "És o jornalista principal da Web Rádio Figueiró. A tua missão é trazer as novidades mais frescas de Amarante com rigor e profissionalismo."
+      },
+    });
+
+    const result = { text: response.text || "", source: 'LIVE' };
+    cache[cacheKey] = { data: result, timestamp: now };
+    return result;
+  } catch (error: any) {
+    console.error("fetchDetailedNews error:", error);
+    return { text: "", source: 'LOCAL' };
+  }
+};
