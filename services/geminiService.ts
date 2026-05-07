@@ -1,9 +1,19 @@
 
+import { GoogleGenAI } from "@google/genai";
 import { Language } from "../translations";
 
 // Simple in-memory cache to avoid redundant API calls and respect rate limits
 const cache: Record<string, { data: any; timestamp: number }> = {};
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+
+const getAIInstance = () => {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key || key === 'undefined' || key === 'null' || key === '') {
+    console.warn("Gemini API Key is not configured correctly.");
+    return null;
+  }
+  return new GoogleGenAI({ apiKey: key });
+};
 
 const FALLBACK_NEWS_DATA = [
   "Web Rádio Figueiró: Sintonize a melhor seleção musical de Amarante 24h por dia.",
@@ -21,23 +31,29 @@ export const fetchLatestNews = async (lang: Language = 'pt') => {
     return cache[cacheKey].data;
   }
 
+  const ai = getAIInstance();
+  if (!ai) return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const };
+
   try {
-    const response = await fetch(`/api/news-ticker?lang=${lang}`);
-    if (!response.ok) throw new Error();
-    const data = await response.json();
-    
-    const result = { text: data.text || FALLBACK_NEWS_DATA, source: data.source || 'LOCAL', grounding: [] };
+    const model = 'gemini-3-flash-preview';
+    const prompt = `Lista 5 notícias ou curiosidades curtas sobre Amarante, Portugal. Escreve obrigatoriamente em ${lang === 'pt' ? 'Português' : 'Inglês'}. Apenas os títulos, um por linha.`;
+
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }],
+        systemInstruction: "És o serviço de notícias da Web Rádio Figueiró. Sê curto, direto e profissional."
+      },
+    });
+
+    const result = { text: response.text || FALLBACK_NEWS_DATA, source: 'LIVE' as const };
     cache[cacheKey] = { data: result, timestamp: now };
     return result;
-  } catch (error) {
+  } catch (error: any) {
     console.error("fetchLatestNews client error:", error);
-    return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
+    return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const };
   }
-};
-
-export const getRadioAssistantResponse = async (userPrompt: string, lang: Language = 'pt'): Promise<string> => {
-  // Podes implementar esta rota no servidor se necessário, por agora mantemos fallback
-  return "Assistente temporariamente offline para manutenção.";
 };
 
 const FALLBACK_CULTURAL_DATA = `
@@ -58,24 +74,6 @@ TIPO: EXPOSIÇÃO
 IMAGEM: https://images.unsplash.com/photo-1531265726475-52ad60219627?q=80&w=800
 LINK: https://www.cm-amarante.pt
 EVENTO_END
-
-EVENTO_START
-TITULO: Cinema ao Ar Livre
-DATA: Sextas-feiras, 21:30
-LOCAL: Claustros do Convento, Amarante
-TIPO: GERAL
-IMAGEM: https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800
-LINK: https://www.cm-amarante.pt
-EVENTO_END
-
-EVENTO_START
-TITULO: Feira de Artesanato
-DATA: Último Domingo do Mês
-LOCAL: Largo de S. Gonçalo, Amarante
-TIPO: FESTA
-IMAGEM: https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800
-LINK: https://www.cm-amarante.pt
-EVENTO_END
 `;
 
 export const fetchCulturalEvents = async () => {
@@ -86,12 +84,35 @@ export const fetchCulturalEvents = async () => {
     return cache[cacheKey].data;
   }
 
+  const ai = getAIInstance();
+  if (!ai) return { text: FALLBACK_CULTURAL_DATA };
+
   try {
-    const response = await fetch('/api/events');
-    if (!response.ok) throw new Error();
-    const data = await response.json();
-    
-    const result = { text: data.text || FALLBACK_CULTURAL_DATA };
+    const model = 'gemini-3-flash-preview';
+    const prompt = `Procura eventos culturais reais, concertos, exposições, teatro ou festas populares em Amarante, Portugal para as próximas semanas e meses. 
+    Retorna uma lista de eventos formatada rigorosamente usando os blocos abaixo para cada evento:
+
+    EVENTO_START
+    TITULO: [Nome do Evento]
+    DATA: [Dia e Mês, ex: 15 de Julho]
+    LOCAL: [Local exato em Amarante]
+    TIPO: [Escolhe uma categoria: CONCERTO, EXPOSIÇÃO, TEATRO, FESTA ou GERAL]
+    IMAGEM: [URL de uma imagem do cartaz ou local se encontrada]
+    LINK: [URL para mais informações]
+    EVENTO_END
+
+    Inclui pelo menos 4 eventos se possível.`;
+
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }],
+        systemInstruction: "És o curador da agenda cultural da Web Rádio Figueiró. A tua missão é encontrar eventos reais e atuais em Amarante, Portugal."
+      },
+    });
+
+    const result = { text: response.text || FALLBACK_CULTURAL_DATA };
     cache[cacheKey] = { data: result, timestamp: now };
     return result;
   } catch (error) {
@@ -108,16 +129,58 @@ export const fetchDetailedNews = async (lang: Language = 'pt') => {
     return cache[cacheKey].data;
   }
 
+  const ai = getAIInstance();
+  if (!ai) return { text: "", source: 'LOCAL' };
+
   try {
-    const response = await fetch(`/api/news?lang=${lang}`);
-    if (!response.ok) throw new Error();
-    const data = await response.json();
-    
-    const result = { text: data.text || "", source: data.source || 'LOCAL' };
+    const model = 'gemini-3-flash-preview';
+    const prompt = `Procura as 4 notícias mais recentes e relevantes de Amarante, Portugal. 
+    Para cada notícia, gera um bloco estruturado como o seguinte:
+
+    NOTICIA_START
+    TITULO: [Título Curto e Impactante]
+    DATA: [Dia e Mês atualizado, ex: 15 de Maio, 2026]
+    RESUMO: [Um parágrafo curto de introdução]
+    CONTEUDO: [Texto detalhado da notícia com pelo menos 3 parágrafos]
+    IMAGEM: [URL de uma imagem real relacionada se encontrada, senão deixa vazio]
+    NOTICIA_END
+
+    Escreve obrigatoriamente em ${lang === 'pt' ? 'Português' : 'Inglês'}.`;
+
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }],
+        systemInstruction: "És o jornalista principal da Web Rádio Figueiró. A tua missão é trazer as novidades mais frescas de Amarante com rigor e profissionalismo."
+      },
+    });
+
+    const result = { text: response.text || "", source: 'LIVE' };
     cache[cacheKey] = { data: result, timestamp: now };
     return result;
   } catch (error) {
     console.error("fetchDetailedNews client error:", error);
     return { text: "", source: 'LOCAL' };
+  }
+};
+
+export const getRadioAssistantResponse = async (userPrompt: string, lang: Language = 'pt'): Promise<string> => {
+  const ai = getAIInstance();
+  if (!ai) return "Offline.";
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: userPrompt,
+      config: {
+        systemInstruction: `És a assistente virtual da Web Rádio Figueiró. Responde sempre no idioma: ${lang}. Sê simpática e prestativa.`,
+        tools: [{ googleSearch: {} }]
+      },
+    });
+    return response.text || "Error.";
+  } catch (error) {
+    console.error("getRadioAssistantResponse error:", error);
+    return "Error.";
   }
 };
