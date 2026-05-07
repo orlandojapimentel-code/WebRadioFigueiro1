@@ -1,17 +1,9 @@
 
-import { GoogleGenAI } from "@google/genai";
 import { Language } from "../translations";
 
 // Simple in-memory cache to avoid redundant API calls and respect rate limits
 const cache: Record<string, { data: any; timestamp: number }> = {};
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
-
-// Helper to get the AI instance. Creates a new instance before each call as per guidelines.
-const getAIInstance = () => {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) return null;
-  return new GoogleGenAI({ apiKey: key });
-};
 
 const FALLBACK_NEWS_DATA = [
   "Web Rádio Figueiró: Sintonize a melhor seleção musical de Amarante 24h por dia.",
@@ -29,75 +21,23 @@ export const fetchLatestNews = async (lang: Language = 'pt') => {
     return cache[cacheKey].data;
   }
 
-  const ai = getAIInstance();
-  if (!ai) return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
-
-  const model = 'gemini-3-flash-preview';
-  const prompt = `Lista 5 notícias ou curiosidades curtas sobre Amarante, Portugal. Escreve obrigatoriamente em ${lang === 'pt' ? 'Português' : lang === 'en' ? 'Inglês' : lang === 'es' ? 'Espanhol' : 'Francês'}. Apenas os títulos, um por linha.`;
-
   try {
-    try {
-      const response = await ai.models.generateContent({
-        model: model,
-        contents: prompt,
-        config: {
-          tools: [{ googleSearch: {} }],
-          systemInstruction: "És o serviço de notícias da Web Rádio Figueiró. Sê curto, direto e profissional."
-        },
-      });
-      if (response && response.text) {
-        const result = { text: response.text, source: 'LIVE' as const, grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] };
-        cache[cacheKey] = { data: result, timestamp: now };
-        return result;
-      }
-    } catch (e: any) {
-      // Check for quota error
-      if (e?.status === 'RESOURCE_EXHAUSTED' || e?.message?.includes('quota')) {
-        console.warn("Gemini Quota Exceeded. Using fallback data.");
-        return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
-      }
-      console.warn("News grounding failed, falling back to basic generation.", e);
-    }
+    const response = await fetch(`/api/news-ticker?lang=${lang}`);
+    if (!response.ok) throw new Error();
+    const data = await response.json();
     
-    const fallbackResponse = await ai.models.generateContent({
-      model: model,
-      contents: prompt,
-      config: { systemInstruction: "És o animador da Web Rádio Figueiró." }
-    });
-    const result = { text: fallbackResponse.text || FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
+    const result = { text: data.text || FALLBACK_NEWS_DATA, source: data.source || 'LOCAL', grounding: [] };
     cache[cacheKey] = { data: result, timestamp: now };
     return result;
-  } catch (error: any) {
-    if (error?.status === 'RESOURCE_EXHAUSTED' || error?.message?.includes('quota')) {
-      console.warn("Gemini Quota Exceeded (Global).");
-    } else {
-      console.error("fetchLatestNews error:", error);
-    }
+  } catch (error) {
+    console.error("fetchLatestNews client error:", error);
     return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const, grounding: [] };
   }
 };
 
 export const getRadioAssistantResponse = async (userPrompt: string, lang: Language = 'pt'): Promise<string> => {
-  const ai = getAIInstance();
-  if (!ai) return "Offline.";
-
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: userPrompt,
-      config: {
-        systemInstruction: `És a assistente virtual da Web Rádio Figueiró. Responde sempre no idioma: ${lang}. Sê simpática e prestativa.`,
-        tools: [{ googleSearch: {} }]
-      },
-    });
-    return response.text || "Error.";
-  } catch (error: any) {
-    if (error?.status === 'RESOURCE_EXHAUSTED' || error?.message?.includes('quota')) {
-      return "Desculpe, atingi o limite de respostas por agora. Tente novamente mais tarde.";
-    }
-    console.error("getRadioAssistantResponse error:", error);
-    return "Error.";
-  }
+  // Podes implementar esta rota no servidor se necessário, por agora mantemos fallback
+  return "Assistente temporariamente offline para manutenção.";
 };
 
 const FALLBACK_CULTURAL_DATA = `
@@ -146,47 +86,16 @@ export const fetchCulturalEvents = async () => {
     return cache[cacheKey].data;
   }
 
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) {
-    return { text: FALLBACK_CULTURAL_DATA };
-  }
-
-  const ai = new GoogleGenAI({ apiKey: key });
-  const model = 'gemini-3-flash-preview';
-
-  const prompt = `Procura eventos culturais reais, concertos, exposições, teatro ou festas populares em Amarante, Portugal para as próximas semanas e meses. 
-  Retorna uma lista de eventos formatada rigorosamente usando os blocos abaixo para cada evento:
-
-  EVENTO_START
-  TITULO: [Nome do Evento]
-  DATA: [Dia e Mês, ex: 15 de Julho]
-  LOCAL: [Local exato em Amarante]
-  TIPO: [Escolhe uma categoria: CONCERTO, EXPOSIÇÃO, TEATRO, FESTA ou GERAL]
-  IMAGEM: [URL de uma imagem do cartaz ou local se encontrada]
-  LINK: [URL para mais informações]
-  EVENTO_END
-
-  Inclui pelo menos 4 eventos se possível.`;
-
   try {
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: prompt,
-      config: {
-        tools: [{ googleSearch: {} }],
-        systemInstruction: "És o curador da agenda cultural da Web Rádio Figueiró. A tua missão é encontrar eventos reais e atuais em Amarante, Portugal."
-      },
-    });
-
-    const result = { text: response.text || FALLBACK_CULTURAL_DATA };
+    const response = await fetch('/api/events');
+    if (!response.ok) throw new Error();
+    const data = await response.json();
+    
+    const result = { text: data.text || FALLBACK_CULTURAL_DATA };
     cache[cacheKey] = { data: result, timestamp: now };
     return result;
-  } catch (error: any) {
-    if (error?.status === 'RESOURCE_EXHAUSTED' || error?.message?.includes('quota')) {
-      console.warn("Gemini Quota Exceeded for Cultural Events.");
-      return { text: FALLBACK_CULTURAL_DATA };
-    }
-    console.error("Error fetching cultural events:", error);
+  } catch (error) {
+    console.error("Error fetching cultural events client:", error);
     return { text: FALLBACK_CULTURAL_DATA };
   }
 };
@@ -199,38 +108,16 @@ export const fetchDetailedNews = async (lang: Language = 'pt') => {
     return cache[cacheKey].data;
   }
 
-  const ai = getAIInstance();
-  if (!ai) return { text: "", source: 'LOCAL' };
-
-  const model = 'gemini-3-flash-preview';
-  const prompt = `Procura as 4 notícias mais recentes e relevantes de Amarante, Portugal. 
-  Para cada notícia, gera um bloco estruturado como o seguinte:
-
-  NOTICIA_START
-  TITULO: [Título Curto e Impactante]
-  DATA: [Dia e Mês atualizado, ex: 15 de Maio, 2026]
-  RESUMO: [Um parágrafo curto de introdução]
-  CONTEUDO: [Texto detalhado da notícia com pelo menos 3 parágrafos]
-  IMAGEM: [URL de uma imagem real relacionada se encontrada, senão deixa vazio]
-  NOTICIA_END
-
-  Escreve obrigatoriamente em ${lang === 'pt' ? 'Português' : 'Inglês'}.`;
-
   try {
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: prompt,
-      config: {
-        tools: [{ googleSearch: {} }],
-        systemInstruction: "És o jornalista principal da Web Rádio Figueiró. A tua missão é trazer as novidades mais frescas de Amarante com rigor e profissionalismo."
-      },
-    });
-
-    const result = { text: response.text || "", source: 'LIVE' };
+    const response = await fetch(`/api/news?lang=${lang}`);
+    if (!response.ok) throw new Error();
+    const data = await response.json();
+    
+    const result = { text: data.text || "", source: data.source || 'LOCAL' };
     cache[cacheKey] = { data: result, timestamp: now };
     return result;
-  } catch (error: any) {
-    console.error("fetchDetailedNews error:", error);
+  } catch (error) {
+    console.error("fetchDetailedNews client error:", error);
     return { text: "", source: 'LOCAL' };
   }
 };
