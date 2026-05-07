@@ -100,7 +100,16 @@ const CustomAudioPlayer: React.FC<{ audio: AudioItem }> = ({ audio }) => {
 };
 
 const MediaCenter: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'video' | 'audio'>('audio');
+  const [activeTab, setActiveTab] = useState<'video' | 'audio' | 'myMusic'>('audio');
+
+  const myMusicVideos = [
+    { id: 'm1', title: "Minha Música #1", youtubeId: "AvHMFxjPSuM", color: "from-purple-600 to-indigo-600" },
+    { id: 'm2', title: "Minha Música #2", youtubeId: "x91uzSqtJlw", color: "from-blue-600 to-cyan-600" },
+    { id: 'm3', title: "Minha Música #3", youtubeId: "TsjKIeLXcmA", color: "from-amber-600 to-orange-600" },
+    { id: 'm4', title: "Minha Música #4", youtubeId: "0B3ivU16tNE", color: "from-emerald-600 to-teal-600" },
+    { id: 'm5', title: "Minha Música #5", youtubeId: "-u6MT203gx0", color: "from-pink-600 to-rose-600" },
+    { id: 'm6', title: "Minha Música #6", youtubeId: "82F8kJ1sGAY", color: "from-indigo-600 to-blue-600" },
+  ];
 
   const audios: AudioItem[] = [
     { 
@@ -141,11 +150,10 @@ const MediaCenter: React.FC = () => {
           </div>
         </div>
 
-        {/* Seletor de Abas com Destaque Máximo */}
-        <div className="flex bg-slate-900/10 dark:bg-white/[0.03] p-2 rounded-[2.2rem] border border-slate-200 dark:border-white/10 shadow-inner backdrop-blur-sm">
+        <div className="flex bg-slate-900/10 dark:bg-white/[0.03] p-2 rounded-[2.2rem] border border-slate-200 dark:border-white/10 shadow-inner backdrop-blur-sm overflow-x-auto no-scrollbar max-w-full">
           <button 
             onClick={() => setActiveTab('video')}
-            className={`flex items-center space-x-3 px-8 md:px-12 py-4 rounded-[1.8rem] text-[12px] font-black uppercase tracking-[0.15em] transition-all duration-500 ${
+            className={`flex items-center space-x-3 px-6 md:px-12 py-4 rounded-[1.8rem] text-[12px] font-black uppercase tracking-[0.15em] transition-all duration-500 whitespace-nowrap ${
               activeTab === 'video' 
                 ? 'bg-blue-600 text-white shadow-[0_10px_30px_rgba(37,99,235,0.4)] scale-105 z-10' 
                 : 'text-slate-500 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-500/5'
@@ -159,7 +167,7 @@ const MediaCenter: React.FC = () => {
           
           <button 
             onClick={() => setActiveTab('audio')}
-            className={`flex items-center space-x-3 px-8 md:px-12 py-4 rounded-[1.8rem] text-[12px] font-black uppercase tracking-[0.15em] transition-all duration-500 ${
+            className={`flex items-center space-x-3 px-6 md:px-12 py-4 rounded-[1.8rem] text-[12px] font-black uppercase tracking-[0.15em] transition-all duration-500 whitespace-nowrap ${
               activeTab === 'audio' 
                 ? 'bg-blue-600 text-white shadow-[0_10px_30px_rgba(37,99,235,0.4)] scale-105 z-10' 
                 : 'text-slate-500 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-500/5'
@@ -170,11 +178,25 @@ const MediaCenter: React.FC = () => {
             </svg>
             <span>Podcasts</span>
           </button>
+
+          <button 
+            onClick={() => setActiveTab('myMusic')}
+            className={`flex items-center space-x-3 px-6 md:px-12 py-4 rounded-[1.8rem] text-[12px] font-black uppercase tracking-[0.15em] transition-all duration-500 whitespace-nowrap ${
+              activeTab === 'myMusic' 
+                ? 'bg-blue-600 text-white shadow-[0_10px_30px_rgba(37,99,235,0.4)] scale-105 z-10' 
+                : 'text-slate-500 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-500/5'
+            }`}
+          >
+            <svg className={`w-5 h-5 transition-transform duration-500 ${activeTab === 'myMusic' ? 'scale-110' : 'opacity-50'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+            </svg>
+            <span>Minhas músicas</span>
+          </button>
         </div>
       </div>
 
       <div className="animate-in fade-in slide-in-from-bottom-10 duration-700">
-        {activeTab === 'audio' ? (
+        {activeTab === 'audio' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {audios.map((audio) => (
               <CustomAudioPlayer key={audio.id} audio={audio} />
@@ -188,7 +210,9 @@ const MediaCenter: React.FC = () => {
               <p className="text-slate-400 text-[10px] uppercase font-bold tracking-widest mt-2">Dê-nos a sua ideia</p>
             </div>
           </div>
-        ) : (
+        )}
+
+        {activeTab === 'video' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {[
               { id: '1', title: "Emissão Especial WRF", youtubeId: "r5GzTRSWXgc", color: "from-blue-600 to-indigo-600" }, 
@@ -204,6 +228,21 @@ const MediaCenter: React.FC = () => {
                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/70">Conteúdo Original</p>
                   </div>
                   <h4 className="font-black text-xl tracking-tighter">{video.title}</h4>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'myMusic' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {myMusicVideos.map((video) => (
+              <div key={video.id} className={`group relative rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl transition-all hover:-translate-y-2 bg-gradient-to-br ${video.color} p-1`}>
+                <div className="aspect-video w-full bg-black rounded-[2.3rem] overflow-hidden">
+                  <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0`} title={video.title} frameBorder="0" allowFullScreen></iframe>
+                </div>
+                <div className="p-5 text-white">
+                  <h4 className="font-black text-base tracking-tighter truncate">{video.title}</h4>
                 </div>
               </div>
             ))}
