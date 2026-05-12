@@ -1,0 +1,21 @@
+{
+  "name": "Web Rádio Figueiró",
+  "short_name": "WR Figueiró",
+  "description": "A Sua Rádio em Amarante e Figueiró",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#dc2626",
+  "icons": [
+    {
+      "src": "https://www.dropbox.com/scl/fi/6d9yqstc7o7jgxyfntaat/logo.png?rlkey=k316g3q17du0cbk9fg75znqwg&st=eh24fzp4&dl=1",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://www.dropbox.com/scl/fi/6d9yqstc7o7jgxyfntaat/logo.png?rlkey=k316g3q17du0cbk9fg75znqwg&st=eh24fzp4&dl=1",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
