@@ -82,79 +82,152 @@ const FALLBACK_NEWS_EN: NewsItem[] = [
   }
 ];
 
+const CATEGORIES = [
+  {
+    name: 'gastronomia',
+    keywords: [
+      'gastronomia', 'artesanato', 'doce', 'conventual', 'vinho', 'verde', 
+      'feira', 'mercado', 'sabor', 'sabores', 'comida', 'prato', 'receita', 
+      'gastronomy', 'wine', 'sweets', 'feiras', 'exposição', 'azeite', 'queijo', 
+      'presunto', 'broa', 'enogastronomia'
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800",
+      "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=800",
+      "https://images.unsplash.com/photo-149514740007a-f8a53e36824b?q=80&w=800",
+      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=800"
+    ]
+  },
+  {
+    name: 'musica',
+    keywords: [
+      'concertina', 'concerto', 'música', 'music', 'instrumento', 'festival', 
+      'espetáculo', 'show', 'banda', 'rancho', 'folclore', 'romaria', 'festa', 
+      'cantares', 'guitarra', 'canção', 'canções', 'espetáculos', 'concertos',
+      'festejos', 'popular', 'populares', 'grupo'
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800",
+      "https://images.unsplash.com/photo-1555412654-e2245e434435?q=80&w=800",
+      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800",
+      "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?q=80&w=800"
+    ]
+  },
+  {
+    name: 'natureza',
+    keywords: [
+      'trilho', 'caminho', 'pedestre', 'natureza', 'rio', 'tâmega', 'ponte', 
+      'floresta', 'serra', 'marão', 'parque', 'turismo', 'scenic', 'trail', 
+      'hiking', 'nature', 'river', 'bridge', 'forest', 'caminhos', 'paisagem',
+      'árvores', 'sinalizado', 'sinalizada', 'percurso'
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1501555088652-021faa106b9b?q=80&w=800",
+      "https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=800",
+      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=800",
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=800"
+    ]
+  },
+  {
+    name: 'desporto',
+    keywords: [
+      'desporto', 'corrida', 'maratona', 'ciclismo', 'bicicleta', 'futebol', 
+      'atleta', 'torneio', 'campeonato', 'clube', 'sports', 'running', 'cycling',
+      'estádio', 'jogo', 'atletismo', 'ciclista', 'trail-run'
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=800",
+      "https://images.unsplash.com/photo-1541614101331-1a5a3a194e92?q=80&w=800",
+      "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=800"
+    ]
+  },
+  {
+    name: 'literatura',
+    keywords: [
+      'livro', 'biblioteca', 'literário', 'poesia', 'escritor', 'leitura', 
+      'literatura', 'pascoaes', 'agustina', 'editor', 'romance', 'book', 'library', 'literary'
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=800",
+      "https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=800",
+      "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=800"
+    ]
+  },
+  {
+    name: 'comunidade',
+    keywords: [
+      'câmara', 'município', 'presidente', 'autarquia', 'vereador', 'decisão', 
+      'política', 'obras', 'reunião', 'assembleia', 'mayor', 'municipality', 
+      'city hall', 'council', 'solidariedade', 'bombeiros', 'saúde', 'hospital', 
+      'social', 'apoio', 'ajuda', 'comunidade', 'paróquia', 'centro social', 'creche'
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1541872703-74c5e44368f9?q=80&w=800",
+      "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=800",
+      "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?q=80&w=800"
+    ]
+  },
+  {
+    name: 'radio',
+    keywords: [
+      'empresa', 'comércio', 'economia', 'tecnologia', 'aplicação', 'app', 
+      'digital', 'inovação', 'ia', 'inteligência artificial', 'rádio', 'radio', 
+      'emissão', 'estúdio', 'microfone', 'broadcasting', 'sintonizar', 'comunicação', 
+      'ouvintes', 'freguesia', 'podcast', 'locutor', 'antena', 'frequência', 'wrf'
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800",
+      "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800",
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800"
+    ]
+  }
+];
+
+const getHashCode = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash);
+};
+
 const getNewsImage = (title: string, content: string, rawImage?: string): string => {
   const cleanImg = rawImage ? rawImage.trim() : "";
-  if (cleanImg && (cleanImg.startsWith('http://') || cleanImg.startsWith('https://')) && !cleanImg.includes('placeholder') && !cleanImg.includes('error')) {
+  const isBlockedDomain = cleanImg.includes('jn.pt') || cleanImg.includes('publico.pt') || 
+                          cleanImg.includes('sapo.pt') || cleanImg.includes('tvi') || 
+                          cleanImg.includes('rtp') || cleanImg.includes('sic') ||
+                          cleanImg.includes('cmjornal') || cleanImg.includes('observador') ||
+                          cleanImg.includes('renascenca') || cleanImg.includes('rr.sapo.pt') ||
+                          cleanImg.includes('e-cultura') || cleanImg.includes('porto');
+
+  if (cleanImg && (cleanImg.startsWith('http://') || cleanImg.startsWith('https://')) && 
+      !cleanImg.includes('placeholder') && !cleanImg.includes('error') && !isBlockedDomain) {
     return cleanImg;
   }
 
-  const text = `${title} ${content}`.toLowerCase();
+  let bestCategory = CATEGORIES[CATEGORIES.length - 1]; // defaults to 'radio'
+  let maxScore = -1;
 
-  // 1. Radio / App / Studio
-  if (
-    text.includes('rádio') || text.includes('radio') || text.includes('app') ||
-    text.includes('aplicação') || text.includes('emissão') || text.includes('estúdio') ||
-    text.includes('digital') || text.includes('tecnologia') || text.includes('ia') ||
-    text.includes('microfone') || text.includes('broadcasting') || text.includes('sintonizar') ||
-    text.includes('comunicação') || text.includes('ouvintes')
-  ) {
-    return "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800";
+  for (const cat of CATEGORIES) {
+    let score = 0;
+    for (const kw of cat.keywords) {
+      if (title.toLowerCase().includes(kw)) {
+        score += 4; // High weight for title match
+      }
+      if (content.toLowerCase().includes(kw)) {
+        score += 1; // Standard weight for content match
+      }
+    }
+
+    if (score > maxScore) {
+      maxScore = score;
+      bestCategory = cat;
+    }
   }
 
-  // 2. Gastronomy / Crafts / Gastronomia / Doces / Vinho / Feira
-  if (
-    text.includes('gastronomia') || text.includes('artesanato') || text.includes('doce') ||
-    text.includes('conventual') || text.includes('vinho') || text.includes('verde') ||
-    text.includes('feira') || text.includes('feiras') || text.includes('gastronomy') ||
-    text.includes('crafts') || text.includes('comida') || text.includes('comer') ||
-    text.includes('sabor') || text.includes('sabores')
-  ) {
-    return "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800";
-  }
-
-  // 3. Music / Festival / Concertina / Concertos / Romaria / Festa
-  if (
-    text.includes('concertina') || text.includes('concerto') || text.includes('música') ||
-    text.includes('music') || text.includes('festival') || text.includes('banda') ||
-    text.includes('romaria') || text.includes('festa') || text.includes('festas') ||
-    text.includes('folclore') || text.includes('espetáculo') || text.includes('show') ||
-    text.includes('cultural') || text.includes('dança') || text.includes('concertos')
-  ) {
-    return "https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800";
-  }
-
-  // 4. Trail / Walk / Nature / Rio / Tâmega / Caminhos / Pedestre
-  if (
-    text.includes('trilho') || text.includes('pedestre') || text.includes('natureza') ||
-    text.includes('rio') || text.includes('tâmega') || text.includes('caminho') ||
-    text.includes('caminhos') || text.includes('floresta') || text.includes('paisagem') ||
-    text.includes('hiking') || text.includes('trail') || text.includes('nature') ||
-    text.includes('scenic') || text.includes('parque') || text.includes('ambiente') ||
-    text.includes('árvore') || text.includes('sinalizado')
-  ) {
-    return "https://images.unsplash.com/photo-1501555088652-021faa106b9b?q=80&w=800";
-  }
-
-  // 5. Books / Library / Literary / Literário
-  if (
-    text.includes('livro') || text.includes('literário') || text.includes('biblioteca') ||
-    text.includes('leitura') || text.includes('escritor') || text.includes('book') ||
-    text.includes('library') || text.includes('literary')
-  ) {
-    return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=800";
-  }
-
-  // 6. Sports / Run / Cycling / Corrida / Ciclo / Desporto
-  if (
-    text.includes('desporto') || text.includes('corrida') || text.includes('maratona') ||
-    text.includes('atletismo') || text.includes('futebol') || text.includes('bicicleta') ||
-    text.includes('ciclismo') || text.includes('cycling') || text.includes('run') ||
-    text.includes('sports')
-  ) {
-    return "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=800";
-  }
-
-  return "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=800";
+  const hash = getHashCode(title);
+  const imgList = bestCategory.images;
+  return imgList[hash % imgList.length];
 };
 
 const NewsSection: React.FC = () => {

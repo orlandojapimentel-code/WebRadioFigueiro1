@@ -239,8 +239,10 @@ export const fetchDetailedNews = async (lang: Language = 'pt') => {
     DATA: [Dia e Mês atualizado, ex: 15 de Maio, 2026]
     RESUMO: [Um parágrafo curto de introdução]
     CONTEUDO: [Texto detalhado da notícia com pelo menos 3 parágrafos]
-    IMAGEM: [URL de uma imagem real relacionada se encontrada, senão deixa vazio]
+    IMAGEM: [URL do Unsplash que corresponda exatamente ao assunto (deve começar por https://images.unsplash.com/photo-), OU deixa este campo vazio se não tiveres certeza, para que a rádio atribua uma imagem selecionada à mão automaticamente]
     NOTICIA_END
+
+    AVISO IMPORTANTE: Nunca uses caminhos ou domínios de jornais locais ou nacionais (como jn.pt, sapo.pt, publico.pt) pois são bloqueados no navegador do utilizador por motivos de segurança e deixam de carregar. Usa apenas o Unsplash ou deixa vazio.
 
     Escreve obrigatoriamente em ${lang === 'pt' ? 'Português' : 'Inglês'}.`;
 
