@@ -1,17 +1,28 @@
 
 import React, { useState, useEffect } from 'react';
 import { fetchLatestNews } from '../services/geminiService';
+import { useLanguage } from '../contexts/LanguageContext';
+
+const FALLBACK_TICKER_PT = [
+  "Web Rádio Figueiró: Lançada aplicação oficial com emissão em Alta Definição (HD) e assistente IA",
+  "Cultura em Época: Encontro Regional de Concertinas encheu de ritmo e cor o coração de Figueiró",
+  "Natureza em Amarante: Novo trilho 'Caminhos de São Gonçalo' atrai pedestrianistas a Figueiró",
+  "Gastronomia Tradicional: Feira de Artesanato de Amarante destaca doces conventuais e vinhos verdes",
+  "Música no Rio: Concertos de verão no Parque Ribeirinho continuam a atrair milhares de visitantes"
+];
+
+const FALLBACK_TICKER_EN = [
+  "Web Rádio Figueiró: Official app launched with High Definition (HD) broadcasting and AI assistant",
+  "Seasonal Culture: Regional Concertina Meeting filled the heart of Figueiró with traditional rhythms",
+  "Nature in Amarante: New scenic trail 'Caminhos de São Gonçalo' attracts hikers to Figueiró",
+  "Traditional Gastronomy: Amarante Crafts Fair highlights conventual sweets and local green wines",
+  "Music by the River: Summer concerts in Ribeirinho park continue to attract thousands of visitors"
+];
 
 const NewsTicker: React.FC = () => {
-  const FALLBACK_TICKER = [
-    "Web Rádio Figueiró: A sua melhor companhia em Amarante e no Mundo",
-    "Sintonize a excelência sonora com a WRF Digital - Emissão 24 horas por dia",
-    "Peça a sua música favorita através do nosso WhatsApp: +351 910 270 085",
-    "WRF: Elevando a voz de Amarante para todos os corações através da música",
-    "Cultura e Informação: Acompanhe as novidades da nossa região aqui na Figueiró"
-  ];
+  const { language } = useLanguage();
 
-  const [newsText, setNewsText] = useState<string[]>(FALLBACK_TICKER);
+  const [newsText, setNewsText] = useState<string[]>(language === 'pt' ? FALLBACK_TICKER_PT : FALLBACK_TICKER_EN);
   const [isSyncing, setIsSyncing] = useState(false);
   const [dataSource, setDataSource] = useState<'LIVE' | 'LOCAL' | 'NONE'>('NONE');
   
@@ -20,7 +31,7 @@ const NewsTicker: React.FC = () => {
     setIsSyncing(true);
     
     try {
-      const result = await fetchLatestNews();
+      const result = await fetchLatestNews(language);
       
       if (result && result.text) {
         const rawItems = result.text.split('\n');
@@ -31,18 +42,27 @@ const NewsTicker: React.FC = () => {
         if (items.length >= 1) {
           setNewsText(items.slice(0, 8));
           setDataSource((result.source as 'LIVE' | 'LOCAL' | 'NONE') || 'LOCAL');
+        } else {
+          setNewsText(language === 'pt' ? FALLBACK_TICKER_PT : FALLBACK_TICKER_EN);
+          setDataSource('LOCAL');
         }
       }
     } catch {
       console.warn("Ticker: Mantendo dados locais devido a falha externa.");
+      setNewsText(language === 'pt' ? FALLBACK_TICKER_PT : FALLBACK_TICKER_EN);
+      setDataSource('LOCAL');
     } finally {
       setIsSyncing(false);
     }
-  }, [isSyncing]);
+  }, [isSyncing, language]);
+
+  useEffect(() => {
+    setNewsText(language === 'pt' ? FALLBACK_TICKER_PT : FALLBACK_TICKER_EN);
+  }, [language]);
 
   useEffect(() => {
     const initialTimer = setTimeout(loadTickerData, 3000);
-    const interval = setInterval(loadTickerData, 600000); 
+    const interval = setInterval(loadTickerData, 300000); // 5 minutes refresh
     
     return () => {
       clearTimeout(initialTimer);
@@ -87,20 +107,6 @@ const NewsTicker: React.FC = () => {
           ))}
         </div>
       </div>
-
-      <style>{`
-        @keyframes ticker-infinite {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-33.333%); }
-        }
-        .animate-ticker-infinite {
-          display: inline-flex;
-          animation: ticker-infinite 160s linear infinite;
-        }
-        .animate-ticker-infinite:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
     </div>
   );
 };

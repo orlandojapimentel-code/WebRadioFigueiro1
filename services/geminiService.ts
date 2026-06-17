@@ -15,24 +15,34 @@ const getAIInstance = () => {
   return new GoogleGenAI({ apiKey: key });
 };
 
-const FALLBACK_NEWS_DATA = [
-  "Web Rádio Figueiró: Sintonize a melhor seleção musical de Amarante 24h por dia.",
-  "Peça a sua música favorita através do nosso novo Centro de Pedidos digital.",
-  "WRF Digital: Tecnologia de ponta e som de alta fidelidade para todos os ouvintes.",
-  "Acompanhe as nossas redes sociais para ficar a par de todos os eventos da região.",
-  "Web Rádio Figueiró: A elevar a voz de Amarante para o mundo inteiro."
+const FALLBACK_NEWS_PT_DATA = [
+  "Web Rádio Figueiró Lança Aplicação Oficial com Emissão HD e Assistente Inteligente",
+  "Feira de Artesanato e Gastronomia de Amarante Promete Recorde no Centro Histórico",
+  "Roteiro Pedestre dos Caminhos de São Gonçalo Revitaliza Turismo em Figueiró",
+  "Encontro Regional de Concertinas de Figueiró Junta Gerações de Tocadores",
+  "Concertos de Verão à Beira do Rio Tâmega Animam Noites Culturais em Amarante"
+].join('\n');
+
+const FALLBACK_NEWS_EN_DATA = [
+  "Web Rádio Figueiró Launches Official App with HD Broadcasting & AI Assistant",
+  "Crafts and Gastronomy Fair of Amarante Promises Record Attendance in Historic Center",
+  "São Gonçalo Scenic Pedestrian Trail Revitalizes Rural Tourism in Figueiró",
+  "Regional Concertina Meeting of Figueiró Unites Generations of Folk Musicians",
+  "Summer Concerts by the Tâmega River Animate Cultural Nights in Amarante"
 ].join('\n');
 
 export const fetchLatestNews = async (lang: Language = 'pt') => {
   const cacheKey = `news_${lang}`;
   const now = Date.now();
 
+  const fallbackData = lang === 'pt' ? FALLBACK_NEWS_PT_DATA : FALLBACK_NEWS_EN_DATA;
+
   if (cache[cacheKey] && (now - cache[cacheKey].timestamp < CACHE_DURATION)) {
     return cache[cacheKey].data;
   }
 
   const ai = getAIInstance();
-  if (!ai) return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const };
+  if (!ai) return { text: fallbackData, source: 'LOCAL' as const };
 
   try {
     const model = 'gemini-3-flash-preview';
@@ -47,12 +57,12 @@ export const fetchLatestNews = async (lang: Language = 'pt') => {
       },
     });
 
-    const result = { text: response.text || FALLBACK_NEWS_DATA, source: 'LIVE' as const };
+    const result = { text: response.text || fallbackData, source: 'LIVE' as const };
     cache[cacheKey] = { data: result, timestamp: now };
     return result;
   } catch (error: any) {
     console.error("fetchLatestNews client error:", error);
-    return { text: FALLBACK_NEWS_DATA, source: 'LOCAL' as const };
+    return { text: fallbackData, source: 'LOCAL' as const };
   }
 };
 
