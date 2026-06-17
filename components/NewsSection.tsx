@@ -82,6 +82,81 @@ const FALLBACK_NEWS_EN: NewsItem[] = [
   }
 ];
 
+const getNewsImage = (title: string, content: string, rawImage?: string): string => {
+  const cleanImg = rawImage ? rawImage.trim() : "";
+  if (cleanImg && (cleanImg.startsWith('http://') || cleanImg.startsWith('https://')) && !cleanImg.includes('placeholder') && !cleanImg.includes('error')) {
+    return cleanImg;
+  }
+
+  const text = `${title} ${content}`.toLowerCase();
+
+  // 1. Radio / App / Studio
+  if (
+    text.includes('rádio') || text.includes('radio') || text.includes('app') ||
+    text.includes('aplicação') || text.includes('emissão') || text.includes('estúdio') ||
+    text.includes('digital') || text.includes('tecnologia') || text.includes('ia') ||
+    text.includes('microfone') || text.includes('broadcasting') || text.includes('sintonizar') ||
+    text.includes('comunicação') || text.includes('ouvintes')
+  ) {
+    return "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800";
+  }
+
+  // 2. Gastronomy / Crafts / Gastronomia / Doces / Vinho / Feira
+  if (
+    text.includes('gastronomia') || text.includes('artesanato') || text.includes('doce') ||
+    text.includes('conventual') || text.includes('vinho') || text.includes('verde') ||
+    text.includes('feira') || text.includes('feiras') || text.includes('gastronomy') ||
+    text.includes('crafts') || text.includes('comida') || text.includes('comer') ||
+    text.includes('sabor') || text.includes('sabores')
+  ) {
+    return "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800";
+  }
+
+  // 3. Music / Festival / Concertina / Concertos / Romaria / Festa
+  if (
+    text.includes('concertina') || text.includes('concerto') || text.includes('música') ||
+    text.includes('music') || text.includes('festival') || text.includes('banda') ||
+    text.includes('romaria') || text.includes('festa') || text.includes('festas') ||
+    text.includes('folclore') || text.includes('espetáculo') || text.includes('show') ||
+    text.includes('cultural') || text.includes('dança') || text.includes('concertos')
+  ) {
+    return "https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800";
+  }
+
+  // 4. Trail / Walk / Nature / Rio / Tâmega / Caminhos / Pedestre
+  if (
+    text.includes('trilho') || text.includes('pedestre') || text.includes('natureza') ||
+    text.includes('rio') || text.includes('tâmega') || text.includes('caminho') ||
+    text.includes('caminhos') || text.includes('floresta') || text.includes('paisagem') ||
+    text.includes('hiking') || text.includes('trail') || text.includes('nature') ||
+    text.includes('scenic') || text.includes('parque') || text.includes('ambiente') ||
+    text.includes('árvore') || text.includes('sinalizado')
+  ) {
+    return "https://images.unsplash.com/photo-1501555088652-021faa106b9b?q=80&w=800";
+  }
+
+  // 5. Books / Library / Literary / Literário
+  if (
+    text.includes('livro') || text.includes('literário') || text.includes('biblioteca') ||
+    text.includes('leitura') || text.includes('escritor') || text.includes('book') ||
+    text.includes('library') || text.includes('literary')
+  ) {
+    return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=800";
+  }
+
+  // 6. Sports / Run / Cycling / Corrida / Ciclo / Desporto
+  if (
+    text.includes('desporto') || text.includes('corrida') || text.includes('maratona') ||
+    text.includes('atletismo') || text.includes('futebol') || text.includes('bicicleta') ||
+    text.includes('ciclismo') || text.includes('cycling') || text.includes('run') ||
+    text.includes('sports')
+  ) {
+    return "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=800";
+  }
+
+  return "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=800";
+};
+
 const NewsSection: React.FC = () => {
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
   const { language } = useLanguage();
@@ -102,13 +177,19 @@ const NewsSection: React.FC = () => {
               return match ? match[1].trim().replace(/[*`]/g, '') : "";
             };
 
+            const title = extract('TITULO') || "Novidade Web Rádio Figueiró";
+            const date = extract('DATA') || "Hoje";
+            const excerpt = extract('RESUMO');
+            const content = extract('CONTEUDO');
+            const rawImage = extract('IMAGEM');
+
             return {
               id: `news-${idx}`,
-              title: extract('TITULO') || "Novidade Web Rádio Figueiró",
-              date: extract('DATA') || "Hoje",
-              excerpt: extract('RESUMO'),
-              content: extract('CONTEUDO'),
-              image: extract('IMAGEM') || "https://images.unsplash.com/photo-1531265726475-52ad60219627?q=80&w=800"
+              title,
+              date,
+              excerpt,
+              content,
+              image: getNewsImage(title, content, rawImage)
             };
           });
           setNewsList(parsed);
