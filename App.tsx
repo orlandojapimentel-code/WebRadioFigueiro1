@@ -15,6 +15,7 @@ import Playlist from './components/Playlist';
 import SocialMedia from './components/SocialMedia';
 import Partnerships from './components/Partnerships';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { fetchCulturalEvents } from './services/geminiService';
 
 const AppContent: React.FC = () => {
   const { t } = useLanguage();
@@ -23,6 +24,39 @@ const AppContent: React.FC = () => {
     return saved ? saved === 'dark' : true;
   });
   const [showAgenda, setShowAgenda] = useState(false);
+  const [nextEventTitle, setNextEventTitle] = useState<string>("Carregando...");
+  const [nextEventDate, setNextEventDate] = useState<string>("");
+
+  useEffect(() => {
+    const loadNextEvent = async () => {
+      try {
+        const result = await fetchCulturalEvents();
+        if (result && result.text) {
+          const eventBlocks = result.text.match(/EVENTO_START[\s\S]*?EVENTO_END/g);
+          if (eventBlocks && eventBlocks.length > 0) {
+            const block = eventBlocks[0];
+            const extract = (key: string) => {
+              const regex = new RegExp(`${key}:\\s*(.*)`, 'i');
+              const match = block.match(regex);
+              return match ? match[1].trim().replace(/[*`]/g, '') : "";
+            };
+            const title = extract('TITULO');
+            const dateStr = extract('DATA');
+            setNextEventTitle(title || "Música no Rio");
+            setNextEventDate(dateStr || "Todos os Sábados de Julho");
+            return;
+          }
+        }
+        setNextEventTitle("Música no Rio");
+        setNextEventDate("Sábados de Julho");
+      } catch (err) {
+        console.error("Error loading next event badge:", err);
+        setNextEventTitle("Música no Rio");
+        setNextEventDate("Sábados de Julho");
+      }
+    };
+    loadNextEvent();
+  }, []);
 
   useEffect(() => {
     if (isDark) {
@@ -93,7 +127,8 @@ const AppContent: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Próximo Evento</p>
-                  <p className="text-white font-bold">Festas de Junho</p>
+                  <p className="text-white font-bold">{nextEventTitle}</p>
+                  {nextEventDate && <p className="text-orange-500 text-[10px] font-bold">{nextEventDate}</p>}
                 </div>
               </div>
             </div>

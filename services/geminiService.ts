@@ -17,18 +17,18 @@ const getAIInstance = () => {
 
 const FALLBACK_NEWS_PT_DATA = [
   "Web Rádio Figueiró Lança Aplicação Oficial com Emissão HD e Assistente Inteligente",
-  "Feira de Artesanato e Gastronomia de Amarante Promete Recorde no Centro Histórico",
-  "Roteiro Pedestre dos Caminhos de São Gonçalo Revitaliza Turismo em Figueiró",
-  "Encontro Regional de Concertinas de Figueiró Junta Gerações de Tocadores",
-  "Concertos de Verão à Beira do Rio Tâmega Animam Noites Culturais em Amarante"
+  "Feira das Cebolas de Amarante Promete Atrair Milhares de Visitantes em Julho",
+  "Inaugurada a Grande Rota Pedestre de Figueiró ao Centro de Amarante",
+  "Caminhada Noturna de Figueiró Reúne Dezenas de Participantes em Convívio Saudável",
+  "Concertos de Verão à Beira do Rio Tâmega Animam Noites de Julho e Agosto"
 ].join('\n');
 
 const FALLBACK_NEWS_EN_DATA = [
   "Web Rádio Figueiró Launches Official App with HD Broadcasting & AI Assistant",
-  "Crafts and Gastronomy Fair of Amarante Promises Record Attendance in Historic Center",
-  "São Gonçalo Scenic Pedestrian Trail Revitalizes Rural Tourism in Figueiró",
-  "Regional Concertina Meeting of Figueiró Unites Generations of Folk Musicians",
-  "Summer Concerts by the Tâmega River Animate Cultural Nights in Amarante"
+  "Onion Fair of Amarante Promises to Attract Thousands of Visitors in July",
+  "Great Pedestrian Trail from Figueiró to Amarante Center Officially Inaugurated",
+  "Figueiró Night Walk Gathers Dozens of Participants in Great Community Gathering",
+  "Summer Concerts by the Tâmega River Animate July and August Nights"
 ].join('\n');
 
 export const fetchLatestNews = async (lang: Language = 'pt') => {
@@ -77,29 +77,29 @@ LINK: https://www.cm-amarante.pt
 EVENTO_END
 
 EVENTO_START
+TITULO: Feira das Cebolas de Amarante
+DATA: 10 a 12 de Julho
+LOCAL: Largo de São Gonçalo, Amarante
+TIPO: FESTA
+IMAGEM: https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800
+LINK: https://www.cm-amarante.pt
+EVENTO_END
+
+EVENTO_START
+TITULO: Caminhada Noturna de Figueiró
+DATA: 25 de Julho
+LOCAL: Figueiró, Amarante
+TIPO: GERAL
+IMAGEM: https://images.unsplash.com/photo-1501555088652-021faa106b9b?q=80&w=800
+LINK: https://www.cm-amarante.pt
+EVENTO_END
+
+EVENTO_START
 TITULO: Exposição Amadeo de Souza-Cardoso
 DATA: Permanente
 LOCAL: Museu Municipal, Amarante
 TIPO: EXPOSIÇÃO
 IMAGEM: https://images.unsplash.com/photo-1531265726475-52ad60219627?q=80&w=800
-LINK: https://www.cm-amarante.pt
-EVENTO_END
-
-EVENTO_START
-TITULO: Festival Literário de Amarante
-DATA: 12 de Outubro
-LOCAL: Biblioteca Municipal Albano Sardoeira, Amarante
-TIPO: GERAL
-IMAGEM: https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=800
-LINK: https://www.cm-amarante.pt
-EVENTO_END
-
-EVENTO_START
-TITULO: Romaria de São Gonçalo de Amarante
-DATA: Primeiro Fim de Semana de Junho
-LOCAL: Largo de S. Gonçalo, Amarante
-TIPO: FESTA
-IMAGEM: https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800
 LINK: https://www.cm-amarante.pt
 EVENTO_END
 `;
@@ -152,68 +152,68 @@ export const fetchCulturalEvents = async () => {
 const FALLBACK_DETAILED_NEWS_PT_STR = `
 NOTICIA_START
 TITULO: Web Rádio Figueiró Lança Aplicação Oficial com Emissão HD
-DATA: 16 Junho, 2026
+DATA: 06 Julho, 2026
 RESUMO: A Web Rádio Figueiró acaba de lançar a sua nova plataforma digital, aproximando ainda mais a comunidade local e a diáspora a Amarante.
 CONTEUDO: A Web Rádio Figueiró, uma das principais vozes da freguesia de Figueiró e do concelho de Amarante, deu um passo histórico em direção ao futuro digital com a apresentação da sua nova aplicação oficial. A nova plataforma permite aos ouvintes desfrutar de uma emissão contínua em Alta Definição (HD), oferecendo uma experiência de som cristalino em qualquer parte do mundo.\\n\\nCom funções inteligentes como um assistente de inteligência artificial dedicado para pedidos de músicas, notícias regionais atualizadas e a integração direta de uma agenda cultural local, a Web Rádio Figueiró consolida o seu compromisso de liderança na divulgação cultural.\\n\\nEsta inovação tecnológica visa aproximar não só as populações que residem no concelho, mas também as vastas comunidades de emigrantes de Figueiró espalhadas pela Europa e pelo mundo, que agora têm um portal de excelência para se manterem ligadas às suas raízes e à música que mais gostam.
 IMAGEM: https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: Feira de Artesanato e Gastronomia de Amarante Promete Recorde
-DATA: 14 Junho, 2026
-RESUMO: O certame deste ano reúne dezenas de artesãos locais e produtores do famoso vinho verde da região no centro histórico.
-CONTEUDO: A tradicional Feira de Artesanato e Gastronomia de Amarante arranca já no próximo fim de semana com a expetativa de ser a maior edição de sempre. Organizada em parceria com as associações regionais, a feira irá transformar as margens do rio Tâmega e o Largo de São Gonçalo no epicentro da cultura tradicional portuguesa.\\n\\nPara além de trabalhos manuais únicos em madeira, barro e tecelagem, os visitantes poderão deliciar-se com os famosos doces conventuais de Amarante e provar os vinhos verdes de produtores de Figueiró e freguesias vizinhas.\\n\\nA Web Rádio Figueiró terá uma equipa no local para fazer a cobertura de rádio em direto, entrevistando artesãos e visitantes e transmitindo toda a animação musical deste evento que é um orgulho para a nossa região portuguesa.
-IMAGEM: https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800
+TITULO: Feira das Cebolas de Amarante Regressa com Grande Animação
+DATA: 04 Julho, 2026
+RESUMO: O tradicional evento secular de Amarante está de volta, prometendo atrair milhares de visitantes com gastronomia e espetáculos populares.
+CONTEUDO: A icónica Feira das Cebolas, um dos eventos mais tradicionais e queridos do concelho de Amarante, regressa ao Largo de São Gonçalo e às margens do rio Tâmega. A edição deste ano promete ser uma das mais dinâmicas de sempre, reunindo produtores agrícolas locais e de toda a região norte.\\n\\nAlém da tradicional venda de cebolas e outros produtos agrícolas, a feira contará com uma rica oferta gastronómica, com destaque para a doçaria conventual amarantina e o afamado vinho verde. A música popular terá também um papel central, com atuações de ranchos folclóricos locais e grupos de bombos.\\n\\nA Web Rádio Figueiró estará presente no certame com emissão em direto e entrevistas exclusivas com os produtores e visitantes, trazendo a atmosfera desta festa tradicional a todos os seus ouvintes espalhados pelo mundo.
+IMAGEM: https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: Roteiro dos Caminhos de São Gonçalo Revitaliza Turismo
-DATA: 10 Junho, 2026
-RESUMO: O novo percurso pedestre e cultural que liga Figueiró ao coração histórico de Amarante já está aberto ao público.
-CONTEUDO: O turismo de Amarante conta com uma nova atração de grande valor patrimonial e ambiental. Foi inaugurado oficialmente o Roteiro Pedestre dos Caminhos de São Gonçalo, um trilho que percorre caminhos rurais históricos a partir da freguesia de Figueiró até à icónica ponte de Amarante.\\n\\nO trajeto, totalmente sinalizado e dotado de painéis informativos sobre a fauna, flora e lendas locais, promete atrair caminhantes, amantes da natureza e peregrinos.\\n\\nA iniciativa visa promover a descentralização turística na região, destacando a riqueza florestal e as belas paisagens ribeirinhas que caracterizam Figueiró e arredores, incentivando simultaneamente o comércio local.
-IMAGEM: https://images.unsplash.com/photo-1531265726475-52ad60219627?q=80&w=800
+TITULO: Inaugurada a Grande Rota Pedestre de Figueiró a Amarante
+DATA: 02 Julho, 2026
+RESUMO: O novo percurso pedestre e cultural que liga a nossa freguesia de Figueiró ao centro da cidade de Amarante já está totalmente operacional.
+CONTEUDO: O património natural de Amarante conta a partir de agora com uma nova atração de excelência para os amantes de caminhadas e turismo de natureza. Foi formalmente inaugurada a Grande Rota Pedestre de Figueiró, um percurso sinalizado que guia os caminhantes por trilhos rurais verdejantes e florestas preservadas.\\n\\nO trajeto está totalmente equipado com sinalética direcional de padrão europeu e painéis interpretativos sobre a biodiversidade, a geologia e a história das lendas locais de São Gonçalo, oferecendo uma experiência imersiva e educativa.\\n\\nEste projeto, apoiado pelo município, visa revitalizar a economia das freguesias rurais como Figueiró, canalizando fluxos turísticos do centro histórico de Amarante para o interior do concelho e valorizando o comércio de proximidade.
+IMAGEM: https://images.unsplash.com/photo-1501555088652-021faa106b9b?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: Encontro de Concertinas de Figueiró Junta Gerações
-DATA: 08 Junho, 2026
-RESUMO: As ruas de Figueiró encheram-se de ritmo e tradição musical num convívio que celebra as canções populares.
-CONTEUDO: A música tradicional portuguesa esteve em destaque no Encontro Regional de Concertinas de Figueiró, Amarante. O evento, promovido pelo grupo de folclore local, reuniu mais de uma dezena de ranchos e grupos informais de tocadores vindos de vários pontos do norte do país.\\n\\nAs ruas encheram-se de sons alegres e desgarradas improvisadas, atraindo centenas de espetadores de todas as idades num ambiente de festa e partilha comunitária.\\n\\nO sucesso da iniciativa reforça a importância de preservar e transmitir as tradições musicais locais aos mais jovens, garantindo que a identidade de Figueiró continua bem viva.
-IMAGEM: https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800
+TITULO: Caminhada Noturna de Figueiró Atrai Dezenas de Entusiastas
+DATA: 29 Junho, 2026
+RESUMO: O evento desportivo e comunitário reuniu famílias e atletas num percurso sob o luar que celebrou a natureza local.
+CONTEUDO: A freguesia de Figueiró acolheu com enorme entusiasmo a primeira edição da sua Caminhada Noturna Sob o Luar. Organizada pela associação desportiva local com o apoio da junta de freguesia, a iniciativa reuniu dezenas de participantes de todas as idades num convívio saudável que aliou o desporto ao ar livre à contemplação do céu estrelado.\\n\\nO percurso de aproximadamente 8 quilómetros, de dificuldade baixa, levou os caminhantes por caminhos florestais e passadiços ribeirinhos iluminados apenas por lanternas e pela lua cheia, proporcionando momentos de grande beleza e tranquilidade.\\n\\nNo final do percurso, todos os participantes foram recebidos com um tradicional lanche comunitário com caldo verde e broa regional, num ambiente de grande confraternização que reforça a união e a dinâmica social de Figueiró.
+IMAGEM: https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=800
 NOTICIA_END
 `;
 
 const FALLBACK_DETAILED_NEWS_EN_STR = `
 NOTICIA_START
 TITULO: Web Rádio Figueiró Launches Official App with HD Broadcasting
-DATA: June 16, 2026
+DATA: July 06, 2026
 RESUMO: Web Rádio Figueiró has launched its new digital platform, bringing the local community and the diaspora closer to Amarante.
 CONTEUDO: Web Rádio Figueiró, one of the leading voices of the parish of Figueiró and the municipality of Amarante, has taken a historic step toward the digital future with the presentation of its official application. The new platform allows listeners to enjoy continuous high-definition (HD) broadcasting, offering a crystal-clear sound experience anywhere in the world.\\n\\nWith smart features such as a dedicated AI assistant for music requests, updated regional news, and direct integration with a local cultural agenda, Web Rádio Figueiró consolidates its leadership in cultural communication.\\n\\nThis technological innovation aims to connect not only local residents but also the vast communities of emigrants from Figueiró scattered across Europe and the globe, who now have an excellent portal to stay connected to their origins and the music they love.
 IMAGEM: https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: Crafts and Gastronomy Fair of Amarante Promises Record Attendance
-DATA: June 14, 2026
-RESUMO: This year's event gathers local artisans and producers of the region's famous Vinho Verde in the historic center.
-CONTEUDO: The traditional Crafts and Gastronomy Fair of Amarante kicks off next weekend with the expectation of being the largest edition ever. Organized in partnership with regional associations, the fair will transform the banks of the Tâmega River and the São Gonçalo Square into the epicenter of traditional Portuguese culture.\\n\\nIn addition to unique wooden, clay, and weaving handicrafts, visitors will be able to enjoy Amarante's famous conventual sweets and taste Vinho Verde wines from producers in Figueiró and neighboring parishes.\\n\\nWeb Rádio Figueiró will have a live broadcasting team on site, interviewing artisans and visitors to share all the musical excitement of this prideful regional event.
-IMAGEM: https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800
+TITULO: Onion Fair of Amarante Returns with Great Excitement
+DATA: July 04, 2026
+RESUMO: This secular traditional event is back, promising to attract thousands of visitors with gastronomy and folk entertainment.
+CONTEUDO: The iconic Onion Fair, one of the most traditional and cherished events in the municipality of Amarante, returns to Largo de São Gonçalo and the banks of the Tâmega River. This year's edition promises to be one of the most dynamic ever, gathering local farmers and producers from across the northern region.\\n\\nIn addition to the traditional sale of onions and other agricultural products, the fair will feature a rich gastronomic selection, highlighting Amarante's famous conventual sweets and its exquisite Vinho Verde. Folk music will also play a central role, with performances from local folklore groups.\\n\\nWeb Rádio Figueiró will cover the event live, featuring exclusive interviews with producers and visitors to bring the warm atmosphere of this traditional feast to its listeners worldwide.
+IMAGEM: https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: São Gonçalo Trail Revitalizes Regional Tourism
-DATA: June 10, 2026
-RESUMO: The new pedestrian and cultural trail connecting Figueiró to the historic heart of Amarante is now open to the public.
-CONTEUDO: Tourism in Amarante has a new attraction of great environmental and heritage value. The Pedestrian Trail of São Gonçalo was officially inaugurated, walking through historic rural paths from the parish of Figueiró to the iconic Amarante bridge.\\n\\nThe trail, fully signposted with informative panels about local fauna, flora, and legends, promises to attract hikers, nature lovers, and pilgrims.\\n\\nThis initiative aims to promote tourism decentralization in the region, highlighting the forest and river landscapes of Figueiró, while boosting the local economy.
-IMAGEM: https://images.unsplash.com/photo-1531265726475-52ad60219627?q=80&w=800
+TITULO: Great Pedestrian Trail from Figueiró to Amarante Opened
+DATA: July 02, 2026
+RESUMO: The new scenic and cultural trail connecting the parish of Figueiró to the center of Amarante is now fully open.
+CONTEUDO: Amarante's natural heritage now boasts a new attraction for hiking and nature tourism lovers. The Great Pedestrian Trail of Figueiró has been officially inaugurated, guiding hikers through beautiful green countryside paths and protected forests.\\n\\nThe path is fully equipped with European-standard direction signs and informative panels about biodiversity, geology, and local São Gonçalo legends, offering an immersive and educational experience.\\n\\nSupported by the city hall, this project aims to revitalize the economy of rural parishes like Figueiró, channeling tourist crowds from the historic center of Amarante to the inland, boosting local commerce.
+IMAGEM: https://images.unsplash.com/photo-1501555088652-021faa106b9b?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: Concertina Meeting of Figueiró Unites Generations
-DATA: June 08, 2026
-RESUMO: The streets of Figueiró filled with rhythm and traditional music in a gathering that celebrates regional folk songs.
-CONTEUDO: Traditional Portuguese music took center stage at the Regional Concertina Meeting in Figueiró, Amarante. The event, promoted by the local folklore group, brought together more than a dozen groups and individual players from all over northern Portugal.\\n\\nThe streets were filled with happy sounds and improvised folk songs, attracting hundreds of spectators of all ages in an atmosphere of sharing and joy.\\n\\nThe success of this initiative strengthens the preservation of local musical traditions, ensuring that the identity of Figueiró remains vibrant for future generations.
-IMAGEM: https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800
+TITULO: Figueiró Night Walk Gathers Dozens of Enthusiasts
+DATA: June 29, 2026
+RESUMO: The community sports event brought together families and athletes on a moonlit trail celebrating local nature.
+CONTEUDO: The parish of Figueiró welcomed with great enthusiasm the first edition of its Moonlit Night Walk. Organized by the local sports association with the support of the parish council, the initiative brought together dozens of participants of all ages in a healthy gathering that combined outdoor sports with stargazing.\\n\\nThe approximately 8-kilometer low-difficulty trail guided hikers through forest paths and river boardwalks illuminated only by flashlights and the full moon, offering moments of sheer beauty and peace.\\n\\nAt the end of the walk, all participants were treated to a traditional community snack featuring local cabbage soup (caldo verde) and regional corn bread (broa), reinforcing the social spirit and cohesion of Figueiró.
+IMAGEM: https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=800
 NOTICIA_END
 `;
 

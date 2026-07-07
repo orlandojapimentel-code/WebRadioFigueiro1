@@ -5,18 +5,18 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 const FALLBACK_TICKER_PT = [
   "Web Rádio Figueiró: Lançada aplicação oficial com emissão em Alta Definição (HD) e assistente IA",
-  "Cultura em Época: Encontro Regional de Concertinas encheu de ritmo e cor o coração de Figueiró",
-  "Natureza em Amarante: Novo trilho 'Caminhos de São Gonçalo' atrai pedestrianistas a Figueiró",
-  "Gastronomia Tradicional: Feira de Artesanato de Amarante destaca doces conventuais e vinhos verdes",
-  "Música no Rio: Concertos de verão no Parque Ribeirinho continuam a atrair milhares de visitantes"
+  "Tradição Viva: Feira das Cebolas de Amarante regressa com gastronomia e animação popular",
+  "Natureza em Amarante: Grande Rota de Figueiró ao centro de Amarante já está operacional",
+  "Comunidade Activa: Caminhada Noturna de Figueiró junta famílias e atletas sob o luar",
+  "Música no Rio: Concertos de verão à beira do Tâmega animam noites de Julho e Agosto"
 ];
 
 const FALLBACK_TICKER_EN = [
   "Web Rádio Figueiró: Official app launched with High Definition (HD) broadcasting and AI assistant",
-  "Seasonal Culture: Regional Concertina Meeting filled the heart of Figueiró with traditional rhythms",
-  "Nature in Amarante: New scenic trail 'Caminhos de São Gonçalo' attracts hikers to Figueiró",
-  "Traditional Gastronomy: Amarante Crafts Fair highlights conventual sweets and local green wines",
-  "Music by the River: Summer concerts in Ribeirinho park continue to attract thousands of visitors"
+  "Living Tradition: Amarante Onion Fair returns with gastronomy and folk entertainment",
+  "Nature in Amarante: Great Trail from Figueiró to Amarante center is now fully operational",
+  "Active Community: Figueiró Night Walk gathers families and athletes under the moonlight",
+  "Music by the River: Summer concerts by the Tâmega River animate July and August nights"
 ];
 
 const NewsTicker: React.FC = () => {
