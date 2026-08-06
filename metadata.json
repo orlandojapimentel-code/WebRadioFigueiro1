@@ -3,5 +3,8 @@
   "description": "App oficial da Web Rádio Figueiró em Amarante. Player digital HD, notícias locais atualizadas por IA, agenda cultural e interatividade com os ouvintes.",
   "requestFramePermissions": [
     "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]
 }
