@@ -42,17 +42,17 @@ const AppContent: React.FC = () => {
             };
             const title = extract('TITULO');
             const dateStr = extract('DATA');
-            setNextEventTitle(title || "Música no Rio");
-            setNextEventDate(dateStr || "Todos os Sábados de Julho");
+            setNextEventTitle(title || "Festas de São Bartolomeu");
+            setNextEventDate(dateStr || "20 a 24 de Agosto");
             return;
           }
         }
-        setNextEventTitle("Música no Rio");
-        setNextEventDate("Sábados de Julho");
+        setNextEventTitle("Festas de São Bartolomeu");
+        setNextEventDate("20 a 24 de Agosto");
       } catch (err) {
         console.error("Error loading next event badge:", err);
-        setNextEventTitle("Música no Rio");
-        setNextEventDate("Sábados de Julho");
+        setNextEventTitle("Festas de São Bartolomeu");
+        setNextEventDate("20 a 24 de Agosto");
       }
     };
     loadNextEvent();

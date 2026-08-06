@@ -15,70 +15,70 @@ interface NewsItem {
 const FALLBACK_NEWS_PT: NewsItem[] = [
   {
     id: "f1",
-    title: "Web Rádio Figueiró Lança Aplicação Oficial com Emissão HD",
-    excerpt: "A Web Rádio Figueiró acaba de lançar a sua nova plataforma digital, aproximando ainda mais a comunidade local e a diáspora a Amarante.",
-    content: "A Web Rádio Figueiró, uma das principais vozes da freguesia de Figueiró e do concelho de Amarante, deu um passo histórico em direção ao futuro digital com a apresentação da sua nova aplicação oficial. A nova plataforma permite aos ouvintes desfrutar de uma emissão contínua em Alta Definição (HD), oferecendo uma experiência de som cristalino em qualquer parte do mundo.\n\nCom funções inteligentes como um assistente de inteligência artificial dedicado para pedidos de músicas, notícias regionais atualizadas e a integração direta de uma agenda cultural local, a Web Rádio Figueiró consolida o seu compromisso de liderança na divulgação cultural.\n\nEsta inovação tecnológica visa aproximar não só as populações que residem no concelho, mas também as vastas comunidades de emigrantes de Figueiró espalhadas pela Europa e pelo mundo, que agora têm um portal de excelência para se manterem ligadas às suas raízes e à música que mais gostam.",
-    date: "16 Junho, 2026",
-    image: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800"
-  },
-  {
-    id: "f2",
-    title: "Feira de Artesanato e Gastronomia de Amarante Promete Recorde",
-    excerpt: "O certame deste ano reúne dezenas de artesãos locais e produtores do famoso vinho verde da região no centro histórico.",
-    content: "A tradicional Feira de Artesanato e Gastronomia de Amarante arranca já no próximo fim de semana com a expetativa de ser a maior edição de sempre. Organizada em parceria com as associações regionais, a feira irá transformar as margens do rio Tâmega e o Largo de São Gonçalo no epicentro da cultura tradicional portuguesa.\n\nPara além de trabalhos manuais únicos em madeira, barro e tecelagem, os visitantes poderão deliciar-se com os famosos doces conventuais de Amarante e provar os vinhos verdes de produtores de Figueiró e freguesias vizinhas.\n\nA Web Rádio Figueiró terá uma equipa no local para fazer a cobertura de rádio em direto, entrevistando artesãos e visitantes e transmitindo toda a animação musical deste evento que é um orgulho para a nossa região portuguesa.",
-    date: "14 Junho, 2026",
+    title: "Festas de São Bartolomeu em Amarante Prometem Animar o Mês de Agosto",
+    excerpt: "As tradicionais Festas de São Bartolomeu regressam ao centro histórico com concertos, folclore e fogo de artifício no Tâmega.",
+    content: "O concelho de Amarante prepara-se para acolher uma das suas celebrações mais emblemáticas do verão: as Festas de São Bartolomeu. Durante cinco dias, o centro histórico transforma-se num palco vibrante de cultura, música popular e convívio comunitário.\n\nA programação inclui atuações de bandas filarmónicas, ranchos folclóricos da região — com destaque para as tradições de Figueiró —, concertos de artistas nacionais e o majestoso espetáculo piromusical sobre as águas do rio Tâmega.\n\nA Web Rádio Figueiró fará a cobertura completa em direto, levando o ambiente festivo aos ouvintes no concelho e na diáspora.",
+    date: "05 Agosto, 2026",
     image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800"
   },
   {
+    id: "f2",
+    title: "Figueiró Recebe Festas em Honra de Nossa Senhora do Moreira",
+    excerpt: "A freguesia de Figueiró celebra as suas festividades anuais com grande fervor religioso e animação musical para toda a família.",
+    content: "A freguesia de Figueiró acolhe já em meados de agosto a tradicional Festa em Honra de Nossa Senhora do Moreira, um dos momentos mais aguardados do ano pela população local e pelos emigrantes que regressam à sua terra natal nas férias de verão.\n\nO programa festivo combina a vertente religiosa — com a procissão solene pelas ruas da freguesia — com a vertente profana, destacando-se espetáculos de variedades, jogos tradicionais e o encontro de concertinas.\n\nA comissão de festas apela à participação de todos neste grande reencontro da comunidade de Figueiró.",
+    date: "03 Agosto, 2026",
+    image: "https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800"
+  },
+  {
     id: "f3",
-    title: "Roteiro dos Caminhos de São Gonçalo Revitaliza Turismo",
-    excerpt: "O novo percurso pedestre e cultural que liga Figueiró ao coração histórico de Amarante já está aberto ao público.",
-    content: "O turismo de Amarante conta com uma nova atração de grande valor patrimonial e ambiental. Foi inaugurado oficialmente o Roteiro Pedestre dos Caminhos de São Gonçalo, um trilho que percorre caminhos rurais históricos a partir da freguesia de Figueiró até à icónica ponte de Amarante.\n\nO trajeto, totalmente sinalizado e dotado de painéis informativos sobre a fauna, flora e lendas locais, promete atrair caminhantes, amantes da natureza e peregrinos.\n\nA iniciativa visa promover a descentralização turística na região, destacando a riqueza florestal e as belas paisagens ribeirinhas que caracterizam Figueiró e arredores, incentivando simultaneamente o comércio local.",
-    date: "10 Junho, 2026",
-    image: "https://images.unsplash.com/photo-1531265726475-52ad60219627?q=80&w=800"
+    title: "Noite Branca de Amarante Ilumina o Centro Histórico no Final de Agosto",
+    excerpt: "O evento multicultural promete transformar as margens do Tâmega num mar de luz, música, teatro de rua e gastronomia.",
+    content: "O centro histórico de Amarante vai voltar a vestir-se integralmente de branco para a grande Noite Branca. O evento, que atrai milhares de visitantes, contará com múltiplos palcos espalhados pelas praças e pontes da cidade, com DJs, bandas ao vivo e performance de artes de rua.\n\nComércio tradicional e restaurantes estarão abertos pela noite dentro com menus especiais inspirados nos sabores da região, como o vinho verde e a doçaria conventual.\n\nA Web Rádio Figueiró montará um estúdio de rádio em direto no recinto para acompanhar em tempo real toda a animação.",
+    date: "01 Agosto, 2026",
+    image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800"
   },
   {
     id: "f4",
-    title: "Encontro de Concertinas de Figueiró Junta Gerações",
-    excerpt: "As ruas de Figueiró encheram-se de ritmo e tradição musical num convívio que celebra as canções populares.",
-    content: "A música tradicional portuguesa esteve em destaque no Encontro Regional de Concertinas de Figueiró, Amarante. O evento, promovido pelo grupo de folclore local, reuniu mais de uma dezena de ranchos e grupos informais de tocadores vindos de vários pontos do norte do país.\n\nAs ruas encheram-se de sons alegres e desgarradas improvisadas, atraindo centenas de espetadores de todas as idades num ambiente de festa e partilha comunitária.\n\nO sucesso da iniciativa reforça a importância de preservar e transmitir as tradições musicais locais aos mais jovens, garantindo que a identidade de Figueiró continua bem viva.",
-    date: "08 Junho, 2026",
-    image: "https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800"
+    title: "Web Rádio Figueiró Bate Recordes de Audiência com a Nova Aplicação",
+    excerpt: "O lançamento da app com emissão HD e inteligência artificial atrai milhares de novos ouvintes da comunidade emigrante.",
+    content: "A Web Rádio Figueiró consolida a sua posição como a voz de referência da região de Amarante e Figueiró no ecossistema digital. Um mês após o lançamento oficial da sua nova aplicação mobile, os indicadores de audiência revelam um crescimento sem precedentes, sobretudo junto das comunidades portuguesas na Europa e América.\n\nA funcionalidade do assistente IA para pedidos musicais e a transmissão em alta definição (HD) têm sido amplamente elogiadas pelos ouvintes.\n\nA direção da rádio agradece a confiança e promete continuar a reforçar os conteúdos informativos e culturais.",
+    date: "28 Julho, 2026",
+    image: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800"
   }
 ];
 
 const FALLBACK_NEWS_EN: NewsItem[] = [
   {
     id: "f1",
-    title: "Web Rádio Figueiró Launches Official App with HD Broadcasting",
-    excerpt: "Web Rádio Figueiró has launched its new digital platform, bringing the local community and the diaspora closer to Amarante.",
-    content: "Web Rádio Figueiró, one of the leading voices of the parish of Figueiró and the municipality of Amarante, has taken a historic step toward the digital future with the presentation of its official application. The new platform allows listeners to enjoy continuous high-definition (HD) broadcasting, offering a crystal-clear sound experience anywhere in the world.\n\nWith smart features such as a dedicated AI assistant for music requests, updated regional news, and direct integration with a local cultural agenda, Web Rádio Figueiró consolidates its leadership in cultural communication.\n\nThis technological innovation aims to connect not only local residents but also the vast communities of emigrants from Figueiró scattered across Europe and the globe, who now have an excellent portal to stay connected to their origins and the music they love.",
-    date: "June 16, 2026",
-    image: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800"
-  },
-  {
-    id: "f2",
-    title: "Crafts and Gastronomy Fair of Amarante Promises Record Attendance",
-    excerpt: "This year's event gathers local artisans and producers of the region's famous Vinho Verde in the historic center.",
-    content: "The traditional Crafts and Gastronomy Fair of Amarante kicks off next weekend with the expectation of being the largest edition ever. Organized in partnership with regional associations, the fair will transform the banks of the Tâmega River and the São Gonçalo Square into the epicenter of traditional Portuguese culture.\n\nIn addition to unique wooden, clay, and weaving handicrafts, visitors will be able to enjoy Amarante's famous conventual sweets and taste Vinho Verde wines from producers in Figueiró and neighboring parishes.\n\nWeb Rádio Figueiró will have a live broadcasting team on site, interviewing artisans and visitors to share all the musical excitement of this prideful regional event.",
-    date: "June 14, 2026",
+    title: "São Bartolomeu Festivities in Amarante Set to Highlight August Celebrations",
+    excerpt: "The traditional Festas de São Bartolomeu return to the historic center with concerts, folklore, and fireworks over the Tâmega River.",
+    content: "The municipality of Amarante is preparing to host one of its most iconic summer celebrations: the Festas de São Bartolomeu. For five days, the historic center will transform into a vibrant stage for culture, traditional music, and community gathering.\n\nThe line-up features performances by brass bands, local folklore groups — highlighting the traditions of Figueiró —, concerts by national artists, and a magnificent musical fireworks display over the Tâmega River.\n\nWeb Rádio Figueiró will provide full live coverage, bringing the festive spirit to listeners locally and across the diaspora.",
+    date: "August 05, 2026",
     image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800"
   },
   {
+    id: "f2",
+    title: "Figueiró Hosts Annual Nossa Senhora do Moreira Festivities",
+    excerpt: "The parish of Figueiró celebrates its annual festivities with great religious devotion and live entertainment for the whole family.",
+    content: "The parish of Figueiró welcomes in mid-August the traditional Feast in Honor of Nossa Senhora do Moreira, one of the most anticipated moments of the year for residents and returning emigrants on summer vacation.\n\nThe festive schedule combines religious traditions — including the solemn procession through the parish streets — with lively entertainment, feature shows, traditional games, and folk music gatherings.\n\nThe committee invites the entire community to join in this joyful reunion in Figueiró.",
+    date: "August 03, 2026",
+    image: "https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800"
+  },
+  {
     id: "f3",
-    title: "São Gonçalo Trail Revitalizes Regional Tourism",
-    excerpt: "The new pedestrian and cultural trail connecting Figueiró to the historic heart of Amarante is now open to the public.",
-    content: "Tourism in Amarante has a new attraction of great environmental and heritage value. The Pedestrian Trail of São Gonçalo was officially inaugurated, walking through historic rural paths from the parish of Figueiró to the iconic Amarante bridge.\n\nThe trail, fully signposted with informative panels about local fauna, flora, and legends, promises to attract hikers, nature lovers, and pilgrims.\n\nThis initiative aims to promote tourism decentralization in the region, highlighting the forest and river landscapes of Figueiró, while boosting the local economy.",
-    date: "June 10, 2026",
-    image: "https://images.unsplash.com/photo-1531265726475-52ad60219627?q=80&w=800"
+    title: "Amarante White Night to Illuminate Historic Center in Late August",
+    excerpt: "The multicultural event promises to turn the Tâmega riverbanks into a sea of light, live music, street theater, and gastronomy.",
+    content: "The historic heart of Amarante will once again dress entirely in white for the famous White Night. Attracting thousands of visitors, the event will feature multiple stages across city squares and bridges, with DJs, live bands, and street performances.\n\nLocal shops and restaurants will stay open throughout the night offering regional wine and traditional pastries.\n\nWeb Rádio Figueiró will broadcast live from the venue to bring real-time updates and interviews to its listeners.",
+    date: "August 01, 2026",
+    image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800"
   },
   {
     id: "f4",
-    title: "Concertina Meeting of Figueiró Unites Generations",
-    excerpt: "The streets of Figueiró filled with rhythm and traditional music in a gathering that celebrates regional folk songs.",
-    content: "Traditional Portuguese music took center stage at the Regional Concertina Meeting in Figueiró, Amarante. The event, promoted by the local folklore group, brought together more than a dozen groups and individual players from all over northern Portugal.\n\nThe streets were filled with happy sounds and improvised folk songs, attracting hundreds of spectators of all ages in an atmosphere of sharing and joy.\n\nThe success of this initiative strengthens the preservation of local musical traditions, ensuring that the identity of Figueiró remains vibrant for future generations.",
-    date: "June 08, 2026",
-    image: "https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800"
+    title: "Web Rádio Figueiró Reaches Record Audience with New Mobile App",
+    excerpt: "The launch of the app with HD audio and AI assistant attracts thousands of new listeners across the emigrant community.",
+    content: "Web Rádio Figueiró reinforces its position as the voice of reference for Amarante and Figueiró in the digital landscape. One month after launching its official mobile application, audience figures show unprecedented growth, particularly among Portuguese diaspora communities in Europe and the Americas.\n\nFeatures like the AI assistant for music requests and high-definition audio streaming have received widespread praise from listeners.\n\nRadio management thanks all supporters and commits to expanding regional news and cultural coverage.",
+    date: "July 28, 2026",
+    image: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800"
   }
 ];
 

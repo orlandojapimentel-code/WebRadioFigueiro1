@@ -4,19 +4,19 @@ import { fetchLatestNews } from '../services/geminiService';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const FALLBACK_TICKER_PT = [
-  "Web Rádio Figueiró: Lançada aplicação oficial com emissão em Alta Definição (HD) e assistente IA",
-  "Tradição Viva: Feira das Cebolas de Amarante regressa com gastronomia e animação popular",
-  "Natureza em Amarante: Grande Rota de Figueiró ao centro de Amarante já está operacional",
-  "Comunidade Activa: Caminhada Noturna de Figueiró junta famílias e atletas sob o luar",
-  "Música no Rio: Concertos de verão à beira do Tâmega animam noites de Julho e Agosto"
+  "Festas de Verão: Festas de São Bartolomeu em Amarante decorrem de 20 a 24 de Agosto",
+  "Tradição em Figueiró: Festa em Honra de N. Senhora do Moreira atrai centenas de visitantes",
+  "Noite Branca de Amarante: Música e animação nas margens do rio Tâmega a 29 de Agosto",
+  "Web Rádio Figueiró: Nova aplicação oficial com emissão HD bate recordes de audiência na diáspora",
+  "Música no Rio: Concertos de verão à beira do Tâmega continuam durante todo o mês de Agosto"
 ];
 
 const FALLBACK_TICKER_EN = [
-  "Web Rádio Figueiró: Official app launched with High Definition (HD) broadcasting and AI assistant",
-  "Living Tradition: Amarante Onion Fair returns with gastronomy and folk entertainment",
-  "Nature in Amarante: Great Trail from Figueiró to Amarante center is now fully operational",
-  "Active Community: Figueiró Night Walk gathers families and athletes under the moonlight",
-  "Music by the River: Summer concerts by the Tâmega River animate July and August nights"
+  "Summer Festivals: Festas de São Bartolomeu in Amarante run from August 20 to 24",
+  "Tradition in Figueiró: Feast in Honor of N. Senhora do Moreira attracts hundreds of visitors",
+  "Amarante White Night: Music and live entertainment along the Tâmega riverbanks on August 29",
+  "Web Rádio Figueiró: Official app with HD audio reaches record audience across the diaspora",
+  "Music by the River: Summer concerts by the Tâmega River continue throughout August"
 ];
 
 const NewsTicker: React.FC = () => {
