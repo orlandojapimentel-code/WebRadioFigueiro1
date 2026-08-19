@@ -4,19 +4,19 @@ import { fetchLatestNews } from '../services/geminiService';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const FALLBACK_TICKER_PT = [
-  "Festas de Verão: Festas de São Bartolomeu em Amarante decorrem de 20 a 24 de Agosto",
-  "Tradição em Figueiró: Festa em Honra de N. Senhora do Moreira atrai centenas de visitantes",
-  "Noite Branca de Amarante: Música e animação nas margens do rio Tâmega a 29 de Agosto",
-  "Web Rádio Figueiró: Nova aplicação oficial com emissão HD bate recordes de audiência na diáspora",
-  "Música no Rio: Concertos de verão à beira do Tâmega continuam durante todo o mês de Agosto"
+  "Festas de São Bartolomeu: Grandes celebrações de verão em Amarante decorrem de 20 a 24 de Agosto",
+  "Figueiró em Festa: Celebrações de N. Senhora do Moreira unem centenas de fiéis e emigrantes",
+  "Noite Branca de Amarante: Música, arte e gastronomia nas margens do Tâmega a 29 de Agosto",
+  "Web Rádio Figueiró: Nova aplicação oficial com som HD atinge recorde de 50.000 ouvintes na diáspora",
+  "Concertos de Verão: Animação musical à beira do Rio Tâmega prossegue até ao final de Agosto"
 ];
 
 const FALLBACK_TICKER_EN = [
-  "Summer Festivals: Festas de São Bartolomeu in Amarante run from August 20 to 24",
-  "Tradition in Figueiró: Feast in Honor of N. Senhora do Moreira attracts hundreds of visitors",
-  "Amarante White Night: Music and live entertainment along the Tâmega riverbanks on August 29",
-  "Web Rádio Figueiró: Official app with HD audio reaches record audience across the diaspora",
-  "Music by the River: Summer concerts by the Tâmega River continue throughout August"
+  "São Bartolomeu Festivities: Summer celebrations in Amarante take place from August 20 to 24",
+  "Figueiró in Celebration: N. Senhora do Moreira festivities gather hundreds of locals and emigrants",
+  "Amarante White Night: Music, arts, and gastronomy by the Tâmega riverbanks on August 29",
+  "Web Rádio Figueiró: Official app with HD audio hits record 50,000 listeners across the diaspora",
+  "Summer Concerts: Live music performances by the Tâmega River continue through the end of August"
 ];
 
 const NewsTicker: React.FC = () => {
