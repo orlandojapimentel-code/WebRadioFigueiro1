@@ -16,19 +16,19 @@ const getAIInstance = () => {
 };
 
 const FALLBACK_NEWS_PT_DATA = [
-  "Festas de São Bartolomeu em Amarante Arrancam esta Semana com Grande Cartaz",
-  "Figueiró Celebra com Sucesso Festa de Nossa Senhora do Moreira e Prepara Encontro Cultural",
-  "Noite Branca de Amarante Marcada para 29 de Agosto Ilumina as Margens do Rio Tâmega",
-  "Web Rádio Figueiró Atinge Recorde Histórico de Audiência Digital na Europa e Américas",
-  "Concertos de Verão à Beira do Rio Tâmega Continuam em Destaque em Agosto"
+  "Vindimas em Amarante e Figueiró Anteveem Vinho Verde de Excelente Qualidade",
+  "Amarante Celebra Jornadas Europeias do Património com Roteiros e Música no Tâmega",
+  "Cineteatro de Amarante Apresenta Temporada Cultural de Outono com Grandes Espetáculos",
+  "Web Rádio Figueiró Estreia Grelha de Outono com Novos Programas Dedicados à Diáspora",
+  "Feiras Tradicionais e Encontros de Concertinas Animam o Concelho em Setembro"
 ].join('\n');
 
 const FALLBACK_NEWS_EN_DATA = [
-  "São Bartolomeu Festivities in Amarante Kick Off This Week with Stellar Line-up",
-  "Figueiró Successfully Celebrates Nossa Senhora do Moreira Festivities with Community Reunion",
-  "Amarante White Night Set for August 29 to Light Up the Tâmega Riverbanks",
-  "Web Rádio Figueiró Hits Record Digital Audience Across Europe and the Americas",
-  "Summer Concerts by the Tâmega River Continue Throughout August"
+  "Wine Harvest in Amarante and Figueiró Anticipates Outstanding Vinho Verde",
+  "Amarante Celebrates European Heritage Days with Guided Routes and Music by the Tâmega",
+  "Amarante Cine-Theater Announces Autumn Season Featuring Fado, Theater, and Cinema",
+  "Web Rádio Figueiró Debuts Autumn Programming Dedicated to the Global Diaspora",
+  "Traditional Fairs and Accordion Gatherings Bring Music to Municipal Parishes"
 ].join('\n');
 
 export const fetchLatestNews = async (lang: Language = 'pt') => {
@@ -46,7 +46,7 @@ export const fetchLatestNews = async (lang: Language = 'pt') => {
 
   try {
     const model = 'gemini-3-flash-preview';
-    const prompt = `Lista 5 notícias ou curiosidades curtas mais recentes sobre Amarante e Figueiró, Portugal (Agosto de 2026). Escreve obrigatoriamente em ${lang === 'pt' ? 'Português' : 'Inglês'}. Apenas os títulos, um por linha.`;
+    const prompt = `Lista 5 notícias ou curiosidades curtas mais recentes sobre Amarante e Figueiró, Portugal (Setembro de 2026). Escreve obrigatoriamente em ${lang === 'pt' ? 'Português' : 'Inglês'}. Apenas os títulos, um por linha.`;
 
     const response = await ai.models.generateContent({
       model: model,
@@ -68,38 +68,38 @@ export const fetchLatestNews = async (lang: Language = 'pt') => {
 
 const FALLBACK_CULTURAL_DATA = `
 EVENTO_START
-TITULO: Festas de São Bartolomeu
-DATA: 20 a 24 de Agosto
-LOCAL: Largo de São Gonçalo, Amarante
-TIPO: FESTA
-IMAGEM: https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800
-LINK: https://www.cm-amarante.pt
-EVENTO_END
-
-EVENTO_START
-TITULO: Festa de N. Senhora do Moreira
-DATA: 14 a 16 de Agosto
+TITULO: Jornadas Europeias do Património: Rota dos Moinhos de Figueiró
+DATA: 25 a 27 de Setembro
 LOCAL: Figueiró, Amarante
-TIPO: FESTA
-IMAGEM: https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800
+TIPO: EXPOSIÇÃO
+IMAGEM: https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800
 LINK: https://www.cm-amarante.pt
 EVENTO_END
 
 EVENTO_START
-TITULO: Noite Branca de Amarante
-DATA: 29 de Agosto
+TITULO: Festa das Vindimas e Sabores de Amarante
+DATA: 26 e 27 de Setembro
 LOCAL: Centro Histórico, Amarante
-TIPO: CONCERTO
-IMAGEM: https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800
+TIPO: FESTA
+IMAGEM: https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=800
 LINK: https://www.cm-amarante.pt
 EVENTO_END
 
 EVENTO_START
-TITULO: Concertos de Verão no Rio Tâmega
-DATA: Todos os Sábados de Agosto
-LOCAL: Parque Ribeirinho, Amarante
+TITULO: Noite de Fado e Poesia de Teixeira de Pascoaes
+DATA: 03 de Outubro
+LOCAL: Claustros de São Gonçalo, Amarante
 TIPO: CONCERTO
-IMAGEM: https://images.unsplash.com/photo-1465847899084-d164df4dedc6?q=80&w=800
+IMAGEM: https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800
+LINK: https://www.cm-amarante.pt
+EVENTO_END
+
+EVENTO_START
+TITULO: Abertura da Temporada Cultural de Outono
+DATA: 10 de Outubro
+LOCAL: Cineteatro de Amarante
+TIPO: TEATRO
+IMAGEM: https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?q=80&w=800
 LINK: https://www.cm-amarante.pt
 EVENTO_END
 
@@ -126,12 +126,12 @@ export const fetchCulturalEvents = async () => {
 
   try {
     const model = 'gemini-3-flash-preview';
-    const prompt = `Procura eventos culturais reais, concertos, exposições, teatro ou festas populares em Amarante e Figueiró, Portugal para este mês de Agosto e próximas semanas de 2026. 
+    const prompt = `Procura eventos culturais reais, concertos, exposições, teatro ou festas populares em Amarante e Figueiró, Portugal para este mês de Setembro e Outono de 2026. 
     Retorna uma lista de eventos formatada rigorosamente usando os blocos abaixo para cada evento:
 
     EVENTO_START
     TITULO: [Nome do Evento]
-    DATA: [Dia e Mês, ex: 20 de Agosto]
+    DATA: [Dia e Mês, ex: 26 de Setembro]
     LOCAL: [Local exato em Amarante ou Figueiró]
     TIPO: [Escolhe uma categoria: CONCERTO, EXPOSIÇÃO, TEATRO, FESTA ou GERAL]
     IMAGEM: [URL de uma imagem do cartaz ou local se encontrada]
@@ -160,68 +160,68 @@ export const fetchCulturalEvents = async () => {
 
 const FALLBACK_DETAILED_NEWS_PT_STR = `
 NOTICIA_START
-TITULO: Festas de São Bartolomeu em Amarante Arrancam esta Semana com Grande Cartaz
-DATA: 18 Agosto, 2026
-RESUMO: O centro histórico de Amarante recebe cinco dias de grande animação popular, concertos, folclore e fogo de artifício no Tâmega.
-CONTEUDO: O concelho de Amarante prepara-se para acolher uma das suas celebrações de verão mais aguardadas: as tradicionais Festas de São Bartolomeu, que decorrem de 20 a 24 de agosto. Durante quase uma semana, as margens do rio Tâmega e o Largo de São Gonçalo transformam-se num epicentro vibrante de cultura, música popular e convívio comunitário.\\n\\nA programação inclui concertos de artistas nacionais, atuações de bandas filarmónicas, encontros de grupos de bombos e ranchos folclóricos da região — com especial destaque para os costumes e trajes de Figueiró. O momento alto das festividades será o majestoso espetáculo piromusical sobre as águas do rio Tâmega.\\n\\nA Web Rádio Figueiró estará em direto no local com estúdio móvel e reportagens exclusivas, transmitindo a emoção das festas aos ouvintes em Amarante e à comunidade emigrante na diáspora.
-IMAGEM: https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800
+TITULO: Vindimas em Amarante e Figueiró Anteveem Vinho Verde de Excelente Qualidade
+DATA: 16 Setembro, 2026
+RESUMO: A época das vindimas arrancou em força nas encostas do Tâmega e socalcos de Figueiró, com viticultores a prever colheita excecional.
+CONTEUDO: As quintas e vinhedos da sub-região de Amarante e da freguesia de Figueiró iniciaram a tradicional azáfama das vindimas de outono. Favorecidas por um verão de noites frescas e dias de sol ameno, as castas autóctones como Azal, Avesso e Pedernã apresentam uma maturação perfeita e equilíbrio de acidez ímpar.\\n\\nNa freguesia de Figueiró, pequenos e médios produtores preservam a colheita manual e a pisa tradicional em lagares de granito. A época traz também de volta o convívio nas adegas, juntando vizinhos e familiares da diáspora que prolongaram a estadia para participar nesta tradição secular.\\n\\nA Web Rádio Figueiró acompanhará ao longo de setembro as histórias dos nossos viticultores, com transmissões dedicadas aos aromas e saberes do nosso Vinho Verde.
+IMAGEM: https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: Figueiró Celebra com Sucesso Festa de Nossa Senhora do Moreira e Prepara Encontro Cultural
-DATA: 16 Agosto, 2026
-RESUMO: A comunidade de Figueiró acolheu centenas de fiéis e emigrantes nas suas celebrações anuais, reforçando a união e tradição paroquial.
-CONTEUDO: A freguesia de Figueiró viveu dias de profunda alegria e comunhão com a celebração da tradicional Festa em Honra de Nossa Senhora do Moreira. As cerimónias religiosas, marcadas pela solene procissão com andores ricamente ornamentados por flores naturais, atraíram centenas de residentes e emigrantes em férias na terra natal.\\n\\nPara além da componente religiosa, as noites foram animadas por espetáculos de variedades, desgarradas e cantares ao desafio, demonstrando a vitalidade do património etnográfico local.\\n\\nA comissão de festas expressou um agradecimento caloroso a todos os que contribuíram para o sucesso deste reencontro comunitário e anunciou já um próximo convívio de outono.
-IMAGEM: https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800
+TITULO: Amarante Celebra Jornadas Europeias do Património com Roteiros e Música no Tâmega
+DATA: 14 Setembro, 2026
+RESUMO: Monumentos históricos, pontes seculares e trilhos naturais de Figueiró abrem portas com visitas guiadas e concertos gratuitos no final de setembro.
+CONTEUDO: De 25 a 27 de setembro, o concelho de Amarante assinala as Jornadas Europeias do Património com uma vasta programação cultural e de descoberta do património construído e imaterial. O programa integra percursos temáticos pelas margens do rio Tâmega e visitas noturnas ao Mosteiro de São Gonçalo.\\n\\nA freguesia de Figueiró estará em destaque com um percurso pedestre guiado pelos antigos moinhos de água e capelas históricas, convidando os participantes a redescobrir as lendas, ofícios ancestrais e a arquitetura rural da nossa terra.\\n\\nTodas as atividades são gratuitas e destinadas a famílias, amantes da natureza e a todos os que valorizam a identidade cultural da nossa região.
+IMAGEM: https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: Noite Branca de Amarante Marcada para 29 de Agosto Ilumina as Margens do Rio Tâmega
-DATA: 14 Agosto, 2026
-RESUMO: Múltiplos palcos, performances de artes de rua, DJs e gastronomia regional vestem o centro histórico de branco até de madrugada.
-CONTEUDO: A magia da Noite Branca está de regresso a Amarante no próximo dia 29 de agosto, prometendo reunir milhares de visitantes vestidos a rigor. As ruas e praças do centro histórico acolherão múltiplos palcos musicais com géneros que vão do pop/rock à música eletrónica, além de estátuas vivas, artes circenses e espetáculos visuais de luz.\\n\\nOs restaurantes, esplanadas e comércio tradicional permanecerão abertos com ementas especiais destacando os vinhos verdes da sub-região de Amarante e a tradicional doçaria conventual.\\n\\nA equipa da Web Rádio Figueiró acompanhará toda a emissão em tempo real com entrevistas a artistas, comerciantes e visitantes.
-IMAGEM: https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800
+TITULO: Cineteatro de Amarante Apresenta Temporada Cultural de Outono com Grandes Espetáculos
+DATA: 11 Setembro, 2026
+RESUMO: A nova programação arranca este mês trazendo fado contemporâneo, teatro nacional e sessões de cinema de autor ao coração da cidade.
+CONTEUDO: O Cineteatro de Amarante divulgou a sua ambiciosa programação cultural para os meses de outono. A nova temporada abre com grandes nomes da música portuguesa, ciclos de teatro comunitário e concertos intimistas de fado e guitarras clássicas.\\n\\nAs associações culturais de Figueiró e das freguesias vizinhas marcarão presença em mostras de artes cénicas e encontros musicais, promovendo jovens talentos e tradições orais.\\n\\nOs ouvintes da Web Rádio Figueiró poderão acompanhar antevisões exclusivas e entrevistas com os artistas convidados na nossa emissão diária.
+IMAGEM: https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: Web Rádio Figueiró Atinge Recorde Histórico de Audiência Digital na Europa e Américas
-DATA: 11 Agosto, 2026
-RESUMO: A nova plataforma digital com transmissão em Alta Definição (HD) e assistente inteligente conecta mais de 50 mil ouvintes.
-CONTEUDO: A Web Rádio Figueiró consolidou este mês a sua posição de liderança como o maior veículo de ligação entre o concelho de Amarante e as comunidades de emigrantes portugueses espalhadas pelo mundo. Dados recentes de audiência digital registam um crescimento recorde após o lançamento da nova aplicação móvel com som HD e assistente musical inteligente.\\n\\nOuvintes em países como França, Suíça, Alemanha, Luxemburgo, Estados Unidos e Brasil destacam a facilidade de pedir músicas, ouvir notícias locais em tempo real e acompanhar os eventos culturais de Figueiró.\\n\\nA direção da rádio agradece a fidelidade de todos e reafirma a sua dedicação incondicional à promoção da cultura, da música portuguesa e das gentes de Figueiró.
+TITULO: Web Rádio Figueiró Estreia Grelha de Outono com Novos Programas Dedicados à Diáspora
+DATA: 08 Setembro, 2026
+RESUMO: A estação renova a emissão com a rubrica 'Pontes de Saudade' e reforça a transmissão em direto de eventos culturais locais.
+CONTEUDO: Com a chegada do outono, a Web Rádio Figueiró lança uma grelha de programação renovada, reforçando a ligação com a comunidade de ouvintes locais e com os milhares de portugueses no estrangeiro. Entre as estreias destaca-se o programa semanal 'Pontes de Saudade', que conecta famílias de Figueiró a familiares residentes em França, Suíça e nas Américas.\\n\\nA grelha inclui ainda reportagens matinais sobre a vida associativa de Amarante, informação meteorológica rural e os grandes clássicos da música popular e ligeira portuguesa.\\n\\nA direção da rádio agradece o apoio contínuo de todos os ouvintes que acompanham a emissão diária em Alta Definição através da nossa plataforma.
 IMAGEM: https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800
 NOTICIA_END
 `;
 
 const FALLBACK_DETAILED_NEWS_EN_STR = `
 NOTICIA_START
-TITULO: São Bartolomeu Festivities in Amarante Kick Off This Week with Stellar Line-up
-DATA: August 18, 2026
-RESUMO: The historic center of Amarante hosts five days of live concerts, folklore, street entertainment, and fireworks over the Tâmega River.
-CONTEUDO: The municipality of Amarante is ready to host one of its most celebrated summer traditions: the São Bartolomeu Festivities, running from August 20 to 24. For nearly a week, the riverbanks of the Tâmega and São Gonçalo Square become the vibrant epicenter of Portuguese culture, traditional music, and joyful community life.\\n\\nThe official schedule includes performances by renowned national artists, philharmonic bands, drumming groups, and local folk dance troupes — highlighting the rich heritage and traditional costumes of Figueiró. The grand finale will feature a stunning pyromusical fireworks show over the Tâmega River.\\n\\nWeb Rádio Figueiró will broadcast live from the venue, connecting local listeners and diaspora families worldwide.
-IMAGEM: https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800
+TITULO: Grape Harvest in Amarante and Figueiró Anticipates Outstanding Vinho Verde
+DATA: September 16, 2026
+RESUMO: The harvest season kicks off across Tâmega slopes and Figueiró vineyards, with winemakers forecasting high-quality wine.
+CONTEUDO: Wineries and vineyard estates across the Amarante sub-region and the parish of Figueiró have launched the traditional autumn harvest. Thanks to a summer with crisp nights and mild sunny days, indigenous grape varieties including Azal, Avesso, and Pedernã boast optimal ripeness and vibrant acidity.\\n\\nIn Figueiró, local growers maintain manual harvesting and granite stone pressing traditions. The harvest brings renewed community warmth to the wine cellars, joining neighbors and diaspora families enjoying the season.\\n\\nWeb Rádio Figueiró will cover local stories, harvest customs, and the authentic winemaking heritage of our region throughout September.
+IMAGEM: https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: Figueiró Successfully Celebrates Nossa Senhora do Moreira Festivities with Community Reunion
-DATA: August 16, 2026
-RESUMO: The parish of Figueiró welcomed hundreds of devotees and returning emigrants for annual religious and folk celebrations.
-CONTEUDO: The parish of Figueiró experienced days of profound warmth and unity during the traditional festivities in honor of Nossa Senhora do Moreira. The solemn religious procession, adorned with handmade natural flower arrangements, drew hundreds of local residents and overseas families visiting their hometown for summer vacation.\\n\\nEvenings featured lively folk concerts, accordion challenges, and traditional games, highlighting the strength of regional heritage.\\n\\nThe organizing committee thanked all volunteers and attendees for making this reunion unforgettable and announced upcoming autumn gatherings.
-IMAGEM: https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800
+TITULO: Amarante Celebrates European Heritage Days with Guided Routes and Music by the Tâmega
+DATA: September 14, 2026
+RESUMO: Historic landmarks, scenic bridges, and heritage trails in Figueiró welcome visitors with free guided tours in late September.
+CONTEUDO: From September 25 to 27, the municipality of Amarante celebrates European Heritage Days with open-air events, cultural trails, and musical showcases along the scenic Tâmega River.\\n\\nThe parish of Figueiró will be in the spotlight with an interpretive walking trail through historic watermills and chapels, inviting participants to explore centuries of local folklore, stone masonry, and pastoral traditions.\\n\\nAll activities are free and designed for families, nature lovers, and cultural heritage enthusiasts.
+IMAGEM: https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: Amarante White Night Set for August 29 to Light Up the Tâmega Riverbanks
-DATA: August 14, 2026
-RESUMO: Multiple concert stages, street art performances, DJs, and regional gastronomy will turn the historic center white until dawn.
-CONTEUDO: The magic of the Amarante White Night returns on August 29, promising to attract thousands of visitors dressed in all-white attire. The streets and scenic squares will host multiple music stages spanning pop/rock and electronic beats, alongside living statues, circus arts, and light installations.\\n\\nLocal restaurants, terraces, and shops will remain open late, serving regional Vinho Verde and traditional conventual sweets.\\n\\nWeb Rádio Figueiró will provide live on-air reporting with exclusive artist interviews and audience reactions throughout the evening.
-IMAGEM: https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800
+TITULO: Amarante Cine-Theater Announces Autumn Season Featuring Fado, Theater, and Cinema
+DATA: September 11, 2026
+RESUMO: The new cultural lineup launches this month, bringing acclaimed Portuguese artists and community productions to the city.
+CONTEUDO: The Amarante Cine-Theater has unveiled its rich cultural programme for the autumn months. Highlights include intimate fado concerts, award-winning contemporary drama, and independent film screenings followed by audience discussions.\\n\\nLocal associations from Figueiró and surrounding parishes will present community performances, showcasing regional talent and living memories.\\n\\nWeb Rádio Figueiró listeners can tune in for exclusive previews and artist interviews on our daily broadcast.
+IMAGEM: https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?q=80&w=800
 NOTICIA_END
 
 NOTICIA_START
-TITULO: Web Rádio Figueiró Hits Record Digital Audience Across Europe and the Americas
-DATA: August 11, 2026
-RESUMO: The new digital broadcasting platform with HD audio and AI music requests connects more than 50,000 active listeners.
-CONTEUDO: Web Rádio Figueiró has solidified its standing as the primary cultural bridge connecting Amarante and Figueiró to Portuguese diaspora communities worldwide. Recent metrics show unprecedented digital growth following the release of the updated mobile application featuring crystal-clear HD streaming and an intelligent music assistant.\\n\\nListeners in France, Switzerland, Germany, Luxembourg, the United States, and Brazil praised the platform for seamless music requests and live regional news.\\n\\nStation management expressed heartfelt gratitude to all listeners and pledged continued commitment to promoting Portuguese culture and community ties.
+TITULO: Web Rádio Figueiró Debuts Autumn Programming Dedicated to the Global Diaspora
+DATA: September 08, 2026
+RESUMO: The radio station refreshes its broadcast schedule with new community shows and enhanced regional coverage.
+CONTEUDO: With autumn underway, Web Rádio Figueiró has premiered an updated programming lineup designed to bridge local communities and emigrants abroad. The flagship addition is the weekly live show 'Bridges of Saudade', connecting residents in Figueiró with relatives living in France, Switzerland, and the Americas.\\n\\nThe schedule also includes daily morning reports on local agricultural life, weather forecasts, and timeless Portuguese classics.\\n\\nThe management expresses sincere appreciation to all listeners tuning into our crystal-clear HD broadcast worldwide.
 IMAGEM: https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800
 NOTICIA_END
 `;
@@ -240,7 +240,7 @@ export const fetchDetailedNews = async (lang: Language = 'pt') => {
 
   try {
     const model = 'gemini-3-flash-preview';
-    const prompt = `Procura as 4 notícias mais recentes e relevantes de Amarante e Figueiró, Portugal para este mês de Agosto de 2026. 
+    const prompt = `Procura as 4 notícias mais recentes e relevantes de Amarante e Figueiró, Portugal para este mês de Setembro de 2026. 
     Para cada notícia, gera um bloco estruturado como o seguinte:
 
     NOTICIA_START

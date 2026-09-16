@@ -42,17 +42,17 @@ const AppContent: React.FC = () => {
             };
             const title = extract('TITULO');
             const dateStr = extract('DATA');
-            setNextEventTitle(title || "Festas de São Bartolomeu");
-            setNextEventDate(dateStr || "20 a 24 de Agosto");
+            setNextEventTitle(title || "Jornadas do Património - Rota dos Moinhos");
+            setNextEventDate(dateStr || "25 a 27 de Setembro");
             return;
           }
         }
-        setNextEventTitle("Festas de São Bartolomeu");
-        setNextEventDate("20 a 24 de Agosto");
+        setNextEventTitle("Jornadas do Património - Rota dos Moinhos");
+        setNextEventDate("25 a 27 de Setembro");
       } catch (err) {
         console.error("Error loading next event badge:", err);
-        setNextEventTitle("Festas de São Bartolomeu");
-        setNextEventDate("20 a 24 de Agosto");
+        setNextEventTitle("Jornadas do Património - Rota dos Moinhos");
+        setNextEventDate("25 a 27 de Setembro");
       }
     };
     loadNextEvent();

@@ -4,19 +4,19 @@ import { fetchLatestNews } from '../services/geminiService';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const FALLBACK_TICKER_PT = [
-  "Festas de São Bartolomeu: Grandes celebrações de verão em Amarante decorrem de 20 a 24 de Agosto",
-  "Figueiró em Festa: Celebrações de N. Senhora do Moreira unem centenas de fiéis e emigrantes",
-  "Noite Branca de Amarante: Música, arte e gastronomia nas margens do Tâmega a 29 de Agosto",
-  "Web Rádio Figueiró: Nova aplicação oficial com som HD atinge recorde de 50.000 ouvintes na diáspora",
-  "Concertos de Verão: Animação musical à beira do Rio Tâmega prossegue até ao final de Agosto"
+  "Vindimas em Amarante e Figueiró: Viticultores preveem colheita de Vinho Verde de excelente qualidade",
+  "Jornadas Europeias do Património: Roteiros culturais e visita aos moinhos de Figueiró de 25 a 27 de Setembro",
+  "Cineteatro de Amarante: Nova temporada cultural de outono arranca com fado e teatro nacional",
+  "Web Rádio Figueiró: Nova grelha de outono estreia com emissão especial 'Pontes de Saudade'",
+  "Música e Tradição: Encontros etnográficos e convívios de outono animam as freguesias do concelho"
 ];
 
 const FALLBACK_TICKER_EN = [
-  "São Bartolomeu Festivities: Summer celebrations in Amarante take place from August 20 to 24",
-  "Figueiró in Celebration: N. Senhora do Moreira festivities gather hundreds of locals and emigrants",
-  "Amarante White Night: Music, arts, and gastronomy by the Tâmega riverbanks on August 29",
-  "Web Rádio Figueiró: Official app with HD audio hits record 50,000 listeners across the diaspora",
-  "Summer Concerts: Live music performances by the Tâmega River continue through the end of August"
+  "Wine Harvest in Amarante & Figueiró: Winemakers project exceptional quality for Vinho Verde",
+  "European Heritage Days: Cultural tours and visits to Figueiró's historic watermills from Sept 25 to 27",
+  "Amarante Cine-Theater: New autumn cultural season begins with fado and contemporary drama",
+  "Web Rádio Figueiró: New autumn schedule premieres with special live show 'Bridges of Saudade'",
+  "Tradition & Music: Autumn ethnographic gatherings and local festivals celebrate Tâmega heritage"
 ];
 
 const NewsTicker: React.FC = () => {
