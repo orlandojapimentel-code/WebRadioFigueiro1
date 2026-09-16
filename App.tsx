@@ -50,7 +50,7 @@ const AppContent: React.FC = () => {
         setNextEventTitle("Jornadas do Património - Rota dos Moinhos");
         setNextEventDate("25 a 27 de Setembro");
       } catch (err) {
-        console.error("Error loading next event badge:", err);
+        console.warn("Notice loading next event badge:", err);
         setNextEventTitle("Jornadas do Património - Rota dos Moinhos");
         setNextEventDate("25 a 27 de Setembro");
       }

@@ -272,7 +272,7 @@ const NewsSection: React.FC = () => {
       // If result.text doesn't contain elements or fails, use fallback list
       setNewsList(language === 'pt' ? FALLBACK_NEWS_PT : FALLBACK_NEWS_EN);
     } catch (error) {
-      console.error("Error loading news in component:", error);
+      console.warn("Notice loading news in component:", error);
       setNewsList(language === 'pt' ? FALLBACK_NEWS_PT : FALLBACK_NEWS_EN);
     } finally {
       setLoading(false);

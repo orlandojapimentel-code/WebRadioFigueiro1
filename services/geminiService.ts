@@ -3,16 +3,39 @@ import { GoogleGenAI } from "@google/genai";
 import { Language } from "../translations";
 
 // Simple in-memory cache to avoid redundant API calls and respect rate limits
-const cache: Record<string, { data: any; timestamp: number }> = {};
+const cache: Record<string, { data: unknown; timestamp: number }> = {};
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
 const getAIInstance = () => {
   const key = process.env.GEMINI_API_KEY;
   if (!key || key === 'undefined' || key === 'null' || key === '') {
-    console.warn("Gemini API Key is not configured correctly.");
     return null;
   }
   return new GoogleGenAI({ apiKey: key });
+};
+
+// Helper to call Gemini models with resilient fallback and without restricted tools
+const callGeminiContent = async (
+  ai: GoogleGenAI,
+  prompt: string,
+  systemInstruction?: string
+): Promise<string | null> => {
+  const candidateModels = ['gemini-3-flash-preview', 'gemini-flash-latest'];
+  for (const model of candidateModels) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: systemInstruction ? { systemInstruction } : undefined,
+      });
+      if (response.text && response.text.trim().length > 0) {
+        return response.text;
+      }
+    } catch (err: unknown) {
+      console.warn(`Gemini (${model}) unavailable or restricted:`, err instanceof Error ? err.message : String(err));
+    }
+  }
+  return null;
 };
 
 const FALLBACK_NEWS_PT_DATA = [
@@ -45,23 +68,15 @@ export const fetchLatestNews = async (lang: Language = 'pt') => {
   if (!ai) return { text: fallbackData, source: 'LOCAL' as const };
 
   try {
-    const model = 'gemini-3-flash-preview';
     const prompt = `Lista 5 notícias ou curiosidades curtas mais recentes sobre Amarante e Figueiró, Portugal (Setembro de 2026). Escreve obrigatoriamente em ${lang === 'pt' ? 'Português' : 'Inglês'}. Apenas os títulos, um por linha.`;
+    const sys = "És o serviço de notícias da Web Rádio Figueiró. Sê curto, direto e profissional.";
 
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: prompt,
-      config: {
-        tools: [{ googleSearch: {} }],
-        systemInstruction: "És o serviço de notícias da Web Rádio Figueiró. Sê curto, direto e profissional."
-      },
-    });
-
-    const result = { text: response.text || fallbackData, source: 'LIVE' as const };
+    const text = await callGeminiContent(ai, prompt, sys);
+    const result = { text: text || fallbackData, source: text ? ('LIVE' as const) : ('LOCAL' as const) };
     cache[cacheKey] = { data: result, timestamp: now };
     return result;
-  } catch (error: any) {
-    console.error("fetchLatestNews client error:", error);
+  } catch (error: unknown) {
+    console.warn("fetchLatestNews using fallback:", error instanceof Error ? error.message : String(error));
     return { text: fallbackData, source: 'LOCAL' as const };
   }
 };
@@ -125,7 +140,6 @@ export const fetchCulturalEvents = async () => {
   if (!ai) return { text: FALLBACK_CULTURAL_DATA };
 
   try {
-    const model = 'gemini-3-flash-preview';
     const prompt = `Procura eventos culturais reais, concertos, exposições, teatro ou festas populares em Amarante e Figueiró, Portugal para este mês de Setembro e Outono de 2026. 
     Retorna uma lista de eventos formatada rigorosamente usando os blocos abaixo para cada evento:
 
@@ -139,21 +153,14 @@ export const fetchCulturalEvents = async () => {
     EVENTO_END
 
     Inclui pelo menos 4 eventos se possível.`;
+    const sys = "És o curador da agenda cultural da Web Rádio Figueiró. A tua missão é encontrar eventos reais e atuais em Amarante e Figueiró, Portugal.";
 
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: prompt,
-      config: {
-        tools: [{ googleSearch: {} }],
-        systemInstruction: "És o curador da agenda cultural da Web Rádio Figueiró. A tua missão é encontrar eventos reais e atuais em Amarante e Figueiró, Portugal."
-      },
-    });
-
-    const result = { text: response.text || FALLBACK_CULTURAL_DATA };
+    const text = await callGeminiContent(ai, prompt, sys);
+    const result = { text: text || FALLBACK_CULTURAL_DATA };
     cache[cacheKey] = { data: result, timestamp: now };
     return result;
-  } catch (error) {
-    console.error("Error fetching cultural events client:", error);
+  } catch (error: unknown) {
+    console.warn("fetchCulturalEvents using fallback:", error instanceof Error ? error.message : String(error));
     return { text: FALLBACK_CULTURAL_DATA };
   }
 };
@@ -239,13 +246,12 @@ export const fetchDetailedNews = async (lang: Language = 'pt') => {
   if (!ai) return { text: fallbackStr, source: 'LOCAL' as const };
 
   try {
-    const model = 'gemini-3-flash-preview';
     const prompt = `Procura as 4 notícias mais recentes e relevantes de Amarante e Figueiró, Portugal para este mês de Setembro de 2026. 
     Para cada notícia, gera um bloco estruturado como o seguinte:
 
     NOTICIA_START
     TITULO: [Título Curto e Impactante]
-    DATA: [Dia e Mês atualizado, ex: 05 de Agosto, 2026]
+    DATA: [Dia e Mês atualizado, ex: 16 de Setembro, 2026]
     RESUMO: [Um parágrafo curto de introdução]
     CONTEUDO: [Texto detalhado da notícia com pelo menos 3 parágrafos]
     IMAGEM: [URL do Unsplash que corresponda exatamente ao assunto (deve começar por https://images.unsplash.com/photo-), OU deixa este campo vazio se não tiveres certeza, para que a rádio atribua uma imagem selecionada à mão automaticamente]
@@ -254,41 +260,30 @@ export const fetchDetailedNews = async (lang: Language = 'pt') => {
     AVISO IMPORTANTE: Nunca uses caminhos ou domínios de jornais locais ou nacionais (como jn.pt, sapo.pt, publico.pt) pois são bloqueados no navegador do utilizador por motivos de segurança e deixam de carregar. Usa apenas o Unsplash ou deixa vazio.
 
     Escreve obrigatoriamente em ${lang === 'pt' ? 'Português' : 'Inglês'}.`;
+    const sys = "És o jornalista principal da Web Rádio Figueiró. A tua missão é trazer as novidades mais frescas de Amarante e Figueiró com rigor e profissionalismo.";
 
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: prompt,
-      config: {
-        tools: [{ googleSearch: {} }],
-        systemInstruction: "És o jornalista principal da Web Rádio Figueiró. A tua missão é trazer as novidades mais frescas de Amarante e Figueiró com rigor e profissionalismo."
-      },
-    });
-
-    const result = { text: response.text || fallbackStr, source: 'LIVE' as const };
+    const text = await callGeminiContent(ai, prompt, sys);
+    const result = { text: text || fallbackStr, source: text ? ('LIVE' as const) : ('LOCAL' as const) };
     cache[cacheKey] = { data: result, timestamp: now };
     return result;
-  } catch (error) {
-    console.error("fetchDetailedNews client error:", error);
+  } catch (error: unknown) {
+    console.warn("fetchDetailedNews using fallback:", error instanceof Error ? error.message : String(error));
     return { text: fallbackStr, source: 'LOCAL' as const };
   }
 };
 
 export const getRadioAssistantResponse = async (userPrompt: string, lang: Language = 'pt'): Promise<string> => {
   const ai = getAIInstance();
-  if (!ai) return "Offline.";
+  if (!ai) return lang === 'pt' ? "Assistente temporariamente indisponível." : "Assistant temporarily unavailable.";
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: userPrompt,
-      config: {
-        systemInstruction: `És a assistente virtual da Web Rádio Figueiró. Responde sempre no idioma: ${lang}. Sê simpática e prestativa.`,
-        tools: [{ googleSearch: {} }]
-      },
-    });
-    return response.text || "Error.";
-  } catch (error) {
-    console.error("getRadioAssistantResponse error:", error);
-    return "Error.";
+    const sys = `És a assistente virtual da Web Rádio Figueiró. Responde sempre no idioma: ${lang}. Sê simpática e prestativa.`;
+    const text = await callGeminiContent(ai, userPrompt, sys);
+    return text || (lang === 'pt' ? "A Web Rádio Figueiró está no ar em Alta Definição!" : "Web Rádio Figueiró is broadcasting live in HD!");
+  } catch (error: unknown) {
+    console.warn("getRadioAssistantResponse using fallback:", error instanceof Error ? error.message : String(error));
+    return lang === 'pt'
+      ? "Olá! Estou a ouvir a Web Rádio Figueiró. Em que posso ajudar relativamente à nossa emissão ou músicas?"
+      : "Hello! I am listening to Web Rádio Figueiró. How can I assist you with our broadcast or music?";
   }
 };

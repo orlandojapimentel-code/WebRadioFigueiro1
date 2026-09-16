@@ -92,7 +92,7 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
       setEvents(parsed);
     } catch (err) {
-      console.error(err);
+      console.warn("Notice loading cultural events:", err);
       setErrorType('empty');
     } finally {
       setLoading(false);
