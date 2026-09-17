@@ -312,28 +312,35 @@ const NewsSection: React.FC = () => {
   };
 
   return (
-    <section id="noticias" className="scroll-mt-48 space-y-12">
+    <section id="noticias" className="scroll-mt-48 space-y-8">
       <div className="flex items-center justify-between">
-        <h3 className="text-3xl md:text-4xl font-brand font-black tracking-tighter text-white">Últimas Notícias</h3>
+        <div>
+          <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em] block">
+            Jornalismo Regional
+          </span>
+          <h3 className="text-2xl sm:text-4xl font-brand font-black tracking-tight text-white mt-1">
+            Últimas Notícias
+          </h3>
+        </div>
         <button 
           onClick={loadNews}
-          className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all group"
+          className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all group"
           title="Atualizar Notícias"
         >
           <svg className={`w-5 h-5 text-slate-400 group-hover:text-white ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
         </button>
       </div>
 
       {loading && newsList.length === 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[1, 2].map(i => (
-            <div key={i} className="bg-white/5 h-64 rounded-3xl animate-pulse overflow-hidden border border-white/5"></div>
+            <div key={i} className="glass-card h-72 animate-pulse overflow-hidden"></div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           {newsList.map((news) => (
             <div 
               key={news.id} 
@@ -341,32 +348,32 @@ const NewsSection: React.FC = () => {
                 window.dispatchEvent(new CustomEvent('close-overlays'));
                 setSelectedNews(news);
               }}
-              className="group bg-slate-900/40 backdrop-blur-md rounded-[2.5rem] border border-white/5 hover:border-red-600/30 transition-all cursor-pointer hover:shadow-[0_20px_50px_rgba(220,38,38,0.1)] flex flex-col h-full"
+              className="group glass-card glass-card-interactive cursor-pointer flex flex-col h-full overflow-hidden"
             >
-              <div className="relative h-64 overflow-hidden rounded-t-[2.5rem]">
+              <div className="relative h-56 sm:h-64 overflow-hidden">
                 <img 
                   src={news.image} 
                   alt={news.title} 
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
-                <div className="absolute bottom-6 left-8">
-                   <span className="px-3 py-1 bg-red-600 text-white text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#07090e] via-transparent to-transparent opacity-80"></div>
+                <div className="absolute bottom-4 left-5 sm:left-6">
+                   <span className="px-3 py-1 bg-red-600/90 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-wider rounded-lg shadow-md border border-red-400/30">
                      {news.date}
                    </span>
                 </div>
               </div>
               
-              <div className="p-8 md:p-10 flex flex-col flex-grow">
-                <h4 className="text-xl md:text-2xl font-black tracking-tighter mb-4 text-white group-hover:text-red-500 transition-colors line-clamp-2">
+              <div className="p-6 sm:p-7 flex flex-col flex-grow">
+                <h4 className="text-lg sm:text-xl font-brand font-black tracking-tight mb-3 text-white group-hover:text-red-400 transition-colors line-clamp-2 leading-snug">
                   {news.title}
                 </h4>
-                <p className="text-sm text-slate-400 line-clamp-3 leading-relaxed mb-8 flex-grow">
+                <p className="text-xs sm:text-sm text-slate-300 line-clamp-3 leading-relaxed mb-6 flex-grow font-normal">
                   {news.excerpt}
                 </p>
-                <div className="flex items-center text-[10px] font-black text-red-600 uppercase tracking-widest group-hover:translate-x-2 transition-transform">
-                  Ler Notícia Completa
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                <div className="flex items-center text-[10px] font-black text-red-500 uppercase tracking-widest group-hover:translate-x-1.5 transition-transform">
+                  <span>Ler Notícia Completa</span>
+                  <svg className="w-3.5 h-3.5 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                 </div>
               </div>
             </div>
@@ -376,23 +383,23 @@ const NewsSection: React.FC = () => {
 
       {selectedNews && (
         <div 
-          className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300"
+          className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300"
           onClick={closeNews}
         >
           <div 
-            className="bg-[#0a0a0f] border border-white/10 rounded-[3rem] max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
+            className="bg-[#0b0e17] border border-white/10 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
             onClick={e => e.stopPropagation()}
           >
-            <div className="sticky top-0 right-0 p-6 flex justify-end z-20 pointer-events-none">
+            <div className="sticky top-0 right-0 p-4 sm:p-6 flex justify-end z-20 pointer-events-none">
               <button 
                 onClick={closeNews}
-                className="pointer-events-auto p-4 bg-white/10 hover:bg-red-600 text-white rounded-2xl backdrop-blur-md transition-all shadow-xl"
+                className="pointer-events-auto p-3 sm:p-3.5 bg-black/70 hover:bg-red-600 text-white rounded-2xl backdrop-blur-md transition-all shadow-xl border border-white/10"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
 
-            <div className="px-8 md:px-16 pb-16 space-y-10 -mt-12">
+            <div className="px-6 sm:px-12 pb-12 space-y-8 -mt-8">
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 rounded-lg bg-red-600/20 flex items-center justify-center">

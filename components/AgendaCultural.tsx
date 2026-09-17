@@ -26,19 +26,6 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     "GERAL": "https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800"
   };
 
-  const handleSintonizar = async () => {
-    // Tenta usar o seletor do AI Studio se disponível, senão avisa que precisa de chave
-    // @ts-expect-error - AI Studio API
-    if (window.aistudio) {
-      // @ts-expect-error - AI Studio API
-      await window.aistudio.openSelectKey();
-      loadEvents();
-    } else {
-      // Na web pública, isto abre o diálogo padrão se injetado, ou podemos redirecionar
-      alert("Para sintonizar a agenda no site público, a chave de API deve ser configurada no painel de administração.");
-    }
-  };
-
   const loadEvents = async () => {
     setLoading(true);
     setErrorType('none');
@@ -131,115 +118,123 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[300] bg-[#fcfcfd] overflow-y-auto animate-in fade-in duration-700">
+    <div className="fixed inset-0 z-[300] bg-[#07090e]/95 backdrop-blur-3xl overflow-y-auto animate-in fade-in duration-300 text-white">
       {/* Header Premium */}
-      <div className="sticky top-0 z-30 bg-[#1e1b4b] text-white shadow-2xl">
-        <div className="container mx-auto px-6 h-24 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0">
-              <svg className="w-7 h-7 text-[#1e1b4b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      <div className="sticky top-0 z-30 bg-[#07090e]/85 backdrop-blur-2xl border-b border-white/[0.08]">
+        <div className="container mx-auto px-4 sm:px-6 h-20 sm:h-24 flex items-center justify-between">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-600/20 border border-orange-500/30 rounded-2xl flex items-center justify-center shadow-lg">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
             <div>
-              <h2 className="text-2xl font-black tracking-tighter uppercase leading-none">Cultura & Agenda</h2>
-              <p className="text-[9px] text-amber-400 font-bold uppercase tracking-[0.2em] mt-1.5">● EXCLUSIVO WEB RÁDIO FIGUEIRÓ</p>
+              <span className="text-[9px] text-orange-400 font-black uppercase tracking-[0.25em] block">
+                Exclusivo Web Rádio Figueiró
+              </span>
+              <h2 className="text-lg sm:text-2xl font-brand font-black tracking-tight text-white leading-none mt-0.5">
+                Agenda Cultural & Eventos
+              </h2>
             </div>
           </div>
+          
           <button 
             onClick={handleClose}
-            className="group flex items-center space-x-2 px-6 py-3 bg-white/10 hover:bg-red-500/20 rounded-xl border border-white/10 transition-all text-[10px] font-black uppercase tracking-widest"
+            className="flex items-center space-x-2 px-4 sm:px-5 py-2.5 bg-white/5 hover:bg-red-600 text-white rounded-xl border border-white/10 transition-all text-[10px] font-black uppercase tracking-wider"
           >
-            <span>Fechar Agenda</span>
-            <svg className="w-4 h-4 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span className="hidden sm:inline">Fechar Agenda</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
           </button>
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-16 max-w-7xl">
+      <div className="container mx-auto px-4 sm:px-6 py-10 sm:py-14 max-w-7xl">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-48">
-             <div className="relative w-20 h-20">
-               <div className="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
-               <div className="absolute inset-0 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="flex flex-col items-center justify-center py-36">
+             <div className="relative w-16 h-16">
+               <div className="absolute inset-0 border-4 border-orange-500/20 rounded-full"></div>
+               <div className="absolute inset-0 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
              </div>
-             <p className="mt-10 text-indigo-900 font-black text-xs uppercase tracking-[0.4em] animate-pulse">Sintonizando Amarante...</p>
+             <p className="mt-8 text-orange-400 font-black text-xs uppercase tracking-[0.3em] animate-pulse">
+               Sintonizando eventos culturais...
+             </p>
           </div>
         ) : errorType !== 'none' ? (
-          <div className="flex flex-col items-center justify-center py-40 text-center max-w-xl mx-auto">
-            <div className="w-24 h-24 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-8 text-slate-400">
-              <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div className="flex flex-col items-center justify-center py-28 text-center max-w-lg mx-auto glass-card p-8">
+            <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-6 text-slate-400 border border-white/10">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
             </div>
-            <h3 className="text-2xl font-black text-slate-900 mb-4">Sinal Cultural Indisponível</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-10 px-8">
-              Não conseguimos captar eventos em tempo real neste momento. Tente recarregar ou regresse mais tarde para ver as novidades de Amarante.
+            <h3 className="text-xl font-brand font-black text-white mb-2">Sinal Cultural Indisponível</h3>
+            <p className="text-slate-300 text-xs leading-relaxed mb-8">
+              A consultar os próximos eventos em Amarante. Pode tentar recarregar para consultar a emissão da agenda.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <button 
                 onClick={loadEvents}
-                className="px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-700 transition-all active:scale-95"
+                className="px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-md shadow-orange-600/20 active:scale-95"
               >
-                Tentar Recarregar
-              </button>
-              <button 
-                onClick={handleSintonizar}
-                className="px-10 py-4 bg-white text-indigo-600 border border-indigo-100 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-sm hover:bg-slate-50 transition-all"
-              >
-                Sintonizar IA
+                Recarregar Agenda
               </button>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {events.map((event, index) => (
-              <div key={index} className="bg-white rounded-[3rem] shadow-[0_30px_60px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col group transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl">
-                <div className="relative h-80 overflow-hidden">
+              <div 
+                key={index} 
+                className="glass-card glass-card-interactive overflow-hidden flex flex-col group transition-all duration-300"
+              >
+                <div className="relative h-64 overflow-hidden">
                   <img 
                     src={event.image} 
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                     alt={event.title}
                     onError={(e) => e.currentTarget.src = fallbackImages[event.category] || fallbackImages["GERAL"]}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#07090e] via-transparent to-transparent opacity-80" />
                   
-                  {/* Badge de Data - Topo Esquerdo (Padrão Studio) */}
-                  <div className="absolute top-8 left-8 bg-white/95 backdrop-blur-xl rounded-[1.5rem] p-4 text-center min-w-[75px] shadow-2xl border border-white/20 group-hover:bg-amber-500 group-hover:text-white transition-all duration-500 transform group-hover:scale-110">
-                    <p className="text-[10px] font-black text-slate-400 group-hover:text-white/80 uppercase leading-none mb-1.5 tracking-tighter">{event.month}</p>
-                    <p className="text-4xl font-black leading-none">{event.day}</p>
+                  {/* Badge de Data */}
+                  <div className="absolute top-4 left-4 bg-black/75 backdrop-blur-md rounded-2xl p-2.5 text-center min-w-[64px] border border-white/15 shadow-xl">
+                    <p className="text-[9px] font-black text-orange-400 uppercase leading-none mb-1 tracking-wider">{event.month}</p>
+                    <p className="text-2xl font-brand font-black leading-none text-white">{event.day}</p>
                   </div>
 
-                  {/* Categoria - Canto Inferior (Padrão Studio) */}
-                  <div className="absolute bottom-8 left-8">
-                    <span className="px-5 py-2 bg-indigo-600/90 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl border border-white/10">
+                  {/* Categoria */}
+                  <div className="absolute bottom-4 left-4">
+                    <span className="px-3 py-1 bg-orange-600/90 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-md border border-orange-400/30">
                       {event.category}
                     </span>
                   </div>
                 </div>
 
-                <div className="p-12 flex flex-col flex-grow bg-white">
-                  <h3 className="text-[#1e1b4b] font-black text-2xl leading-tight mb-6 line-clamp-2 min-h-[4rem] group-hover:text-indigo-600 transition-colors">
+                <div className="p-6 flex flex-col flex-grow">
+                  <h3 className="text-white font-brand font-black text-lg sm:text-xl leading-snug mb-3 line-clamp-2 min-h-[3rem] group-hover:text-orange-400 transition-colors">
                     {event.title}
                   </h3>
                   
-                  <div className="flex items-center space-x-4 text-slate-500 mb-10">
-                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-indigo-500 group-hover:bg-indigo-50 transition-colors">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <div className="flex items-center space-x-2.5 text-slate-300 mb-6">
+                    <div className="w-7 h-7 bg-white/5 rounded-lg flex items-center justify-center text-orange-400 shrink-0 border border-white/5">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
                     </div>
-                    <span className="text-[11px] font-bold uppercase tracking-widest truncate">{event.location}</span>
+                    <span className="text-xs font-semibold truncate">{event.location}</span>
                   </div>
 
-                  <div className="mt-auto flex items-center space-x-4">
+                  <div className="mt-auto pt-4 border-t border-white/[0.08] flex items-center space-x-3">
                     <a 
                       href={event.sourceUrl} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="flex-grow bg-[#1e1b4b] text-white py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-center shadow-xl shadow-indigo-900/10 hover:bg-indigo-700 transition-all active:scale-95"
+                      className="flex-grow bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white py-3 rounded-xl text-xs font-black uppercase tracking-wider text-center shadow-md shadow-orange-600/20 transition-all active:scale-95"
                     >
-                      Descobrir Mais
+                      Ver Detalhes
                     </a>
-                    <button className="p-5 bg-slate-50 text-slate-300 rounded-2xl hover:text-amber-500 hover:bg-amber-50 transition-all duration-300">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-                    </button>
                   </div>
                 </div>
               </div>
@@ -247,10 +242,10 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </div>
         )}
 
-        <div className="mt-32 text-center py-20 border-t border-slate-100">
-           <div className="inline-block px-8 py-3 bg-white rounded-full border border-slate-100 shadow-sm">
-             <p className="text-[9px] text-slate-300 font-black uppercase tracking-[0.6em]">
-               WEB RÁDIO FIGUEIRÓ • CULTURA AMARANTE 2026
+        <div className="mt-16 text-center py-8 border-t border-white/[0.08]">
+           <div className="inline-block px-6 py-2 bg-white/5 rounded-full border border-white/10">
+             <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em]">
+               Web Rádio Figueiró • Agenda Cultural de Amarante
              </p>
            </div>
         </div>

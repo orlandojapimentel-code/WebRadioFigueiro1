@@ -69,8 +69,10 @@ const WeatherWidget: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-gray-800/40 p-6 rounded-[2.5rem] border border-white/5 animate-pulse h-32 flex items-center justify-center">
-        <div className="text-[10px] font-black uppercase tracking-widest text-gray-500">Sincronizando tempo...</div>
+      <div className="glass-card p-6 h-36 flex items-center justify-center animate-pulse">
+        <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+          Sincronizando Meteorologia...
+        </div>
       </div>
     );
   }
@@ -78,16 +80,20 @@ const WeatherWidget: React.FC = () => {
   if (!weather) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800/40 p-6 rounded-[2.5rem] border border-gray-200 dark:border-blue-500/20 shadow-xl dark:shadow-2xl backdrop-blur-xl relative overflow-hidden group transition-all hover:border-blue-500/40">
-      {/* Background Decorativo */}
-      <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+    <div className="glass-card glass-card-interactive p-6 relative overflow-hidden group">
+      {/* Decorative Aura */}
+      <div className="absolute -top-4 -right-4 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all pointer-events-none"></div>
       
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <span className="text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1 block">Estado do Tempo</span>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center">
-              <svg className="w-3 h-3 mr-1.5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/></svg>
+            <span className="text-blue-400 text-[9px] font-black uppercase tracking-[0.3em] mb-0.5 block">
+              Meteorologia Local
+            </span>
+            <h4 className="text-xs font-bold text-white flex items-center">
+              <svg className="w-3 h-3 mr-1 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+              </svg>
               Figueiró, Amarante
             </h4>
           </div>
@@ -97,24 +103,23 @@ const WeatherWidget: React.FC = () => {
         </div>
 
         <div className="flex items-end justify-between">
-          <div className="flex items-start">
-            <span className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">
+          <div className="flex items-baseline">
+            <span className="text-4xl sm:text-5xl font-brand font-black text-white tracking-tight">
               {weather.temp}°
             </span>
-            <span className="text-blue-600 dark:text-blue-400 font-bold text-lg ml-1">C</span>
+            <span className="text-blue-400 font-bold text-base ml-1">C</span>
           </div>
           
           <div className="text-right space-y-1">
-            <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+            <p className="text-[10px] font-black text-blue-400 uppercase tracking-wider">
               {getWeatherDesc(weather.code)}
             </p>
-            <div className="flex items-center justify-end space-x-3 text-[9px] text-slate-500 dark:text-gray-400 font-bold uppercase tracking-tighter">
+            <div className="flex items-center justify-end space-x-3 text-[10px] text-slate-400 font-medium">
               <span className="flex items-center">
-                <svg className="w-2.5 h-2.5 mr-1 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
-                Sente: {weather.apparentTemp}°
+                <span className="opacity-60 mr-1">Sensação:</span> {weather.apparentTemp}°C
               </span>
+              <span>•</span>
               <span className="flex items-center">
-                <svg className="w-2.5 h-2.5 mr-1 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 {weather.wind} km/h
               </span>
             </div>

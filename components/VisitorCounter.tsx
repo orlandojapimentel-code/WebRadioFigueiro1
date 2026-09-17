@@ -79,30 +79,41 @@ const VisitorCounter: React.FC = () => {
   const digits = totalVisits.toString().padStart(6, '0').split('');
 
   return (
-    <div className="bg-white dark:bg-gray-800/40 p-6 rounded-[2.5rem] border border-gray-200 dark:border-blue-500/20 shadow-xl dark:shadow-2xl backdrop-blur-xl relative overflow-hidden group transition-colors">
-      <div className="flex items-center justify-between mb-6 relative z-10">
+    <div className="glass-card p-6 relative overflow-hidden group">
+      <div className="flex items-center justify-between mb-5 relative z-10">
         <div className="flex flex-col">
-          <span className="text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Audiência Global</span>
+          <span className="text-red-500 text-[9px] font-black uppercase tracking-[0.25em] mb-1">
+            Audiência Global
+          </span>
           <div className="flex items-center space-x-2">
-            <span className="relative flex h-2 w-2 rounded-full bg-green-500">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative flex h-2 w-2 rounded-full bg-emerald-500">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             </span>
-            <span className="text-[10px] text-slate-500 dark:text-gray-400 font-bold uppercase tracking-widest">
-              Em Direto
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+              Contador Ativo
             </span>
           </div>
         </div>
-        <div className="px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-600 dark:text-blue-300 text-[9px] font-black tracking-widest uppercase">
+        <div className="px-3 py-1 rounded-full bg-red-600/10 border border-red-500/20 text-red-400 text-[9px] font-black tracking-widest uppercase">
           Online
         </div>
       </div>
 
-      <div className="flex justify-center items-center space-x-1 md:space-x-2 relative z-10">
+      <div className="flex justify-center items-center space-x-1.5 sm:space-x-2 relative z-10 py-1">
         {digits.map((digit, i) => (
-          <div key={i} className={`bg-slate-900 dark:bg-black text-blue-400 dark:text-blue-500 text-3xl md:text-5xl font-mono font-black px-3 py-4 rounded-xl border border-white/5 shadow-inner transition-all duration-500 ${hasNewEntry ? 'text-white scale-110 shadow-blue-500/50' : ''}`}>
+          <div 
+            key={i} 
+            className={`bg-[#05070c] text-white text-2xl sm:text-3xl font-mono font-black w-9 sm:w-11 h-12 sm:h-14 flex items-center justify-center rounded-xl border border-white/10 shadow-inner transition-all duration-300 ${hasNewEntry ? 'text-red-400 scale-105 border-red-500/40 shadow-red-500/20' : ''}`}
+          >
             {digit}
           </div>
         ))}
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-white/[0.06] text-center">
+        <p className="text-[10px] text-slate-400 font-medium">
+          Ouvintes e visitas sincronizadas em tempo real
+        </p>
       </div>
     </div>
   );

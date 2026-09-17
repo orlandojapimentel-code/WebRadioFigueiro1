@@ -73,36 +73,44 @@ const NewsTicker: React.FC = () => {
   const displayItems = [...newsText, ...newsText, ...newsText];
 
   return (
-    <div className="fixed top-20 left-0 right-0 z-[45] bg-black border-b border-red-600/20 h-11 flex items-center overflow-hidden shadow-xl">
-      <div className={`h-full px-6 flex items-center z-20 shadow-[10px_0_25px_rgba(0,0,0,0.5)] relative shrink-0 transition-all duration-700 
-        ${isSyncing ? 'bg-blue-600' : (dataSource === 'LIVE' ? 'bg-red-600' : 'bg-red-600')}`}>
+    <div className="fixed top-20 sm:top-24 left-0 right-0 z-[45] bg-[#07090e]/95 backdrop-blur-xl border-b border-white/[0.08] h-10 flex items-center overflow-hidden shadow-lg transition-all">
+      <div className={`h-full px-4 sm:px-6 flex items-center z-20 shadow-[6px_0_20px_rgba(0,0,0,0.6)] relative shrink-0 transition-all duration-500 
+        ${isSyncing ? 'bg-blue-600' : 'bg-gradient-to-r from-red-600 to-rose-600'}`}>
         
-        <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] whitespace-nowrap flex items-center">
+        <div className="text-[10px] font-black text-white uppercase tracking-[0.25em] whitespace-nowrap flex items-center space-x-2">
           {isSyncing ? (
-            <span className="animate-pulse">Sincronizando...</span>
+            <span className="animate-pulse flex items-center space-x-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+              <span>Sincronizando...</span>
+            </span>
           ) : (
             <>
-              <div className={`w-2 h-2 rounded-full mr-2 ${dataSource === 'LIVE' ? 'bg-white animate-pulse' : 'bg-white'}`}></div>
-              <span>{dataSource === 'LIVE' ? 'Direto Amarante' : 'WRF News'}</span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+              </span>
+              <span>{dataSource === 'LIVE' ? 'Amarante Hoje' : 'WRF News'}</span>
             </>
           )}
         </div>
         
-        <div className={`absolute right-[-12px] top-0 bottom-0 w-0 h-0 border-t-[22px] border-t-transparent border-b-[22px] border-b-transparent border-l-[12px] transition-colors duration-500 
-          ${isSyncing ? 'border-l-blue-600' : (dataSource === 'LIVE' ? 'border-l-red-600' : 'border-l-red-600')}`}>
+        <div className={`absolute -right-3 top-0 bottom-0 w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-l-[12px] transition-colors duration-500 
+          ${isSyncing ? 'border-l-blue-600' : 'border-l-rose-600'}`}>
         </div>
       </div>
       
-      <div className="flex-grow relative h-full flex items-center bg-black">
-        <div className="animate-ticker-infinite flex whitespace-nowrap items-center">
+      <div className="flex-grow relative h-full flex items-center overflow-hidden group">
+        <div className="animate-ticker-infinite group-hover:[animation-play-state:paused] flex whitespace-nowrap items-center cursor-pointer">
           {displayItems.map((text, i) => (
             <div key={i} className="flex items-center shrink-0">
-              <span className="text-white text-[10px] md:text-[11px] font-bold tracking-tight uppercase px-12">
+              <span className="text-slate-200 hover:text-white text-[11px] font-semibold tracking-tight px-8 transition-colors">
                 {text}
               </span>
-              <div className="h-4 w-[1px] bg-white/10"></div>
-              <span className="text-red-500 font-black text-[9px] px-8 tracking-tighter">WRF NEWS</span>
-              <div className="h-4 w-[1px] bg-white/10"></div>
+              <span className="text-red-500/80 font-black text-[9px] px-3 tracking-wider flex items-center space-x-1">
+                <span className="inline-block w-1 h-1 rounded-full bg-red-500"></span>
+                <span>WRF</span>
+              </span>
+              <div className="h-3 w-[1px] bg-white/10"></div>
             </div>
           ))}
         </div>

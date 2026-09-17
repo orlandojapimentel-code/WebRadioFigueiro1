@@ -141,26 +141,26 @@ const PhotoGallery: React.FC = () => {
     <div className="w-full">
       <div 
         onClick={handleOpenGallery}
-        className="group relative w-full h-64 md:h-80 rounded-[2.5rem] overflow-hidden cursor-pointer shadow-2xl transition-all duration-700 hover:scale-[1.02] border border-blue-500/20"
+        className="glass-card glass-card-interactive group relative w-full h-64 md:h-72 rounded-[2rem] overflow-hidden cursor-pointer"
       >
-        <div className="absolute inset-0 bg-blue-900/40 group-hover:bg-blue-900/20 transition-colors z-10" />
         <img 
           src={FOTOS_ESTUDIO[0].url} 
           alt="Explorar Galeria de Fotos Web Rádio Figueiró Amarante" 
-          className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
         
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 text-center bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent">
-          <div className="mb-4 p-4 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 group-hover:scale-110 transition-transform duration-500">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-t from-[#07090e] via-[#07090e]/60 to-transparent">
+          <div className="mb-3 p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 group-hover:scale-110 transition-transform duration-300 text-white">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
           </div>
-          <h3 className="text-3xl md:text-4xl font-black text-white tracking-tighter mb-2">A Nossa Galeria</h3>
-          <p className="text-blue-300 font-bold uppercase tracking-[0.2em] text-[10px] mb-6">Explore o estúdio e os nossos eventos</p>
+          <span className="text-red-400 font-black uppercase tracking-[0.25em] text-[9px] mb-1">Bastidores & Eventos</span>
+          <h3 className="text-2xl md:text-3xl font-brand font-bold text-white tracking-tight mb-2">Galeria de Fotos</h3>
+          <p className="text-slate-300 text-xs mb-4">Explore os momentos e recantos da nossa emissão</p>
           
-          <div className="flex items-center space-x-4">
-            <span className="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/40">
+          <div className="flex items-center space-x-2">
+            <span className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-lg shadow-red-600/30 transition-colors">
               Ver {allPhotos.length} Fotos
             </span>
           </div>
@@ -168,36 +168,40 @@ const PhotoGallery: React.FC = () => {
       </div>
 
       {isOverlayOpen && (
-        <div className="fixed inset-0 z-[300] bg-gray-950 flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-500">
-          <div className="sticky top-0 z-20 bg-gray-900/95 backdrop-blur-xl border-b border-white/5">
-            <div className="container mx-auto px-4 h-24 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2.5 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        <div className="fixed inset-0 z-[300] bg-[#07090e]/95 backdrop-blur-3xl flex flex-col animate-in fade-in duration-300 text-white">
+          <div className="sticky top-0 z-20 bg-[#07090e]/90 backdrop-blur-2xl border-b border-white/[0.08]">
+            <div className="container mx-auto px-4 sm:px-6 h-20 sm:h-24 flex items-center justify-between">
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <div className="p-2.5 bg-red-600/20 border border-red-500/30 rounded-xl text-red-500">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-white tracking-tight leading-none">Galeria WRF</h2>
-                  <p className="text-[9px] text-blue-400 font-bold uppercase tracking-widest mt-1.5">Figueiró • Amarante</p>
+                  <span className="text-[9px] text-red-400 font-black uppercase tracking-[0.25em] block">
+                    Figueiró • Amarante
+                  </span>
+                  <h2 className="text-lg sm:text-2xl font-brand font-black text-white tracking-tight leading-none mt-0.5">
+                    Galeria de Fotografias
+                  </h2>
                 </div>
               </div>
 
-              {/* Botão de Fechar Melhorado - Mais visível e acessível */}
+              {/* Botão de Fechar */}
               <button 
                 onClick={handleCloseGallery}
-                className="group flex items-center space-x-2 sm:space-x-3 px-4 sm:px-6 py-2.5 sm:py-3.5 bg-red-600 hover:bg-red-500 text-white rounded-xl sm:rounded-2xl transition-all shadow-xl shadow-red-600/20 active:scale-95 z-50"
+                className="flex items-center space-x-2 px-4 sm:px-5 py-2.5 bg-white/5 hover:bg-red-600 text-white rounded-xl border border-white/10 transition-all text-[10px] font-black uppercase tracking-wider"
                 aria-label="Fechar Galeria"
               >
-                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest hidden xs:inline">Fechar</span>
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/>
+                <span className="hidden sm:inline">Fechar Galeria</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </button>
             </div>
 
-            <div className="container mx-auto px-4 pb-4">
-              <div className="flex flex-wrap gap-2 overflow-x-auto scrollbar-hide py-2">
+            <div className="container mx-auto px-4 sm:px-6 pb-3">
+              <div className="flex flex-wrap gap-2 overflow-x-auto scrollbar-hide py-1">
                 {[
                   { id: 'todos', label: 'Todas' },
                   { id: 'estudio', label: 'Estúdio' },
@@ -207,10 +211,10 @@ const PhotoGallery: React.FC = () => {
                   <button
                     key={cat.id}
                     onClick={() => setFilter(cat.id as 'todos' | 'eventos' | 'lugares' | 'estudio')}
-                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+                    className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all ${
                       filter === cat.id 
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 scale-105' 
-                        : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                        ? 'bg-red-600 text-white shadow-md shadow-red-600/30' 
+                        : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     {cat.label}
@@ -220,16 +224,16 @@ const PhotoGallery: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-grow overflow-y-auto p-4 md:p-8 bg-gray-950">
-            <div className="container mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="flex-grow overflow-y-auto p-4 sm:p-6 md:p-8">
+            <div className="container mx-auto max-w-7xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {filteredPhotos.map((photo) => (
                   <PhotoCard key={photo.id} photo={photo} onClick={setSelectedPhoto} />
                 ))}
               </div>
               
-              <div className="mt-12 mb-20 text-center py-12 border-t border-white/5">
-                <p className="text-gray-500 font-bold text-[10px] uppercase tracking-[0.3em]">
+              <div className="mt-12 mb-16 text-center py-8 border-t border-white/[0.08]">
+                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.3em]">
                   Web Rádio Figueiró - Sintonizados na Comunidade
                 </p>
               </div>
