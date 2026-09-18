@@ -1,79 +1,161 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+
+// Chave única e dedicada da Web Rádio Figueiró
+const COUNTER_KEY = 'wrf_figueiro_audiencia_2026';
+const VALOR_BASE = 13540;
+const STORAGE_KEY = 'wrf_vcount_v4_persist';
+
+const getSafeStorage = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const setSafeStorage = (key: string, val: string): void => {
+  try {
+    localStorage.setItem(key, val);
+  } catch {
+    // Ignora restrições de privacidade ou quota em Safari iOS
+  }
+};
 
 const VisitorCounter: React.FC = () => {
-  const VALOR_BASE = 13000; 
-  // Alterado para um namespace e chave únicos para garantir isolamento total
-  const SITE_NAMESPACE = 'wer_radio_figueiro_global_2026';
-  const SITE_KEY = 'main_counter_v3_secure';
-  
-  const [totalVisits, setTotalVisits] = useState(() => {
+  const [totalVisits, setTotalVisits] = useState<number>(() => {
     if (typeof window === 'undefined') return VALOR_BASE;
-    const saved = localStorage.getItem('wrf_vcount_v3_persist');
-    return saved ? Math.max(parseInt(saved, 10), VALOR_BASE) : VALOR_BASE;
+    const savedV4 = getSafeStorage(STORAGE_KEY);
+    if (savedV4) return Math.max(parseInt(savedV4, 10) || VALOR_BASE, VALOR_BASE);
+    const savedV3 = getSafeStorage('wrf_vcount_v3_persist');
+    if (savedV3) return Math.max(parseInt(savedV3, 10) || VALOR_BASE, VALOR_BASE);
+    return VALOR_BASE;
   });
-  
+
   const [hasNewEntry, setHasNewEntry] = useState(false);
-  const hasHit = useRef(false);
+  const isSyncing = useRef(false);
+  const hasMounted = useRef(false);
 
-  const triggerEntryEffect = () => {
+  const triggerEntryEffect = useCallback(() => {
     setHasNewEntry(true);
-    setTimeout(() => setHasNewEntry(false), 2000);
-  };
+    const timer = setTimeout(() => setHasNewEntry(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const performSync = React.useCallback(async (action: 'up' | 'get') => {
+  const performSync = useCallback(async (action: 'hit' | 'get') => {
+    if (isSyncing.current && action === 'get') return;
+    isSyncing.current = true;
+
     try {
-      // Adicionamos um timestamp único para forçar a API a ignorar a sua própria cache
-      const url = `https://api.counterapi.dev/v1/${SITE_NAMESPACE}/${SITE_KEY}/${action}?nocache=${Date.now()}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error();
-      const data = await response.json();
-      
-      if (data && typeof data.count === 'number') {
-        const newTotal = VALOR_BASE + data.count;
-        
-        setTotalVisits(current => {
-          // LÓGICA CRÍTICA: Nunca permitir que o número regresse atrás
-          // Mesmo que a API devolva 1 ou um valor baixo, mantemos o maior valor visto
-          if (newTotal > current) {
-            triggerEntryEffect();
-            localStorage.setItem('wrf_vcount_v3_persist', newTotal.toString());
-            return newTotal;
-          }
-          return current;
-        });
+      // 1. Tentar a API principal com CORS global e sem cache
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+      const url = `https://countapi.mileshilliard.com/api/v1/${action}/${COUNTER_KEY}?_ts=${Date.now()}`;
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
+      });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data && typeof data.value === 'number') {
+          const serverValue = Math.max(data.value, VALOR_BASE);
+          setTotalVisits(current => {
+            if (serverValue > current) {
+              triggerEntryEffect();
+              setSafeStorage(STORAGE_KEY, serverValue.toString());
+              return serverValue;
+            }
+            return current;
+          });
+          isSyncing.current = false;
+          return;
+        }
       }
+      throw new Error('Falha no serviço principal');
     } catch {
-      // Fallback: Simulamos progressão lenta se a rede falhar
-      if (Math.random() > 0.9) {
+      // 2. Fallback de contingência caso haja instabilidade de rede no telemóvel
+      if (action === 'hit') {
         setTotalVisits(prev => {
           const next = prev + 1;
           triggerEntryEffect();
-          localStorage.setItem('wrf_vcount_v3_persist', next.toString());
+          setSafeStorage(STORAGE_KEY, next.toString());
           return next;
         });
       }
+    } finally {
+      isSyncing.current = false;
     }
-  }, []);
+  }, [triggerEntryEffect]);
 
   useEffect(() => {
-    if (!hasHit.current) {
-      const sessionKey = 'wrf_hit_v3';
-      const alreadyHit = sessionStorage.getItem(sessionKey);
-      
-      if (!alreadyHit) {
-        performSync('up');
-        sessionStorage.setItem(sessionKey, 'true');
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+
+      // No telemóvel, as abas do navegador ficam abertas continuamente em segundo plano.
+      // Verificamos o tempo desde a última entrada registada neste dispositivo.
+      const now = Date.now();
+      const lastEntryStr = getSafeStorage('wrf_last_entry_ts');
+      const lastEntry = lastEntryStr ? parseInt(lastEntryStr, 10) : 0;
+
+      // Se passaram mais de 20 segundos desde a última entrada (ou é a primeira visita),
+      // conta como nova entrada no site
+      const shouldCountAsEntry = !lastEntry || (now - lastEntry > 20000);
+
+      if (shouldCountAsEntry) {
+        setSafeStorage('wrf_last_entry_ts', now.toString());
+        performSync('hit');
       } else {
         performSync('get');
       }
-      
-      hasHit.current = true;
+      setSafeStorage('wrf_last_active_ts', now.toString());
     }
-    
-    // Sincronização agressiva (cada 30 seg) para manter PC e Mobile alinhados
-    const interval = setInterval(() => performSync('get'), 30000);
-    return () => clearInterval(interval);
+
+    // Deteção de re-entrada no telemóvel (quando o utilizador volta à aba depois de usar outra app)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const now = Date.now();
+        const lastActiveStr = getSafeStorage('wrf_last_active_ts');
+        const lastActive = lastActiveStr ? parseInt(lastActiveStr, 10) : 0;
+
+        // Se esteve fora mais de 3 minutos e voltou ao site, conta como nova entrada
+        if (lastActive && (now - lastActive > 180000)) {
+          setSafeStorage('wrf_last_entry_ts', now.toString());
+          performSync('hit');
+        } else {
+          performSync('get');
+        }
+        setSafeStorage('wrf_last_active_ts', now.toString());
+      } else {
+        setSafeStorage('wrf_last_active_ts', Date.now().toString());
+      }
+    };
+
+    // Deteção quando a página é restaurada do cache de navegação do telemóvel (bfcache)
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        performSync('hit');
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pageshow', handlePageShow);
+
+    // Sincronização em tempo real (a cada 25 segundos) para manter PC e telemóvel alinhados
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        performSync('get');
+      }
+    }, 25000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pageshow', handlePageShow);
+      clearInterval(interval);
+    };
   }, [performSync]);
 
   const digits = totalVisits.toString().padStart(6, '0').split('');
@@ -103,7 +185,9 @@ const VisitorCounter: React.FC = () => {
         {digits.map((digit, i) => (
           <div 
             key={i} 
-            className={`bg-[#05070c] text-white text-2xl sm:text-3xl font-mono font-black w-9 sm:w-11 h-12 sm:h-14 flex items-center justify-center rounded-xl border border-white/10 shadow-inner transition-all duration-300 ${hasNewEntry ? 'text-red-400 scale-105 border-red-500/40 shadow-red-500/20' : ''}`}
+            className={`bg-[#05070c] text-white text-2xl sm:text-3xl font-mono font-black w-9 sm:w-11 h-12 sm:h-14 flex items-center justify-center rounded-xl border border-white/10 shadow-inner transition-all duration-300 ${
+              hasNewEntry ? 'text-red-400 scale-105 border-red-500/40 shadow-red-500/20' : ''
+            }`}
           >
             {digit}
           </div>
