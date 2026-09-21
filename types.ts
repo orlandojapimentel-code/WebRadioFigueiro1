@@ -19,3 +19,14 @@ export interface ScheduleItem {
   program: string;
   host: string;
 }
+
+export interface PlaylistItem {
+  id: string;
+  number: number;
+  title: string;
+  artist: string;
+  audioUrl: string;
+  originalUrl: string;
+  format: 'MP3' | 'FLAC';
+  tag: string;
+}

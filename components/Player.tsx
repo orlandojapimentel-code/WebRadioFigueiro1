@@ -20,14 +20,22 @@ const Player: React.FC = () => {
     window.dispatchEvent(new CustomEvent('wrf-radio-state', { detail: { isPlaying } }));
   }, [isPlaying]);
 
-  // Global listener for play/pause triggers from Header or Hero
+  // Global listener for play/pause triggers from Header, Hero, or Playlist
   useEffect(() => {
     const handleToggle = () => {
       togglePlay();
     };
+    const handlePause = () => {
+      if (audioRef.current && isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+    };
     window.addEventListener('wrf-toggle-play', handleToggle);
+    window.addEventListener('wrf-pause-radio', handlePause);
     return () => {
       window.removeEventListener('wrf-toggle-play', handleToggle);
+      window.removeEventListener('wrf-pause-radio', handlePause);
     };
   }, [isPlaying]);
 

@@ -95,20 +95,32 @@ const Header: React.FC<HeaderProps> = ({ isDark, onToggleTheme }) => {
           {/* Center Navigation for Desktop */}
           <nav className="hidden lg:flex items-center space-x-1 sm:space-x-2 bg-white/[0.03] p-1.5 rounded-2xl border border-white/[0.06]">
             <button 
+              onClick={() => {
+                scrollToSection('multimedia');
+                window.dispatchEvent(new CustomEvent('wrf-set-media-tab', { detail: { tab: 'playlist' } }));
+              }} 
+              className="px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-red-400 hover:text-white hover:bg-red-600/20 transition-all flex items-center space-x-1.5"
+            >
+              <svg className="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+              </svg>
+              <span>{t.nav.playlist}</span>
+            </button>
+            <button 
               onClick={() => scrollToSection('programacao')} 
-              className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:bg-white/10 transition-all"
+              className="px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:bg-white/10 transition-all"
             >
               {t.nav.prog}
             </button>
             <button 
               onClick={() => scrollToSection('galeria')} 
-              className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:bg-white/10 transition-all"
+              className="px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:bg-white/10 transition-all"
             >
               {t.nav.gallery}
             </button>
             <button 
               onClick={() => scrollToSection('noticias')} 
-              className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:bg-white/10 transition-all"
+              className="px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:bg-white/10 transition-all"
             >
               {t.nav.news}
             </button>

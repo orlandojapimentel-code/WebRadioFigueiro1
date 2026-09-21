@@ -1,5 +1,6 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import SpecialPlaylist from './SpecialPlaylist';
 
 interface AudioItem {
   id: string;
@@ -97,7 +98,20 @@ const CustomAudioPlayer: React.FC<{ audio: AudioItem }> = ({ audio }) => {
 };
 
 const MediaCenter: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'video' | 'audio' | 'myMusic'>('audio');
+  const [activeTab, setActiveTab] = useState<'playlist' | 'audio' | 'video' | 'myMusic'>('playlist');
+
+  useEffect(() => {
+    const handleSetTab = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab?: string }>;
+      if (customEvent.detail?.tab && ['playlist', 'audio', 'video', 'myMusic'].includes(customEvent.detail.tab)) {
+        setActiveTab(customEvent.detail.tab as 'playlist' | 'audio' | 'video' | 'myMusic');
+      }
+    };
+    window.addEventListener('wrf-set-media-tab', handleSetTab);
+    return () => {
+      window.removeEventListener('wrf-set-media-tab', handleSetTab);
+    };
+  }, []);
 
   const myMusicVideos = [
     { id: 'm1', title: "Minha Música #1", youtubeId: "AvHMFxjPSuM", color: "from-purple-600 to-indigo-600" },
@@ -130,8 +144,8 @@ const MediaCenter: React.FC = () => {
   ];
 
   return (
-    <div id="multimedia" className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/[0.08] pb-6">
+    <div id="multimedia" className="space-y-8 scroll-mt-28">
+      <div id="playlist-section" className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/[0.08] pb-6">
         <div className="flex items-center space-x-4">
           <div className="p-3.5 bg-red-600/10 border border-red-500/20 rounded-2xl text-red-500 shadow-lg">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,27 +153,30 @@ const MediaCenter: React.FC = () => {
             </svg>
           </div>
           <div>
-            <span className="text-[9px] text-red-500 font-black uppercase tracking-[0.25em] block">Multimédia</span>
+            <span className="text-[9px] text-red-500 font-black uppercase tracking-[0.25em] block">Multimédia & Música</span>
             <h3 className="text-2xl sm:text-3xl font-brand font-black text-white tracking-tight">Explorar Conteúdos</h3>
-            <p className="text-xs text-slate-400 mt-1">Podcasts gravados, transmissões e programas especiais</p>
+            <p className="text-xs text-slate-400 mt-1">Playlist de autor, podcasts, emissões e destaques</p>
           </div>
         </div>
 
-        <div className="flex bg-white/[0.04] p-1.5 rounded-2xl border border-white/10 overflow-x-auto no-scrollbar max-w-full">
+        <div className="flex bg-white/[0.04] p-1.5 rounded-2xl border border-white/10 overflow-x-auto no-scrollbar max-w-full gap-1">
           <button 
-            onClick={() => setActiveTab('video')}
-            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
-              activeTab === 'video' 
-                ? 'bg-red-600 text-white shadow-md shadow-red-600/30' 
+            onClick={() => setActiveTab('playlist')}
+            className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
+              activeTab === 'playlist' 
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/30 ring-2 ring-red-500/20' 
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <span>Vídeos</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+            </svg>
+            <span>Playlist (15 Músicas)</span>
           </button>
-          
+
           <button 
             onClick={() => setActiveTab('audio')}
-            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
+            className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
               activeTab === 'audio' 
                 ? 'bg-red-600 text-white shadow-md shadow-red-600/30' 
                 : 'text-slate-400 hover:text-white'
@@ -169,19 +186,34 @@ const MediaCenter: React.FC = () => {
           </button>
 
           <button 
+            onClick={() => setActiveTab('video')}
+            className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
+              activeTab === 'video' 
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/30' 
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>Vídeos</span>
+          </button>
+
+          <button 
             onClick={() => setActiveTab('myMusic')}
-            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
+            className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
               activeTab === 'myMusic' 
                 ? 'bg-red-600 text-white shadow-md shadow-red-600/30' 
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <span>Minhas músicas</span>
+            <span>Vídeos Musicais</span>
           </button>
         </div>
       </div>
 
       <div className="animate-in fade-in duration-300">
+        {activeTab === 'playlist' && (
+          <SpecialPlaylist />
+        )}
+
         {activeTab === 'audio' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {audios.map((audio) => (

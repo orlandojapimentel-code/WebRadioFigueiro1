@@ -4,6 +4,7 @@ export interface Translation {
   nav: {
     prog: string;
     media: string;
+    playlist: string;
     gallery: string;
     news: string;
     contactBtn: string;
@@ -46,6 +47,7 @@ export const translations: Record<Language, Translation> = {
     nav: {
       prog: 'Programação',
       media: 'Multimédia',
+      playlist: 'Playlist',
       gallery: 'Galeria',
       news: 'Notícias',
       contactBtn: 'Contactar'
@@ -86,6 +88,7 @@ export const translations: Record<Language, Translation> = {
     nav: {
       prog: 'Schedule',
       media: 'Multimedia',
+      playlist: 'Playlist',
       gallery: 'Gallery',
       news: 'News',
       contactBtn: 'Contact'
@@ -126,6 +129,7 @@ export const translations: Record<Language, Translation> = {
     nav: {
       prog: 'Programación',
       media: 'Multimedia',
+      playlist: 'Playlist',
       gallery: 'Galería',
       news: 'Noticias',
       contactBtn: 'Contactar'
@@ -166,6 +170,7 @@ export const translations: Record<Language, Translation> = {
     nav: {
       prog: 'Programme',
       media: 'Multimédia',
+      playlist: 'Playlist',
       gallery: 'Galerie',
       news: 'Nouvelles',
       contactBtn: 'Contact'
