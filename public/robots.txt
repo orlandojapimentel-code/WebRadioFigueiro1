@@ -1,4 +1,14 @@
 User-agent: *
 Allow: /
+Allow: /favicon.ico
+Allow: /favicon-*.png
+Allow: /apple-touch-icon.png
+Allow: /logo.png
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
 
 Sitemap: https://ais-pre-ulvxthrodcnkct4viajllz-137776049037.europe-west1.run.app/sitemap.xml
