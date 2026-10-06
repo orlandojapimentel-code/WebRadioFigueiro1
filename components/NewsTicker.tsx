@@ -4,19 +4,19 @@ import { fetchLatestNews } from '../services/geminiService';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const FALLBACK_TICKER_PT = [
-  "Vindimas em Amarante e Figueiró: Viticultores preveem colheita de Vinho Verde de excelente qualidade",
-  "Jornadas Europeias do Património: Roteiros culturais e visita aos moinhos de Figueiró de 25 a 27 de Setembro",
-  "Cineteatro de Amarante: Nova temporada cultural de outono arranca com fado e teatro nacional",
-  "Web Rádio Figueiró: Nova grelha de outono estreia com emissão especial 'Pontes de Saudade'",
-  "Música e Tradição: Encontros etnográficos e convívios de outono animam as freguesias do concelho"
+  "BECA estreia equipa sénior feminina na época 2026/27 no Baixo Tâmega",
+  "Vindimas de Outono: Viticultores de Figueiró e Amarante celebram colheita de excelente qualidade",
+  "Cultura no Tâmega: Cinema, literatura e encontros de outono aproximam as comunidades de Amarante",
+  "Web Rádio Figueiró: Nova programação de outono estreia com emissões dedicadas à diáspora",
+  "Trilhos de Figueiró: Roteiro dos moinhos de água atrai caminhantes e amantes de natureza no Tâmega"
 ];
 
 const FALLBACK_TICKER_EN = [
-  "Wine Harvest in Amarante & Figueiró: Winemakers project exceptional quality for Vinho Verde",
-  "European Heritage Days: Cultural tours and visits to Figueiró's historic watermills from Sept 25 to 27",
-  "Amarante Cine-Theater: New autumn cultural season begins with fado and contemporary drama",
-  "Web Rádio Figueiró: New autumn schedule premieres with special live show 'Bridges of Saudade'",
-  "Tradition & Music: Autumn ethnographic gatherings and local festivals celebrate Tâmega heritage"
+  "BECA Handball Debuts Senior Women's Team for the 2026/27 Season",
+  "Autumn Harvest: Figueiró and Amarante Winegrowers Celebrate Outstanding Vinho Verde Quality",
+  "Tâmega Cultural Autumn: Cinema, Heritage and Literature Bring Communities Together",
+  "Web Rádio Figueiró: Autumn Broadcast Lineup Premieres Dedicated Diaspora Shows",
+  "Figueiró Heritage Trails: Historic Watermills Welcome Walking Enthusiasts Along the Tâmega"
 ];
 
 const NewsTicker: React.FC = () => {

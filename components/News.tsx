@@ -41,8 +41,20 @@ const News: React.FC = () => {
   const loadNews = async () => {
     setLoading(true);
     try {
-      const result = await fetchLatestNews();
+      const result: any = await fetchLatestNews();
       
+      if (result && result.items && Array.isArray(result.items) && result.items.length > 0) {
+        const liveItems = result.items.map((it: any) => ({
+          title: it.title,
+          source: it.source || "TÂMEGA.TV",
+          type: "LOCAL",
+          summary: it.excerpt || "Notícia da região do Tâmega e Sousa.",
+          url: it.url || "https://tamega.tv"
+        }));
+        setNews(liveItems.slice(0, 5));
+        return;
+      }
+
       if (result && result.text) {
         const rawLines = result.text.split('\n');
         const lines = rawLines

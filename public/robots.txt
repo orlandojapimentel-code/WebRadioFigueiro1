@@ -5,11 +5,23 @@ Allow: /favicon-*.png
 Allow: /apple-touch-icon.png
 Allow: /logo.png
 Allow: /google*.html
+Allow: /browserconfig.xml
+Allow: /mstile-*.png
+Allow: /favicon.svg
 
 User-agent: Googlebot
 Allow: /
 
 User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: msnbot
+Allow: /
+
+User-agent: BingPreview
 Allow: /
 
 Sitemap: https://www.webradiofigueiro.pt/sitemap.xml
