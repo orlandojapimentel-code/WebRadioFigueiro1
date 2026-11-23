@@ -1,6 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import SpecialPlaylist from './SpecialPlaylist';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface AudioItem {
   id: string;
@@ -8,11 +8,13 @@ interface AudioItem {
   category: string;
   audioUrl: string;
   duration?: string;
-  colorClass: string;
-  accentColor: string;
 }
 
-const CustomAudioPlayer: React.FC<{ audio: AudioItem }> = ({ audio }) => {
+const CustomAudioPlayer: React.FC<{
+  audio: AudioItem;
+  playingLabel: string;
+  readyLabel: string;
+}> = ({ audio, playingLabel, readyLabel }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -29,68 +31,77 @@ const CustomAudioPlayer: React.FC<{ audio: AudioItem }> = ({ audio }) => {
   };
 
   const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      const current = audioRef.current.currentTime;
-      const duration = audioRef.current.duration;
-      setProgress((current / duration) * 100);
+    if (audioRef.current && audioRef.current.duration) {
+      setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
     }
   };
 
   return (
-    <div className="glass-card glass-card-interactive relative overflow-hidden group p-6 transition-all duration-300">
-      <audio 
-        ref={audioRef} 
-        src={audio.audioUrl} 
-        onTimeUpdate={handleTimeUpdate} 
+    <div className="glass-card glass-card-interactive p-6">
+      <audio
+        ref={audioRef}
+        src={audio.audioUrl}
+        onTimeUpdate={handleTimeUpdate}
         onEnded={() => setIsPlaying(false)}
       />
-      
-      <div className="relative z-10 flex items-center space-x-4 sm:space-x-5">
-        {/* Play Button */}
-        <button 
+
+      <div className="flex items-center gap-4 sm:gap-5">
+        <button
+          type="button"
           onClick={togglePlay}
-          className={`h-14 w-14 sm:h-16 sm:w-16 shrink-0 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-lg ${
-            isPlaying 
-            ? 'bg-red-600 text-white shadow-red-600/40 ring-4 ring-red-500/20' 
-            : 'bg-white/10 hover:bg-red-600 text-white'
+          className={`h-14 w-14 shrink-0 rounded-2xl flex items-center justify-center transition-colors shadow-sm ${
+            isPlaying
+              ? 'bg-red-600 text-white'
+              : 'bg-slate-100 dark:bg-white/10 hover:bg-red-600 text-slate-800 dark:text-white hover:text-white'
           }`}
+          aria-label={isPlaying ? 'Pausar' : 'Reproduzir'}
         >
           {isPlaying ? (
-            <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
           ) : (
-            <svg className="w-6 h-6 sm:w-7 sm:h-7 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <svg className="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
           )}
         </button>
 
         <div className="flex-grow min-w-0">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[9px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-red-400 px-2.5 py-0.5 rounded-full">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
               {audio.category}
             </span>
             {isPlaying && (
-              <div className="flex space-x-1 h-3 items-end">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="w-0.5 bg-red-500 animate-bounce" style={{ height: `${30 + Math.random() * 70}%`, animationDuration: `${0.4 + Math.random() * 0.4}s` }}></div>
+              <div className="flex items-end gap-0.5 h-3" aria-hidden="true">
+                {[1, 2, 3, 4].map((i) => (
+                  <span
+                    key={i}
+                    className="w-0.5 h-3 rounded-full bg-red-600 dark:bg-red-500 animate-eq-bar"
+                    style={{ animationDelay: `${i * 0.14}s` }}
+                  />
                 ))}
               </div>
             )}
           </div>
-          <h4 className="text-white font-brand font-bold text-base sm:text-lg leading-snug line-clamp-2 group-hover:text-red-400 transition-colors">
+          <h4 className="text-slate-900 dark:text-white font-brand font-bold text-base sm:text-lg leading-snug line-clamp-2">
             {audio.title}
           </h4>
         </div>
       </div>
 
-      <div className="mt-5 flex flex-col space-y-2 relative z-10">
-        <div className="relative h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-          <div 
-            className="absolute top-0 left-0 h-full bg-gradient-to-r from-red-600 to-rose-500 rounded-full transition-all duration-200"
+      <div className="mt-5 space-y-2">
+        <div className="relative h-1.5 w-full bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-red-600 rounded-full transition-all duration-200"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-wider text-slate-400">
-           <span className={isPlaying ? 'text-red-400 font-black animate-pulse' : ''}>{isPlaying ? 'A Reproduzir' : 'Pronto'}</span>
-           <span>{audio.duration}</span>
+        <div className="flex justify-between items-center text-[11px] font-mono text-slate-500 dark:text-slate-400 tabular-nums">
+          <span className={isPlaying ? 'text-red-600 dark:text-red-400 font-bold' : ''}>
+            {isPlaying ? playingLabel : readyLabel}
+          </span>
+          <span>{audio.duration}</span>
         </div>
       </div>
     </div>
@@ -98,6 +109,7 @@ const CustomAudioPlayer: React.FC<{ audio: AudioItem }> = ({ audio }) => {
 };
 
 const MediaCenter: React.FC = () => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'playlist' | 'audio' | 'video' | 'myMusic'>('playlist');
 
   useEffect(() => {
@@ -114,138 +126,131 @@ const MediaCenter: React.FC = () => {
   }, []);
 
   const myMusicVideos = [
-    { id: 'm1', title: "Minha Música #1", youtubeId: "AvHMFxjPSuM", color: "from-purple-600 to-indigo-600" },
-    { id: 'm2', title: "Minha Música #2", youtubeId: "x91uzSqtJlw", color: "from-blue-600 to-cyan-600" },
-    { id: 'm3', title: "Minha Música #3", youtubeId: "TsjKIeLXcmA", color: "from-amber-600 to-orange-600" },
-    { id: 'm4', title: "Minha Música #4", youtubeId: "0B3ivU16tNE", color: "from-emerald-600 to-teal-600" },
-    { id: 'm5', title: "Minha Música #5", youtubeId: "-u6MT203gx0", color: "from-pink-600 to-rose-600" },
-    { id: 'm6', title: "Minha Música #6", youtubeId: "82F8kJ1sGAY", color: "from-indigo-600 to-blue-600" },
+    { id: 'm1', title: 'Minha Música #1', youtubeId: 'AvHMFxjPSuM' },
+    { id: 'm2', title: 'Minha Música #2', youtubeId: 'x91uzSqtJlw' },
+    { id: 'm3', title: 'Minha Música #3', youtubeId: 'TsjKIeLXcmA' },
+    { id: 'm4', title: 'Minha Música #4', youtubeId: '0B3ivU16tNE' },
+    { id: 'm5', title: 'Minha Música #5', youtubeId: '-u6MT203gx0' },
+    { id: 'm6', title: 'Minha Música #6', youtubeId: '82F8kJ1sGAY' },
   ];
 
   const audios: AudioItem[] = [
-    { 
-      id: '1', 
-      title: "Entrevista: Ás da Concertina e Vasquinho da Concertina", 
-      category: "Tradição Viva", 
-      audioUrl: "https://www.dropbox.com/scl/fi/u3r7msk0h6blqpjt8mrba/Entrevista-s-da-concertina-e-Vasquinho-24-01-2025.mp3?rlkey=2sb2suromeylsn0yiwoyc67mn&st=qhx3c6fq&raw=1",
-      duration: "1h 21min",
-      colorClass: "",
-      accentColor: ""
+    {
+      id: '1',
+      title: 'Entrevista: Ás da Concertina e Vasquinho da Concertina',
+      category: 'Tradição Viva',
+      audioUrl:
+        'https://www.dropbox.com/scl/fi/u3r7msk0h6blqpjt8mrba/Entrevista-s-da-concertina-e-Vasquinho-24-01-2025.mp3?rlkey=2sb2suromeylsn0yiwoyc67mn&st=qhx3c6fq&raw=1',
+      duration: '1h 21min',
     },
-    { 
-      id: '2', 
-      title: "Prazeres Interrompidos - Promo", 
-      category: "Podcast Literário", 
-      audioUrl: "https://www.dropbox.com/scl/fi/tz8ccze2co79c16pwq1jp/PROMO-Web-R-dio-Figueir.mp3?rlkey=88lpwhzqnl845jn86g4b4b7ai&st=try9kss2&raw=1",
-      duration: "0:30 seg",
-      colorClass: "",
-      accentColor: ""
+    {
+      id: '2',
+      title: 'Prazeres Interrompidos - Promo',
+      category: 'Podcast Literário',
+      audioUrl:
+        'https://www.dropbox.com/scl/fi/tz8ccze2co79c16pwq1jp/PROMO-Web-R-dio-Figueir.mp3?rlkey=88lpwhzqnl845jn86g4b4b7ai&st=try9kss2&raw=1',
+      duration: '0:30 seg',
     },
   ];
 
   return (
     <div id="multimedia" className="space-y-8 scroll-mt-28">
-      <div id="playlist-section" className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/[0.08] pb-6">
-        <div className="flex items-center space-x-4">
-          <div className="p-3.5 bg-red-600/10 border border-red-500/20 rounded-2xl text-red-500 shadow-lg">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <div>
-            <span className="text-[9px] text-red-500 font-black uppercase tracking-[0.25em] block">Multimédia & Música</span>
-            <h3 className="text-2xl sm:text-3xl font-brand font-black text-white tracking-tight">Explorar Conteúdos</h3>
-            <p className="text-xs text-slate-400 mt-1">Playlist de autor, podcasts, emissões e destaques</p>
-          </div>
+      <div
+        id="playlist-section"
+        className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-200 dark:border-white/[0.08] pb-6"
+      >
+        <div>
+          <span className="text-xs text-red-600 dark:text-red-400 font-bold uppercase tracking-[0.2em] block">
+            {t.media.kicker}
+          </span>
+          <h3 className="text-2xl sm:text-3xl font-brand font-black text-slate-900 dark:text-white tracking-tight mt-1">
+            {t.media.title}
+          </h3>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{t.media.subtitle}</p>
         </div>
 
-        <div className="flex bg-white/[0.04] p-1.5 rounded-2xl border border-white/10 overflow-x-auto no-scrollbar max-w-full gap-1">
-          <button 
-            onClick={() => setActiveTab('playlist')}
-            className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
-              activeTab === 'playlist' 
-                ? 'bg-red-600 text-white shadow-md shadow-red-600/30 ring-2 ring-red-500/20' 
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-            </svg>
-            <span>Playlist (15 Músicas)</span>
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('audio')}
-            className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
-              activeTab === 'audio' 
-                ? 'bg-red-600 text-white shadow-md shadow-red-600/30' 
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <span>Podcasts</span>
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('video')}
-            className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
-              activeTab === 'video' 
-                ? 'bg-red-600 text-white shadow-md shadow-red-600/30' 
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <span>Vídeos</span>
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('myMusic')}
-            className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
-              activeTab === 'myMusic' 
-                ? 'bg-red-600 text-white shadow-md shadow-red-600/30' 
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <span>Vídeos Musicais</span>
-          </button>
+        {/* Segmented Filter Control */}
+        <div className="inline-flex bg-slate-100 dark:bg-white/[0.05] p-1 rounded-2xl border border-slate-200 dark:border-white/10 overflow-x-auto max-w-full gap-1 shrink-0">
+          {(
+            [
+              { id: 'playlist', label: t.media.tabs.playlist },
+              { id: 'audio', label: t.media.tabs.podcasts },
+              { id: 'video', label: t.media.tabs.videos },
+              { id: 'myMusic', label: t.media.tabs.musicVideos },
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-colors whitespace-nowrap shrink-0 ${
+                activeTab === tab.id
+                  ? 'bg-slate-900 dark:bg-red-600 text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="animate-in fade-in duration-300">
-        {activeTab === 'playlist' && (
-          <SpecialPlaylist />
-        )}
+      <div>
+        {activeTab === 'playlist' && <SpecialPlaylist />}
 
         {activeTab === 'audio' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {audios.map((audio) => (
-              <CustomAudioPlayer key={audio.id} audio={audio} />
+              <CustomAudioPlayer
+                key={audio.id}
+                audio={audio}
+                playingLabel={t.media.playing}
+                readyLabel={t.media.ready}
+              />
             ))}
-            
-            <div className="glass-card border-dashed border-white/20 p-8 flex flex-col items-center justify-center text-center group cursor-pointer hover:border-red-500/40 transition-all min-h-[160px]">
-              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-slate-400 mb-3 group-hover:scale-110 group-hover:text-red-500 transition-all border border-white/10">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+
+            <a
+              href="https://wa.me/351910270085"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass-card glass-card-interactive border-dashed p-8 flex flex-col items-center justify-center text-center min-h-[160px]"
+            >
+              <div className="w-11 h-11 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-300 mb-3 border border-slate-200 dark:border-white/10">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
               </div>
-              <h5 className="text-white font-brand font-bold text-sm tracking-tight">Sugerir Conteúdo</h5>
-              <p className="text-slate-400 text-xs mt-1">Envie-nos a sua sugestão ou tema para debate</p>
-            </div>
+              <h5 className="text-slate-900 dark:text-white font-brand font-bold text-sm">
+                {t.media.suggestTitle}
+              </h5>
+              <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">{t.media.suggestDesc}</p>
+            </a>
           </div>
         )}
 
         {activeTab === 'video' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
-              { id: '1', title: "Emissão Especial WRF", youtubeId: "r5GzTRSWXgc" }, 
-              { id: '2', title: "Destaque Musical", youtubeId: "kjRBK718BtM" }
+              { id: '1', title: 'Emissão Especial WRF', youtubeId: 'r5GzTRSWXgc' },
+              { id: '2', title: 'Destaque Musical', youtubeId: 'kjRBK718BtM' },
             ].map((video) => (
-              <div key={video.id} className="glass-card glass-card-interactive overflow-hidden group">
-                <div className="aspect-video w-full bg-black overflow-hidden">
-                  <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0`} title={video.title} frameBorder="0" allowFullScreen></iframe>
+              <div key={video.id} className="glass-card glass-card-interactive overflow-hidden">
+                <div className="aspect-video w-full bg-black">
+                  <iframe
+                    className="w-full h-full"
+                    src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0`}
+                    title={video.title}
+                    frameBorder="0"
+                    allowFullScreen
+                  />
                 </div>
                 <div className="p-5">
-                  <div className="flex items-center space-x-2 mb-1.5">
-                     <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                     <p className="text-[9px] font-black uppercase tracking-widest text-red-400">Conteúdo Original</p>
-                  </div>
-                  <h4 className="font-brand font-bold text-base sm:text-lg text-white tracking-tight">{video.title}</h4>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400 block mb-1">
+                    {t.media.originalLabel}
+                  </span>
+                  <h4 className="font-brand font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+                    {video.title}
+                  </h4>
                 </div>
               </div>
             ))}
@@ -255,12 +260,20 @@ const MediaCenter: React.FC = () => {
         {activeTab === 'myMusic' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {myMusicVideos.map((video) => (
-              <div key={video.id} className="glass-card glass-card-interactive overflow-hidden group">
-                <div className="aspect-video w-full bg-black overflow-hidden">
-                  <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0`} title={video.title} frameBorder="0" allowFullScreen></iframe>
+              <div key={video.id} className="glass-card glass-card-interactive overflow-hidden">
+                <div className="aspect-video w-full bg-black">
+                  <iframe
+                    className="w-full h-full"
+                    src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0`}
+                    title={video.title}
+                    frameBorder="0"
+                    allowFullScreen
+                  />
                 </div>
                 <div className="p-4">
-                  <h4 className="font-brand font-bold text-sm text-white tracking-tight truncate">{video.title}</h4>
+                  <h4 className="font-brand font-bold text-sm text-slate-900 dark:text-white truncate">
+                    {video.title}
+                  </h4>
                 </div>
               </div>
             ))}

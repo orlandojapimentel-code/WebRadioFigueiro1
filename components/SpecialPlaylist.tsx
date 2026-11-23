@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { PLAYLIST_SONGS } from '../data/playlistSongs';
 import { PlaylistItem } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export const SpecialPlaylist: React.FC = () => {
+  const { t } = useLanguage();
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -19,12 +21,10 @@ export const SpecialPlaylist: React.FC = () => {
 
   const currentTrack: PlaylistItem = PLAYLIST_SONGS[currentTrackIndex] || PLAYLIST_SONGS[0];
 
-  // Pause radio broadcast when playing local playlist
   const pauseLiveRadio = () => {
     window.dispatchEvent(new CustomEvent('wrf-pause-radio'));
   };
 
-  // If live radio starts playing, pause this playlist player
   useEffect(() => {
     const handleRadioState = (e: Event) => {
       const customEvent = e as CustomEvent<{ isPlaying?: boolean }>;
@@ -39,14 +39,12 @@ export const SpecialPlaylist: React.FC = () => {
     };
   }, []);
 
-  // Update volume
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume;
     }
   }, [volume, isMuted]);
 
-  // Load and play track
   const playTrack = useCallback((index: number) => {
     setCurrentTrackIndex(index);
     setCurrentTime(0);
@@ -77,7 +75,7 @@ export const SpecialPlaylist: React.FC = () => {
       setIsPlaying(false);
     } else {
       pauseLiveRadio();
-      if (!audioRef.current.src || audioRef.current.src === '' || audioRef.current.src !== currentTrack.audioUrl) {
+      if (!audioRef.current.src || audioRef.current.src !== currentTrack.audioUrl) {
         audioRef.current.src = currentTrack.audioUrl;
         audioRef.current.load();
       }
@@ -103,13 +101,11 @@ export const SpecialPlaylist: React.FC = () => {
       }
       playTrack(nextIndex);
     } else {
-      const nextIndex = (currentTrackIndex + 1) % PLAYLIST_SONGS.length;
-      playTrack(nextIndex);
+      playTrack((currentTrackIndex + 1) % PLAYLIST_SONGS.length);
     }
   }, [currentTrackIndex, isShuffle, playTrack]);
 
   const handlePrev = useCallback(() => {
-    // If current time > 3s, restart current track
     if (audioRef.current && audioRef.current.currentTime > 3) {
       audioRef.current.currentTime = 0;
       setCurrentTime(0);
@@ -128,14 +124,11 @@ export const SpecialPlaylist: React.FC = () => {
       }
     } else if (repeatMode === 'all') {
       handleNext();
+    } else if (currentTrackIndex < PLAYLIST_SONGS.length - 1) {
+      handleNext();
     } else {
-      // Off: if last track, stop; otherwise next
-      if (currentTrackIndex < PLAYLIST_SONGS.length - 1) {
-        handleNext();
-      } else {
-        setIsPlaying(false);
-        setCurrentTime(0);
-      }
+      setIsPlaying(false);
+      setCurrentTime(0);
     }
   }, [currentTrackIndex, handleNext, repeatMode]);
 
@@ -155,7 +148,6 @@ export const SpecialPlaylist: React.FC = () => {
     }
   };
 
-  // Seek bar interaction
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!progressBarRef.current || !audioRef.current || !duration) return;
     const rect = progressBarRef.current.getBoundingClientRect();
@@ -166,7 +158,6 @@ export const SpecialPlaylist: React.FC = () => {
     setCurrentTime(newTime);
   };
 
-  // Time format helper (mm:ss)
   const formatTime = (seconds: number) => {
     if (isNaN(seconds) || seconds === 0) return '0:00';
     const mins = Math.floor(seconds / 60);
@@ -174,7 +165,6 @@ export const SpecialPlaylist: React.FC = () => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  // Filter songs by search query
   const filteredSongs = useMemo(() => {
     if (!searchQuery.trim()) return PLAYLIST_SONGS;
     const q = searchQuery.toLowerCase().trim();
@@ -190,7 +180,6 @@ export const SpecialPlaylist: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Hidden Audio Element */}
       <audio
         ref={audioRef}
         src={currentTrack.audioUrl}
@@ -206,125 +195,104 @@ export const SpecialPlaylist: React.FC = () => {
         onPause={() => setIsPlaying(false)}
       />
 
-      {/* Main Interactive Player Box */}
-      <div className="glass-card relative overflow-hidden p-6 sm:p-8 border border-white/15 bg-gradient-to-br from-[#0c101c]/90 via-[#07090e]/95 to-[#160a10]/80 rounded-3xl shadow-2xl">
-        {/* Glow backdrop decoration */}
-        <div className="absolute -top-24 -right-24 w-72 h-72 bg-red-600/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 sm:gap-8">
-          {/* Vinyl / Cover Art Graphic */}
-          <div className="relative w-28 h-28 sm:w-36 sm:h-36 shrink-0 rounded-2xl bg-[#05070c] border border-white/15 shadow-xl flex items-center justify-center p-3 group overflow-hidden">
-            {/* Spinning vinyl disc effect */}
+      {/* Main Playlist Player */}
+      <div className="glass-card p-6 sm:p-8">
+        <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8">
+          {/* Vinyl Disc Visual */}
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 rounded-2xl bg-slate-900 dark:bg-[#05070c] border border-slate-800 dark:border-white/10 flex items-center justify-center p-3 overflow-hidden shadow-md">
             <div
-              className={`w-full h-full rounded-full border-4 border-white/10 bg-gradient-to-tr from-slate-900 via-black to-slate-800 flex items-center justify-center shadow-inner transition-transform duration-700 ${
-                isPlaying ? 'animate-[spin_6s_linear_infinite]' : ''
+              className={`w-full h-full rounded-full border-4 border-white/10 bg-gradient-to-tr from-slate-900 via-black to-slate-800 flex items-center justify-center ${
+                isPlaying ? 'animate-[spin_7s_linear_infinite]' : ''
               }`}
             >
-              {/* Disc grooves */}
-              <div className="w-4/5 h-4/5 rounded-full border border-white/5 flex items-center justify-center">
+              <div className="w-4/5 h-4/5 rounded-full border border-white/10 flex items-center justify-center">
                 <div className="w-3/5 h-3/5 rounded-full border border-white/10 flex items-center justify-center bg-red-600/20">
-                  <div className="w-4 h-4 rounded-full bg-red-500 shadow-lg shadow-red-500/50" />
+                  <div className="w-3.5 h-3.5 rounded-full bg-red-600" />
                 </div>
               </div>
             </div>
-
-            {/* Floating Equalizer pill when playing */}
-            {isPlaying && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-end gap-1 px-2.5 py-1 bg-black/80 backdrop-blur-md rounded-full border border-red-500/30 shadow-lg">
-                <span className="w-1 h-3 bg-red-500 rounded-full animate-[pulse_0.6s_ease-in-out_infinite]" />
-                <span className="w-1 h-4 bg-red-400 rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.2s]" />
-                <span className="w-1 h-2 bg-red-500 rounded-full animate-[pulse_0.8s_ease-in-out_infinite_0.4s]" />
-              </div>
-            )}
           </div>
 
-          {/* Track Info & Progress */}
+          {/* Info & Controls */}
           <div className="flex-1 w-full space-y-4 text-center md:text-left">
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-red-600/20 text-red-400 border border-red-500/30 text-[10px] font-black uppercase tracking-wider">
-                Música {currentTrack.number} de {PLAYLIST_SONGS.length}
+            <div className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 tabular-nums">
+              <span className="text-red-600 dark:text-red-400 font-bold">
+                {t.playlist.trackLabel} {String(currentTrack.number).padStart(2, '0')} {t.playlist.ofWord}{' '}
+                {PLAYLIST_SONGS.length}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-white/80 border border-white/10 text-[10px] font-mono font-bold">
-                {currentTrack.format}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-bold">
-                {currentTrack.tag}
-              </span>
+              <span className="mx-2" aria-hidden="true">·</span>
+              <span>{currentTrack.format}</span>
+              <span className="mx-2" aria-hidden="true">·</span>
+              <span>{currentTrack.tag}</span>
             </div>
 
             <div>
-              <h3 className="text-xl sm:text-2xl lg:text-3xl font-brand font-black text-white tracking-tight leading-tight">
+              <h3 className="text-xl sm:text-2xl lg:text-3xl font-brand font-black text-slate-900 dark:text-white tracking-tight">
                 {currentTrack.title}
               </h3>
-              <p className="text-xs sm:text-sm font-semibold text-slate-300 mt-1 flex items-center justify-center md:justify-start gap-2">
-                <span>{currentTrack.artist}</span>
-                <span className="text-slate-500">•</span>
-                <span className="text-red-400 text-xs">Web Rádio Figueiró</span>
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mt-1">
+                {currentTrack.artist} · Web Rádio Figueiró
               </p>
             </div>
 
-            {/* Progress Bar & Timers */}
-            <div className="space-y-1.5 pt-1">
+            {/* Progress Bar */}
+            <div className="space-y-1.5">
               <div
                 ref={progressBarRef}
                 onClick={handleSeek}
-                className="group relative h-2.5 w-full rounded-full bg-white/10 cursor-pointer overflow-hidden transition-all hover:h-3"
-                title="Clique para avançar/recuar"
+                className="group relative h-2 w-full rounded-full bg-slate-200 dark:bg-white/10 cursor-pointer overflow-hidden"
+                title={t.playlist.clickToSeek}
               >
                 <div
-                  className="h-full bg-gradient-to-r from-red-600 to-rose-500 rounded-full transition-all duration-100 relative shadow-[0_0_12px_rgba(220,38,38,0.7)]"
+                  className="h-full bg-red-600 rounded-full transition-all duration-100"
                   style={{ width: `${progressPercent}%` }}
-                >
-                  <span className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+                />
               </div>
 
-              <div className="flex justify-between items-center text-[11px] font-mono text-slate-400 px-0.5">
+              <div className="flex justify-between items-center text-[11px] font-mono text-slate-500 dark:text-slate-400 tabular-nums">
                 <span>{formatTime(currentTime)}</span>
                 {isLoadingAudio ? (
-                  <span className="text-red-400 text-[10px] animate-pulse">A carregar áudio...</span>
+                  <span className="text-red-600 dark:text-red-400">{t.playlist.loadingAudio}</span>
                 ) : (
                   <span>{duration > 0 ? formatTime(duration) : '--:--'}</span>
                 )}
               </div>
             </div>
 
-            {/* Playback Controls & Settings */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-              {/* Main buttons: Prev, Play, Next */}
-              <div className="flex items-center space-x-2 sm:space-x-3 mx-auto md:mx-0">
-                {/* Shuffle Button */}
+            {/* Playback Controls */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+              <div className="flex items-center gap-2 sm:gap-3 mx-auto md:mx-0">
                 <button
+                  type="button"
                   onClick={() => setIsShuffle(!isShuffle)}
-                  className={`p-2 rounded-xl border transition-all ${
+                  className={`p-2 rounded-xl border transition-colors ${
                     isShuffle
-                      ? 'bg-red-600/20 text-red-400 border-red-500/40 shadow-sm'
-                      : 'bg-white/5 text-slate-400 border-white/10 hover:text-white hover:bg-white/10'
+                      ? 'bg-red-50 dark:bg-red-600/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/40'
+                      : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-white/10 hover:text-slate-950 dark:hover:text-white'
                   }`}
-                  title={isShuffle ? 'Modo Aleatório Ativado' : 'Ativar Modo Aleatório'}
+                  title={isShuffle ? t.playlist.shuffleOn : t.playlist.shuffleOff}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h4l4 6 4-6h4m-4 12l-4-6-4 6H4m16 0h-4l-4-6" />
                   </svg>
                 </button>
 
-                {/* Previous */}
                 <button
+                  type="button"
                   onClick={handlePrev}
-                  className="p-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-95"
-                  title="Música anterior"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white border border-slate-200 dark:border-white/10 transition-colors"
+                  title={t.playlist.prev}
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
                   </svg>
                 </button>
 
-                {/* Big Play / Pause */}
                 <button
+                  type="button"
                   onClick={togglePlay}
-                  className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-red-600 hover:bg-red-500 text-white flex items-center justify-center shadow-lg shadow-red-600/40 ring-4 ring-red-500/20 hover:ring-red-500/40 transition-all transform active:scale-95"
-                  title={isPlaying ? 'Pausar música' : 'Reproduzir música'}
+                  className="h-12 w-12 rounded-2xl bg-red-600 hover:bg-red-500 text-white flex items-center justify-center shadow-md shadow-red-600/25 transition-transform active:scale-95"
+                  title={isPlaying ? t.playlist.pause : t.playlist.play}
                 >
                   {isLoadingAudio ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -339,35 +307,35 @@ export const SpecialPlaylist: React.FC = () => {
                   )}
                 </button>
 
-                {/* Next */}
                 <button
+                  type="button"
                   onClick={handleNext}
-                  className="p-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-95"
-                  title="Próxima música"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white border border-slate-200 dark:border-white/10 transition-colors"
+                  title={t.playlist.next}
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
                   </svg>
                 </button>
 
-                {/* Repeat Button */}
                 <button
+                  type="button"
                   onClick={() => {
                     if (repeatMode === 'off') setRepeatMode('all');
                     else if (repeatMode === 'all') setRepeatMode('one');
                     else setRepeatMode('off');
                   }}
-                  className={`p-2 rounded-xl border transition-all relative ${
+                  className={`p-2 rounded-xl border transition-colors relative ${
                     repeatMode !== 'off'
-                      ? 'bg-red-600/20 text-red-400 border-red-500/40'
-                      : 'bg-white/5 text-slate-400 border-white/10 hover:text-white hover:bg-white/10'
+                      ? 'bg-red-50 dark:bg-red-600/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/40'
+                      : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-white/10 hover:text-slate-950 dark:hover:text-white'
                   }`}
                   title={
                     repeatMode === 'all'
-                      ? 'Repetir toda a playlist'
+                      ? t.playlist.repeatAll
                       : repeatMode === 'one'
-                      ? 'Repetir esta música'
-                      : 'Repetição desativada'
+                      ? t.playlist.repeatOne
+                      : t.playlist.repeatOff
                   }
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -379,38 +347,29 @@ export const SpecialPlaylist: React.FC = () => {
                     />
                   </svg>
                   {repeatMode === 'one' && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-[8px] font-black text-white rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-[9px] font-bold text-white rounded-full w-3.5 h-3.5 flex items-center justify-center">
                       1
                     </span>
                   )}
                 </button>
               </div>
 
-              {/* Volume Slider */}
-              <div className="flex items-center space-x-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 mx-auto md:mx-0">
+              {/* Volume */}
+              <div className="flex items-center gap-2 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 mx-auto md:mx-0">
                 <button
+                  type="button"
                   onClick={() => setIsMuted(!isMuted)}
-                  className="text-slate-400 hover:text-white transition-colors"
-                  title={isMuted ? 'Desativar mudo' : 'Silenciar'}
+                  className="text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white transition-colors"
+                  title={isMuted ? t.playlist.unmute : t.playlist.mute}
                 >
                   {isMuted || volume === 0 ? (
-                    <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                      />
+                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
                     </svg>
                   ) : (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                     </svg>
                   )}
                 </button>
@@ -425,7 +384,7 @@ export const SpecialPlaylist: React.FC = () => {
                     setVolume(newVol);
                     if (isMuted && newVol > 0) setIsMuted(false);
                   }}
-                  className="w-16 sm:w-20 accent-red-600 h-1 bg-white/20 rounded-lg cursor-pointer"
+                  className="w-20 accent-red-600 h-1 bg-slate-300 dark:bg-white/20 rounded-lg cursor-pointer"
                   title={`Volume: ${Math.round((isMuted ? 0 : volume) * 100)}%`}
                 />
               </div>
@@ -434,40 +393,26 @@ export const SpecialPlaylist: React.FC = () => {
         </div>
       </div>
 
-      {/* Playlist Controls & Tracklist */}
-      <div className="glass-card p-5 sm:p-7 rounded-3xl border border-white/10 space-y-5">
-        {/* Header bar: Title, Search, and Quick Action */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-5">
-          <div className="flex items-center space-x-3">
-            <div className="p-2.5 bg-red-600/10 border border-red-500/20 rounded-xl text-red-500">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                />
-              </svg>
-            </div>
-            <div>
-              <h4 className="text-lg font-brand font-black text-white tracking-tight">
-                Lista de Faixas
-              </h4>
-              <p className="text-xs text-slate-400">
-                {filteredSongs.length} de {PLAYLIST_SONGS.length} canções de Orlando José Pimentel
-              </p>
-            </div>
+      {/* Tracklist */}
+      <div className="glass-card p-5 sm:p-6 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/[0.08] pb-4">
+          <div>
+            <h4 className="text-lg font-brand font-bold text-slate-900 dark:text-white">
+              {t.playlist.tracklistTitle}
+            </h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+              {filteredSongs.length} {t.playlist.ofWord} {PLAYLIST_SONGS.length} {t.playlist.songsCredit}
+            </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Search Input */}
-            <div className="relative flex-1 sm:w-64">
+          <div className="flex items-center gap-2.5">
+            <div className="relative flex-1 sm:w-60">
               <input
                 type="text"
-                placeholder="Pesquisar música..."
+                placeholder={t.playlist.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white/[0.04] text-white text-xs pl-9 pr-8 py-2 rounded-xl border border-white/10 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500/30 transition-all placeholder:text-slate-500"
+                className="w-full bg-slate-100 dark:bg-white/[0.04] text-slate-900 dark:text-white text-xs pl-9 pr-8 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 focus:border-red-500 focus:outline-none transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               <svg
                 className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
@@ -479,33 +424,32 @@ export const SpecialPlaylist: React.FC = () => {
               </svg>
               {searchQuery && (
                 <button
+                  type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs"
                 >
                   ✕
                 </button>
               )}
             </div>
 
-            {/* Play All Button */}
             <button
+              type="button"
               onClick={() => playTrack(0)}
-              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md shadow-red-600/30 flex items-center space-x-1.5 shrink-0"
-              title="Iniciar reprodução do início"
+              className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0"
             >
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
-              <span className="hidden sm:inline">Tocar Todas</span>
+              <span className="hidden sm:inline">{t.playlist.playAll}</span>
             </button>
           </div>
         </div>
 
-        {/* Songs List */}
-        <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
+        <div className="divide-y divide-slate-200 dark:divide-white/[0.06] max-h-[500px] overflow-y-auto pr-1">
           {filteredSongs.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 text-sm">
-              Nenhuma música encontrada para &quot;{searchQuery}&quot;.
+            <div className="py-12 text-center text-slate-500 dark:text-slate-400 text-sm">
+              {t.playlist.noResults} &quot;{searchQuery}&quot;.
             </div>
           ) : (
             filteredSongs.map((song) => {
@@ -516,40 +460,36 @@ export const SpecialPlaylist: React.FC = () => {
               return (
                 <div
                   key={song.id}
-                  onClick={() => {
-                    if (isCurrent) {
-                      togglePlay();
-                    } else {
-                      playTrack(originalIndex);
-                    }
-                  }}
-                  className={`flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer group ${
+                  onClick={() => (isCurrent ? togglePlay() : playTrack(originalIndex))}
+                  className={`flex items-center justify-between py-3 px-2 sm:px-3 rounded-xl transition-colors cursor-pointer group ${
                     isCurrent
-                      ? 'bg-red-600/10 border-red-500/40 shadow-md shadow-red-600/10'
-                      : 'bg-white/[0.02] hover:bg-white/[0.06] border-white/5 hover:border-white/15'
+                      ? 'bg-red-50 dark:bg-red-600/10'
+                      : 'hover:bg-slate-100/80 dark:hover:bg-white/[0.04]'
                   }`}
                 >
-                  {/* Left: Number / Play icon, Title, Artist */}
-                  <div className="flex items-center space-x-3.5 sm:space-x-4 min-w-0">
-                    {/* Index or Play Button */}
-                    <div className="w-9 h-9 shrink-0 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-red-500/40 transition-colors">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-9 h-9 shrink-0 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center border border-slate-200 dark:border-white/10">
                       {isItemPlaying ? (
-                        <div className="flex items-end gap-0.5 h-4">
-                          <span className="w-1 h-3 bg-red-500 rounded-full animate-[pulse_0.6s_ease-in-out_infinite]" />
-                          <span className="w-1 h-4 bg-red-400 rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.2s]" />
-                          <span className="w-1 h-2 bg-red-500 rounded-full animate-[pulse_0.8s_ease-in-out_infinite_0.4s]" />
+                        <div className="flex items-end gap-0.5 h-4" aria-hidden="true">
+                          {[1, 2, 3].map((i) => (
+                            <span
+                              key={i}
+                              className="w-1 h-4 bg-red-600 dark:bg-red-500 rounded-full animate-eq-bar"
+                              style={{ animationDelay: `${i * 0.16}s` }}
+                            />
+                          ))}
                         </div>
                       ) : (
                         <>
                           <span
-                            className={`text-xs font-mono font-bold group-hover:hidden ${
-                              isCurrent ? 'text-red-400' : 'text-slate-400'
+                            className={`text-xs font-mono font-bold tabular-nums group-hover:hidden ${
+                              isCurrent ? 'text-red-600 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'
                             }`}
                           >
                             {String(song.number).padStart(2, '0')}
                           </span>
                           <svg
-                            className="w-4 h-4 text-red-500 hidden group-hover:block ml-0.5"
+                            className="w-4 h-4 text-red-600 hidden group-hover:block ml-0.5"
                             fill="currentColor"
                             viewBox="0 0 24 24"
                           >
@@ -560,51 +500,46 @@ export const SpecialPlaylist: React.FC = () => {
                     </div>
 
                     <div className="min-w-0">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center gap-2">
                         <h5
-                          className={`font-brand font-bold text-sm sm:text-base tracking-tight truncate ${
-                            isCurrent ? 'text-red-400 font-black' : 'text-white group-hover:text-red-300'
+                          className={`font-brand font-bold text-sm sm:text-base truncate ${
+                            isCurrent
+                              ? 'text-red-600 dark:text-red-400'
+                              : 'text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400'
                           }`}
                         >
                           {song.title}
                         </h5>
                         {isCurrent && (
-                          <span className="shrink-0 px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[9px] font-black uppercase tracking-wider">
-                            A tocar
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400 shrink-0">
+                            · {t.playlist.playingBadge}
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] sm:text-xs text-slate-400 truncate mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
                         {song.artist}
                       </p>
                     </div>
                   </div>
 
-                  {/* Right: Format, Tag, and Open link */}
-                  <div className="flex items-center space-x-2.5 shrink-0 ml-3">
-                    <span className="hidden sm:inline-block px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] font-mono text-slate-300">
-                      {song.format}
-                    </span>
-                    <span className="hidden md:inline-block px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-[10px] font-bold text-purple-300">
-                      {song.tag}
+                  <div className="flex items-center gap-3 shrink-0 ml-3">
+                    <span className="hidden sm:inline text-xs font-mono text-slate-500 dark:text-slate-400">
+                      {song.format} · {song.tag}
                     </span>
 
-                    {/* Quick play/pause button */}
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (isCurrent) {
-                          togglePlay();
-                        } else {
-                          playTrack(originalIndex);
-                        }
+                        if (isCurrent) togglePlay();
+                        else playTrack(originalIndex);
                       }}
-                      className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all ${
+                      className={`h-9 w-9 rounded-xl flex items-center justify-center transition-colors ${
                         isItemPlaying
-                          ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                          : 'bg-white/5 hover:bg-red-600 text-slate-300 hover:text-white border border-white/10'
+                          ? 'bg-red-600 text-white'
+                          : 'bg-slate-100 dark:bg-white/5 hover:bg-red-600 text-slate-700 dark:text-slate-300 hover:text-white border border-slate-200 dark:border-white/10'
                       }`}
-                      title={isItemPlaying ? 'Pausar' : 'Ouvir esta música'}
+                      title={isItemPlaying ? t.playlist.pause : t.playlist.play}
                     >
                       {isItemPlaying ? (
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">

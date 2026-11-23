@@ -1,21 +1,37 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { RADIO_LOGO } from '../src/constants';
+import { MEDIA_ASSETS } from '../src/mediaAssets';
 
 const Hero: React.FC = () => {
   const { t } = useLanguage();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [nowPlaying, setNowPlaying] = useState<string>(t.player.tuning);
+  const [logoError, setLogoError] = useState(false);
 
   useEffect(() => {
-    const handleRadioState = (e: CustomEvent) => {
-      if (e.detail && typeof e.detail.isPlaying === 'boolean') {
-        setIsPlaying(e.detail.isPlaying);
+    setNowPlaying((prev) => (prev.endsWith('...') ? t.player.tuning : prev));
+  }, [t.player.tuning]);
+
+  useEffect(() => {
+    const handleRadioState = (e: Event) => {
+      const customEvent = e as CustomEvent<{ isPlaying?: boolean }>;
+      if (customEvent.detail && typeof customEvent.detail.isPlaying === 'boolean') {
+        setIsPlaying(customEvent.detail.isPlaying);
       }
     };
-    window.addEventListener('wrf-radio-state' as any, handleRadioState);
+    const handleNowPlaying = (e: Event) => {
+      const customEvent = e as CustomEvent<{ song?: string }>;
+      if (customEvent.detail?.song) {
+        setNowPlaying(customEvent.detail.song);
+      }
+    };
+
+    window.addEventListener('wrf-radio-state', handleRadioState);
+    window.addEventListener('wrf-now-playing', handleNowPlaying);
     return () => {
-      window.removeEventListener('wrf-radio-state' as any, handleRadioState);
+      window.removeEventListener('wrf-radio-state', handleRadioState);
+      window.removeEventListener('wrf-now-playing', handleNowPlaying);
     };
   }, []);
 
@@ -23,136 +39,185 @@ const Hero: React.FC = () => {
     window.dispatchEvent(new CustomEvent('wrf-toggle-play'));
   };
 
+  const scrollToPlaylist = () => {
+    window.dispatchEvent(new CustomEvent('wrf-set-media-tab', { detail: { tab: 'playlist' } }));
+    const el = document.getElementById('multimedia');
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.pageYOffset - 112;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="relative w-full flex flex-col items-center overflow-hidden rounded-[2.5rem] md:rounded-[3.5rem] bg-[#07090e] border border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] min-h-[560px] md:min-h-[640px] justify-center transition-all duration-500">
-      
-      {/* Studio Background Image with Smooth Depth of Field */}
-      <div className="absolute inset-0 z-0 select-none pointer-events-none">
-        <img 
-          src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2000&auto=format&fit=crop" 
-          alt="Studio Broadcast" 
-          className="w-full h-full object-cover opacity-25 scale-105 filter saturate-150 animate-pulse-soft"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#07090e]/90 via-[#07090e]/75 to-[#07090e]"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#07090e] via-transparent to-[#07090e]"></div>
-      </div>
+    <section className="glass-card overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch">
+        {/* Left Editorial Column */}
+        <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-between gap-6">
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
+              {t.hero.kicker}
+            </p>
 
-      {/* Atmospheric Ambient Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-600/15 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-10 right-10 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+            <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] font-brand font-black tracking-tight leading-[1.06] text-slate-900 dark:text-white text-balance">
+              {t.hero.title}
+            </h1>
 
-      {/* Content Container */}
-      <div className="relative z-20 w-full flex flex-col items-center text-center px-6 py-12 md:py-16">
-        
-        {/* Live Badge */}
-        <div className="inline-flex items-center space-x-3 px-5 py-2 bg-white/[0.04] backdrop-blur-xl rounded-full border border-white/10 mb-8 shadow-inner">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
-          </span>
-          <span className="text-[10px] font-black uppercase tracking-[0.35em] text-slate-200">
-            {isPlaying ? 'Emissão no Ar • 320 kbps HD' : 'Emissão Digital HD • Direto de Figueiró'}
-          </span>
-        </div>
-
-        <div className="max-w-4xl flex flex-col items-center">
-          
-          {/* Radio Station Emblem with Radiant Sound Ring */}
-          <div className="relative w-32 h-32 md:w-44 md:h-44 mb-8 group cursor-pointer" onClick={handlePlayClick}>
-            <div className={`absolute inset-0 rounded-full blur-2xl transition-all duration-700 ${isPlaying ? 'bg-red-600/40 scale-125 animate-pulse' : 'bg-red-600/20 group-hover:bg-red-600/35'}`}></div>
-            <div className="relative w-full h-full p-2.5 bg-black/60 backdrop-blur-md rounded-full border border-white/15 shadow-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-              <img 
-                src={RADIO_LOGO} 
-                alt="Web Rádio Figueiró" 
-                className="w-full h-full object-contain rounded-full drop-shadow-[0_0_20px_rgba(239,68,68,0.4)]" 
-              />
-              {/* Play overlay on hover if not playing */}
-              <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <div className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg">
-                  {isPlaying ? (
-                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                  ) : (
-                    <svg className="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                  )}
-                </div>
-              </div>
-            </div>
+            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl">
+              {t.hero.description}{' '}
+              <span className="text-slate-900 dark:text-white font-semibold">{t.hero.since}</span>.
+            </p>
           </div>
-          
-          {/* Main Headline */}
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-brand font-black tracking-tighter leading-[0.95] text-white mb-6">
-            WEB RÁDIO<br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-red-500 to-rose-400">
-              FIGUEIRÓ
-            </span>
-          </h1>
-          
-          <p className="text-base sm:text-xl text-slate-300 font-normal max-w-2xl leading-relaxed mb-10">
-            {t.hero.description} <span className="text-white font-semibold">desde 2022</span>. Música, informação local de Amarante e proximidade com as nossas gentes.
-          </p>
 
-          {/* Interactive CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto justify-center">
-            
-            <button 
-              onClick={handlePlayClick}
-              className={`w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center space-x-3 shadow-xl hover:scale-105 active:scale-95 ${
-                isPlaying 
-                  ? 'bg-white text-slate-950 shadow-white/20' 
-                  : 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-red-600/30'
-              }`}
-            >
-              {isPlaying ? (
-                <>
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                  <span>Pausar Transmissão</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                  <span>{t.hero.cta}</span>
-                </>
-              )}
-            </button>
-
-            {/* Listeners Badge */}
-            <div className="flex items-center space-x-3 bg-white/[0.04] backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10">
-              <div className="flex -space-x-2.5">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 border-[#07090e] bg-slate-800 overflow-hidden">
-                    <img src={`https://i.pravatar.cc/100?img=${i + 15}`} alt="Ouvinte" className="w-full h-full object-cover" />
-                  </div>
+          {/* Live Now Playing Strip */}
+          <div className="rounded-2xl bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 px-4 py-3 flex items-center justify-between gap-3">
+            <div className="min-w-0 flex items-center gap-3">
+              <div className="flex items-end gap-0.5 h-4 shrink-0" aria-hidden="true">
+                {[0.6, 1, 0.45, 0.85].map((scale, idx) => (
+                  <span
+                    key={idx}
+                    className={`w-1 rounded-full bg-red-600 dark:bg-red-500 ${
+                      isPlaying ? 'animate-eq-bar h-4' : 'h-1.5 opacity-40'
+                    }`}
+                    style={
+                      isPlaying
+                        ? { animationDelay: `${idx * 0.14}s`, transform: `scaleY(${scale})` }
+                        : undefined
+                    }
+                  />
                 ))}
               </div>
-              <div className="text-left">
-                <span className="text-xs font-black text-white block leading-tight">+12.000</span>
-                <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold block">Ouvintes Ativos</span>
+              <div className="min-w-0">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                  {t.hero.nowPlayingLabel}
+                </span>
+                <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                  {nowPlaying}
+                </p>
               </div>
             </div>
 
+            <span className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap shrink-0 tabular-nums">
+              320 kbps
+            </span>
           </div>
 
-          {/* Key Station Metadata Badges */}
-          <div className="grid grid-cols-3 gap-3 sm:gap-6 mt-12 w-full max-w-lg border-t border-white/10 pt-8">
-            <div className="text-center">
-              <span className="text-[10px] sm:text-xs font-mono font-bold text-red-500 uppercase tracking-widest block mb-0.5">Qualidade</span>
-              <span className="text-sm sm:text-base font-black text-white">320 kbps HD</span>
+          {/* Actions & Station Metadata */}
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handlePlayClick}
+                className={`px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 whitespace-nowrap shrink-0 shadow-md ${
+                  isPlaying
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950'
+                    : 'bg-red-600 hover:bg-red-500 text-white shadow-red-600/20'
+                }`}
+              >
+                {isPlaying ? (
+                  <>
+                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                    </svg>
+                    <span>{t.hero.pauseCta}</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                    <span>{t.hero.cta}</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={scrollToPlaylist}
+                className="px-5 py-3.5 rounded-2xl border border-slate-300 dark:border-white/15 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors whitespace-nowrap shrink-0"
+              >
+                {t.media.tabs.playlist}
+              </button>
             </div>
-            <div className="text-center border-x border-white/10 px-2">
-              <span className="text-[10px] sm:text-xs font-mono font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Origem</span>
-              <span className="text-sm sm:text-base font-black text-white truncate">Amarante, PT</span>
-            </div>
-            <div className="text-center">
-              <span className="text-[10px] sm:text-xs font-mono font-bold text-emerald-500 uppercase tracking-widest block mb-0.5">Emissão</span>
-              <span className="text-sm sm:text-base font-black text-white">24/7 Online</span>
+
+            <div className="grid grid-cols-3 gap-4 pt-5 border-t border-slate-200 dark:border-white/[0.08]">
+              <div>
+                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block">
+                  {t.hero.qualityLabel}
+                </span>
+                <span className="text-sm font-bold font-mono text-slate-900 dark:text-white tabular-nums">
+                  320 kbps HD
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block">
+                  {t.hero.originLabel}
+                </span>
+                <span className="text-sm font-bold text-slate-900 dark:text-white truncate block">
+                  {t.hero.originValue}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block">
+                  {t.hero.broadcastLabel}
+                </span>
+                <span className="text-sm font-bold font-mono text-slate-900 dark:text-white tabular-nums">
+                  {t.hero.broadcastValue}
+                </span>
+              </div>
             </div>
           </div>
+        </div>
 
+        {/* Right Studio Visual Column */}
+        <div
+          onClick={handlePlayClick}
+          className="lg:col-span-5 relative min-h-[260px] sm:min-h-[340px] lg:h-full cursor-pointer group overflow-hidden bg-slate-900"
+        >
+          <img
+            src={MEDIA_ASSETS.heroStudioAmarante}
+            alt="Estúdio da Web Rádio Figueiró com vista para o Vale do Tâmega"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/15" />
+
+          <div className="absolute inset-x-6 bottom-6 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-12 h-12 rounded-2xl bg-black/75 border border-white/20 p-1.5 flex items-center justify-center shrink-0">
+                {!logoError ? (
+                  <img
+                    src={RADIO_LOGO}
+                    alt="Logótipo Web Rádio Figueiró"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-contain rounded-lg"
+                    onError={() => setLogoError(true)}
+                  />
+                ) : (
+                  <span className="text-red-500 font-brand font-black text-xs">WRF</span>
+                )}
+              </div>
+              <div className="min-w-0 text-white">
+                <p className="text-sm font-brand font-bold truncate">Web Rádio Figueiró</p>
+                <p className="text-xs text-slate-300 truncate">{t.hero.subtitle}</p>
+              </div>
+            </div>
+
+            <div className="w-11 h-11 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0 shadow-lg group-hover:scale-105 transition-transform">
+              {isPlaying ? (
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
 export default Hero;
-

@@ -1,8 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { fetchCulturalEvents } from '../services/geminiService';
+import { useLanguage } from '../contexts/LanguageContext';
+import { MEDIA_ASSETS } from '../src/mediaAssets';
 
-interface Event {
+interface CulturalEvent {
   title: string;
   dateStr: string;
   day: string;
@@ -14,36 +15,34 @@ interface Event {
 }
 
 const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const { t } = useLanguage();
+  const [events, setEvents] = useState<CulturalEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [errorType, setErrorType] = useState<'none' | 'key' | 'empty'>('none');
+  const [hasError, setHasError] = useState(false);
 
   const fallbackImages: Record<string, string> = {
-    "CONCERTO": "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800",
-    "EXPOSIÇÃO": "https://images.unsplash.com/photo-1531265726475-52ad60219627?q=80&w=800",
-    "TEATRO": "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?q=80&w=800",
-    "FESTA": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800",
-    "GERAL": "https://images.unsplash.com/photo-1514525253344-7814d9196606?q=80&w=800"
+    CONCERTO: MEDIA_ASSETS.culturalEventsStage,
+    'EXPOSIÇÃO': MEDIA_ASSETS.tamegaHeritageBanner,
+    TEATRO: MEDIA_ASSETS.culturalEventsStage,
+    FESTA: MEDIA_ASSETS.newsFallbackCommunity,
+    GERAL: MEDIA_ASSETS.tamegaHeritageBanner,
   };
 
   const loadEvents = async () => {
     setLoading(true);
-    setErrorType('none');
-    
+    setHasError(false);
+
     try {
       const result = await fetchCulturalEvents();
-      
-      if (!result || !result.text || !result.text.includes("EVENTO_START")) {
-        setErrorType('empty');
-        setLoading(false);
+
+      if (!result || !result.text || !result.text.includes('EVENTO_START')) {
+        setHasError(true);
         return;
       }
 
       const eventBlocks = result.text.match(/EVENTO_START[\s\S]*?EVENTO_END/g);
-      
       if (!eventBlocks || eventBlocks.length === 0) {
-        setErrorType('empty');
-        setLoading(false);
+        setHasError(true);
         return;
       }
 
@@ -51,36 +50,45 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         const extract = (key: string) => {
           const regex = new RegExp(`${key}:\\s*(.*)`, 'i');
           const match = block.match(regex);
-          return match ? match[1].trim().replace(/[*`]/g, '') : "";
+          return match ? match[1].trim().replace(/[*`]/g, '') : '';
         };
 
         const title = extract('TITULO');
         const dateStr = extract('DATA');
         const local = extract('LOCAL');
-        const type = extract('TIPO').toUpperCase() || "GERAL";
+        const type = extract('TIPO').toUpperCase() || 'GERAL';
         const img = extract('IMAGEM');
         const link = extract('LINK');
 
         const dayMatch = dateStr.match(/\d+/);
-        const day = dayMatch ? dayMatch[0] : "??";
-        const monthPart = dateStr.replace(day, "").replace(/de/g, "").trim().substring(0, 3).toUpperCase();
+        const day = dayMatch ? dayMatch[0] : '—';
+        const monthPart = dateStr
+          .replace(day, '')
+          .replace(/de/g, '')
+          .trim()
+          .substring(0, 3)
+          .toUpperCase();
+
+        const validImg =
+          img && img.startsWith('http') && !img.includes('unsplash.com')
+            ? img
+            : fallbackImages[type] || fallbackImages.GERAL;
 
         return {
-          title: title || "Evento Cultural",
+          title: title || 'Evento Cultural',
           dateStr,
           day,
-          month: monthPart || "AGENDA",
-          location: local || "Amarante",
+          month: monthPart || 'AGENDA',
+          location: local || 'Amarante',
           category: type,
-          image: (img && img.startsWith('http')) ? img : (fallbackImages[type] || fallbackImages["GERAL"]),
-          sourceUrl: link || "https://www.viralagenda.com/pt/p/municipiodeamarante"
+          image: validImg,
+          sourceUrl: link || 'https://www.cm-amarante.pt',
         };
       });
 
       setEvents(parsed);
-    } catch (err) {
-      console.warn("Notice loading cultural events:", err);
-      setErrorType('empty');
+    } catch {
+      setHasError(true);
     } finally {
       setLoading(false);
     }
@@ -89,16 +97,10 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   useEffect(() => {
     const handleCloseOverlays = () => onClose();
     window.addEventListener('close-overlays', handleCloseOverlays);
-    
     loadEvents();
 
-    // Adicionar estado ao histórico para permitir retroceder
     window.history.pushState({ modal: 'agenda' }, '');
-    
-    const handlePopState = () => {
-      onClose();
-    };
-
+    const handlePopState = () => onClose();
     window.addEventListener('popstate', handlePopState);
 
     return () => {
@@ -109,7 +111,6 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   }, []);
 
   const handleClose = () => {
-    // Se o modal estiver aberto, retroceder no histórico se o estado for do modal
     if (window.history.state?.modal === 'agenda') {
       window.history.back();
     } else {
@@ -118,136 +119,105 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[300] bg-[#07090e]/95 backdrop-blur-3xl overflow-y-auto animate-in fade-in duration-300 text-white">
-      {/* Header Premium */}
-      <div className="sticky top-0 z-30 bg-[#07090e]/85 backdrop-blur-2xl border-b border-white/[0.08]">
-        <div className="container mx-auto px-4 sm:px-6 h-20 sm:h-24 flex items-center justify-between">
-          <div className="flex items-center space-x-3 sm:space-x-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-600/20 border border-orange-500/30 rounded-2xl flex items-center justify-center shadow-lg">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div>
-              <span className="text-[9px] text-orange-400 font-black uppercase tracking-[0.25em] block">
-                Exclusivo Web Rádio Figueiró
-              </span>
-              <h2 className="text-lg sm:text-2xl font-brand font-black tracking-tight text-white leading-none mt-0.5">
-                Agenda Cultural & Eventos
-              </h2>
-            </div>
+    <div className="fixed inset-0 z-[300] bg-slate-50/95 dark:bg-[#07090e]/95 backdrop-blur-2xl overflow-y-auto text-slate-900 dark:text-white transition-colors">
+      <div className="sticky top-0 z-30 bg-white/90 dark:bg-[#07090e]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/[0.08]">
+        <div className="container mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] text-red-600 dark:text-red-400 font-bold uppercase tracking-[0.2em] block">
+              {t.agenda.kicker}
+            </span>
+            <h2 className="text-lg sm:text-2xl font-brand font-black tracking-tight text-slate-900 dark:text-white leading-none mt-0.5">
+              {t.agenda.title}
+            </h2>
           </div>
-          
-          <button 
+
+          <button
+            type="button"
             onClick={handleClose}
-            className="flex items-center space-x-2 px-4 sm:px-5 py-2.5 bg-white/5 hover:bg-red-600 text-white rounded-xl border border-white/10 transition-all text-[10px] font-black uppercase tracking-wider"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-red-600 hover:text-white text-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-white/10 transition-colors text-xs font-bold uppercase tracking-wider"
           >
-            <span className="hidden sm:inline">Fechar Agenda</span>
+            <span className="hidden sm:inline">{t.agenda.close}</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 py-10 sm:py-14 max-w-7xl">
+      <div className="container mx-auto px-4 sm:px-6 py-10 max-w-7xl">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-36">
-             <div className="relative w-16 h-16">
-               <div className="absolute inset-0 border-4 border-orange-500/20 rounded-full"></div>
-               <div className="absolute inset-0 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-             </div>
-             <p className="mt-8 text-orange-400 font-black text-xs uppercase tracking-[0.3em] animate-pulse">
-               Sintonizando eventos culturais...
-             </p>
-          </div>
-        ) : errorType !== 'none' ? (
-          <div className="flex flex-col items-center justify-center py-28 text-center max-w-lg mx-auto glass-card p-8">
-            <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-6 text-slate-400 border border-white/10">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-            <h3 className="text-xl font-brand font-black text-white mb-2">Sinal Cultural Indisponível</h3>
-            <p className="text-slate-300 text-xs leading-relaxed mb-8">
-              A consultar os próximos eventos em Amarante. Pode tentar recarregar para consultar a emissão da agenda.
+          <div className="flex flex-col items-center justify-center py-32">
+            <div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+            <p className="mt-6 text-slate-600 dark:text-slate-300 font-semibold text-sm">
+              {t.agenda.tuning}
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <button 
-                onClick={loadEvents}
-                className="px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-md shadow-orange-600/20 active:scale-95"
-              >
-                Recarregar Agenda
-              </button>
-            </div>
+          </div>
+        ) : hasError ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center max-w-md mx-auto glass-card p-8">
+            <h3 className="text-xl font-brand font-black text-slate-900 dark:text-white mb-2">
+              {t.agenda.unavailableTitle}
+            </h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+              {t.agenda.unavailableDesc}
+            </p>
+            <button
+              type="button"
+              onClick={loadEvents}
+              className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-colors"
+            >
+              {t.agenda.reload}
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event, index) => (
-              <div 
-                key={index} 
-                className="glass-card glass-card-interactive overflow-hidden flex flex-col group transition-all duration-300"
-              >
-                <div className="relative h-64 overflow-hidden">
-                  <img 
-                    src={event.image} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+              <div key={index} className="glass-card glass-card-interactive overflow-hidden flex flex-col group">
+                <div className="relative h-56 overflow-hidden bg-slate-200 dark:bg-slate-900">
+                  <img
+                    src={event.image}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     alt={event.title}
-                    onError={(e) => e.currentTarget.src = fallbackImages[event.category] || fallbackImages["GERAL"]}
+                    onError={(e) => {
+                      e.currentTarget.src = fallbackImages[event.category] || fallbackImages.GERAL;
+                    }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#07090e] via-transparent to-transparent opacity-80" />
-                  
-                  {/* Badge de Data */}
-                  <div className="absolute top-4 left-4 bg-black/75 backdrop-blur-md rounded-2xl p-2.5 text-center min-w-[64px] border border-white/15 shadow-xl">
-                    <p className="text-[9px] font-black text-orange-400 uppercase leading-none mb-1 tracking-wider">{event.month}</p>
-                    <p className="text-2xl font-brand font-black leading-none text-white">{event.day}</p>
-                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
 
-                  {/* Categoria */}
-                  <div className="absolute bottom-4 left-4">
-                    <span className="px-3 py-1 bg-orange-600/90 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-md border border-orange-400/30">
-                      {event.category}
-                    </span>
+                  <div className="absolute top-4 left-4 bg-black/75 backdrop-blur-md rounded-xl px-3 py-2 text-center border border-white/15 tabular-nums">
+                    <p className="text-[10px] font-bold text-red-400 uppercase leading-none mb-1">{event.month}</p>
+                    <p className="text-xl font-brand font-black leading-none text-white">{event.day}</p>
                   </div>
                 </div>
 
                 <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-white font-brand font-black text-lg sm:text-xl leading-snug mb-3 line-clamp-2 min-h-[3rem] group-hover:text-orange-400 transition-colors">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400 mb-1.5 block">
+                    {event.category}
+                  </span>
+                  <h3 className="text-slate-900 dark:text-white font-brand font-bold text-lg leading-snug mb-3 line-clamp-2">
                     {event.title}
                   </h3>
-                  
-                  <div className="flex items-center space-x-2.5 text-slate-300 mb-6">
-                    <div className="w-7 h-7 bg-white/5 rounded-lg flex items-center justify-center text-orange-400 shrink-0 border border-white/5">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                      </svg>
-                    </div>
-                    <span className="text-xs font-semibold truncate">{event.location}</span>
-                  </div>
 
-                  <div className="mt-auto pt-4 border-t border-white/[0.08] flex items-center space-x-3">
-                    <a 
-                      href={event.sourceUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex-grow bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white py-3 rounded-xl text-xs font-black uppercase tracking-wider text-center shadow-md shadow-orange-600/20 transition-all active:scale-95"
-                    >
-                      Ver Detalhes
-                    </a>
-                  </div>
+                  <p className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-6 truncate">
+                    {event.location}
+                  </p>
+
+                  <a
+                    href={event.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-auto py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider text-center transition-colors"
+                  >
+                    {t.agenda.viewDetails}
+                  </a>
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        <div className="mt-16 text-center py-8 border-t border-white/[0.08]">
-           <div className="inline-block px-6 py-2 bg-white/5 rounded-full border border-white/10">
-             <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em]">
-               Web Rádio Figueiró • Agenda Cultural de Amarante
-             </p>
-           </div>
+        <div className="mt-14 text-center py-6 border-t border-slate-200 dark:border-white/[0.08]">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{t.agenda.footer}</p>
         </div>
       </div>
     </div>
