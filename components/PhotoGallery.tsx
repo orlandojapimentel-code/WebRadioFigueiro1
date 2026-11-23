@@ -119,7 +119,10 @@ const PhotoGallery: React.FC = () => {
     };
 
     if (isOverlayOpen) {
-      const handleCloseOverlays = () => handleCloseGallery();
+      const handleCloseOverlays = () => {
+        setIsOverlayOpen(false);
+        setSelectedPhoto(null);
+      };
       window.addEventListener('close-overlays', handleCloseOverlays);
 
       document.body.style.overflow = 'hidden';

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { fetchCulturalEvents } from '../services/geminiService';
 import { useLanguage } from '../contexts/LanguageContext';
 import { MEDIA_ASSETS } from '../src/mediaAssets';
@@ -64,7 +65,8 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         const day = dayMatch ? dayMatch[0] : '—';
         const monthPart = dateStr
           .replace(day, '')
-          .replace(/de/g, '')
+          .replace(/\bde\b/gi, '')
+          .replace(/[·,]/g, '')
           .trim()
           .substring(0, 3)
           .toUpperCase();
@@ -95,33 +97,44 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   useEffect(() => {
-    const handleCloseOverlays = () => onClose();
-    window.addEventListener('close-overlays', handleCloseOverlays);
     loadEvents();
 
-    window.history.pushState({ modal: 'agenda' }, '');
-    const handlePopState = () => onClose();
-    window.addEventListener('popstate', handlePopState);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleCloseOverlays = (e: Event) => {
+      const detail = (e as CustomEvent<{ source?: string }>).detail;
+      if (detail?.source !== 'agenda') {
+        onClose();
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('close-overlays', handleCloseOverlays);
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      document.body.style.overflow = prevOverflow;
       window.removeEventListener('close-overlays', handleCloseOverlays);
-      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('keydown', handleKeyDown);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleClose = () => {
-    if (window.history.state?.modal === 'agenda') {
-      window.history.back();
-    } else {
-      onClose();
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[300] bg-slate-50/95 dark:bg-[#07090e]/95 backdrop-blur-2xl overflow-y-auto text-slate-900 dark:text-white transition-colors">
-      <div className="sticky top-0 z-30 bg-white/90 dark:bg-[#07090e]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/[0.08]">
-        <div className="container mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
+  const content = (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={t.agenda.title}
+      className="fixed inset-0 z-[500] bg-slate-50/95 dark:bg-[#07090e]/95 backdrop-blur-2xl overflow-y-auto text-slate-900 dark:text-white transition-colors"
+    >
+      <div className="sticky top-0 z-30 bg-white/95 dark:bg-[#07090e]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/[0.08]">
+        <div className="container mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
           <div>
             <span className="text-[11px] text-red-600 dark:text-red-400 font-bold uppercase tracking-[0.2em] block">
               {t.agenda.kicker}
@@ -133,8 +146,8 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
           <button
             type="button"
-            onClick={handleClose}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-red-600 hover:text-white text-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-white/10 transition-colors text-xs font-bold uppercase tracking-wider"
+            onClick={onClose}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-red-600 hover:text-white text-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-white/10 transition-colors text-xs font-bold uppercase tracking-wider shrink-0"
           >
             <span className="hidden sm:inline">{t.agenda.close}</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,6 +235,8 @@ const AgendaCultural: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(content, document.body) : content;
 };
 
 export default AgendaCultural;

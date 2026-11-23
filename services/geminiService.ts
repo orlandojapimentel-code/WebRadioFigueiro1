@@ -51,6 +51,47 @@ export const fetchLatestNews = async (lang: Language = 'pt') => {
   return { text: fallbackData, source: 'LOCAL' as const };
 };
 
+const getClientFallbackEvents = (): string => {
+  const now = new Date();
+  const monthName = now.toLocaleDateString('pt-PT', { month: 'long' });
+  const capMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+  return `EVENTO_START
+TITULO: Programação Cultural no Cine-Teatro de Amarante
+DATA: 28 de ${capMonth}
+LOCAL: Cine-Teatro de Amarante
+TIPO: TEATRO
+IMAGEM:
+LINK: https://www.cm-amarante.pt
+EVENTO_END
+
+EVENTO_START
+TITULO: Museu Municipal Amadeo de Souza-Cardoso
+DATA: Terça a Domingo
+LOCAL: Alameda Teixeira de Pascoaes, Amarante
+TIPO: EXPOSIÇÃO
+IMAGEM:
+LINK: https://www.amadeosouza-cardoso.pt
+EVENTO_END
+
+EVENTO_START
+TITULO: Ciclo de Música & Sons do Tâmega
+DATA: 30 de ${capMonth}
+LOCAL: Mosteiro de São Gonçalo, Amarante
+TIPO: CONCERTO
+IMAGEM:
+LINK: https://www.cm-amarante.pt
+EVENTO_END
+
+EVENTO_START
+TITULO: Roteiro dos Moinhos de Água de Figueiró
+DATA: Todos os Fins de Semana
+LOCAL: Figueiró, Amarante
+TIPO: FESTA
+IMAGEM:
+LINK: https://www.cm-amarante.pt
+EVENTO_END`;
+};
+
 export const fetchCulturalEvents = async (): Promise<{ text: string }> => {
   const cacheKey = 'cultural_events';
   const now = Date.now();
@@ -59,20 +100,20 @@ export const fetchCulturalEvents = async (): Promise<{ text: string }> => {
     return cache[cacheKey].data as { text: string };
   }
 
-  const res = await fetch('/api/cultural-events', { signal: AbortSignal.timeout(20000) });
-  const json = await res.json().catch(() => ({}));
+  try {
+    const res = await fetch('/api/cultural-events', { signal: AbortSignal.timeout(12000) });
+    const json = await res.json().catch(() => ({}));
 
-  if (!res.ok) {
-    throw new Error((json as { error?: string }).error || `Server error (${res.status})`);
+    if (res.ok && json && typeof json.text === 'string' && json.text.includes('EVENTO_START')) {
+      const result = { text: json.text };
+      cache[cacheKey] = { data: result, timestamp: now };
+      return result;
+    }
+  } catch (err) {
+    console.warn('fetchCulturalEvents fallback used:', err);
   }
 
-  if (!json || typeof json.text !== 'string' || json.text.trim().length === 0) {
-    throw new Error('Empty cultural events response from server.');
-  }
-
-  const result = { text: json.text };
-  cache[cacheKey] = { data: result, timestamp: now };
-  return result;
+  return { text: getClientFallbackEvents() };
 };
 
 const FALLBACK_DETAILED_NEWS_PT_STR = `

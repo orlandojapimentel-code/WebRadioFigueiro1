@@ -72,14 +72,22 @@ const AppContent: React.FC = () => {
   const toggleTheme = () => setIsDark(!isDark);
 
   useEffect(() => {
-    const handleCloseOverlays = () => {
-      setShowAgenda(false);
+    const handleCloseOverlays = (e: Event) => {
+      const detail = (e as CustomEvent<{ source?: string }>).detail;
+      if (detail?.source !== 'agenda') {
+        setShowAgenda(false);
+      }
     };
     window.addEventListener('close-overlays', handleCloseOverlays);
     return () => {
       window.removeEventListener('close-overlays', handleCloseOverlays);
     };
   }, []);
+
+  const handleOpenAgenda = () => {
+    window.dispatchEvent(new CustomEvent('close-overlays', { detail: { source: 'agenda' } }));
+    setShowAgenda(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col pb-28 sm:pb-32 bg-slate-50 dark:bg-[#07090e] text-slate-900 dark:text-slate-100 transition-colors duration-300">
@@ -105,11 +113,8 @@ const AppContent: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent('close-overlays'));
-                  setShowAgenda(true);
-                }}
-                className="self-start px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-colors whitespace-nowrap shrink-0"
+                onClick={handleOpenAgenda}
+                className="relative z-10 self-start px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-colors whitespace-nowrap shrink-0 cursor-pointer"
               >
                 {t.bento.agendaCta}
               </button>
